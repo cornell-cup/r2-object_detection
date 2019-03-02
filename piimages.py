@@ -3,32 +3,35 @@ import numpy as np
 from PIL import Image
 import picamera
 import time
-import cv2
+import sys
 ip = sys.argv[1]
-portnum = sys.argv[2]
+portnum = int(sys.argv[2])
 def main():	
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-	s.connect(ip,portnum)
-	with picamera.PiCamera as camera():
-		camera.capture("image.png")
-	frame = cv2.imread("image.png")
+	s.connect((ip,portnum))
+	with picamera.PiCamera() as camera:
+		camera.capture("image.jpg")
+	frame = Image.open("image.jpg")
+	frame = np.asarray(frame)
 	frameBytes = frame.tobytes()
-	byteLength = len(bytes)
+	byteLength = len(frameBytes)
 	shape0 = frame.shape[0]
 	shape1 = frame.shape[1]
+	print(frame.shape)
 	s.send(str(byteLength).encode())
-	s.send(str(shape0).encode())
-	s.send(str(shape1).encode())
 	s.close()
-	try:	
-		s1=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-		s1.connect(ip,portnum) 
-	except:
-		print("cannot reconnect")
-	print("connected")
+	connected = False       
+	while connected == False:
+		try:
+			s1=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+			s1.connect((ip,portnum))
+			print("connected")
+			connected = True
+		except:
+			print("cannot reconnect")
 	s1.send(frameBytes)
 	s1.close()
 	time.sleep(.001)
 
-while true
+while True :
  main();
