@@ -8,7 +8,7 @@ ip = sys.argv[1]
 portnum = int(sys.argv[2])
 def main():
 	try:
-		input()
+		input("Please press Enter to take a picture")
 	except:
 		pass
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
