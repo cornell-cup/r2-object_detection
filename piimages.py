@@ -6,7 +6,11 @@ import time
 import sys
 ip = sys.argv[1]
 portnum = int(sys.argv[2])
-def main():	
+def main():
+	try:
+		input()
+	except:
+		pass
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	s.connect((ip,portnum))
 	with picamera.PiCamera() as camera:
