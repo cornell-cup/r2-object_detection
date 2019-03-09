@@ -4,22 +4,18 @@ from PIL import Image
 import picamera
 import time
 import sys
-import streamvideo
 ip = sys.argv[1]
 portnum = int(sys.argv[2])
+option = int(sys.argv[3])
 def main():
-	streamvideo
 	try:
 		input("Please press Enter to take a picture")
 	except:
 		pass
-	
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	s.connect((ip,portnum))
-	with picamera.PiCamera() as camera:
-		#camera.stop_recording()
-		camera.capture("image.jpg")
-	print("image taken")
+	#with picamera.PiCamera() as camera:
+		#camera.capture("image.jpg")
 	frame = Image.open("image.jpg")
 	frame = np.asarray(frame)
 	frameBytes = frame.tobytes()
@@ -41,6 +37,9 @@ def main():
 	s1.send(frameBytes)
 	s1.close()
 	time.sleep(.001)
-
+        receive_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+	receive_socket.bind((socket.gethostbyname(socket.gethostname()), int(sys.argv[2])))
+        print(socket.gethostbyname(socket.gethostname()))
+        receive_socket.listen(5)
 while True :
  main();
