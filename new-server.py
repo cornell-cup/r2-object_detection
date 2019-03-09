@@ -3,8 +3,13 @@ import numpy as np
 from PIL import Image
 
 from test import infer_and_match
+from play import process
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((socket.gethostbyname(socket.gethostname()), int(sys.argv[1])))
+
+action = int(sys.argv[2])
+# 1 stands for detecting people, 2 stands for RockPaperScissors
+
 print(socket.gethostbyname(socket.gethostname()))
 
 server_socket.listen(5)
@@ -94,7 +99,11 @@ while 1:
     im_path='test_images/image{}.jpg'.format(idx)
 
     im.save('test_images/image{}.jpg'.format(idx))
-    infer_and_match(im_path)
+    if action == 1:
+        infer_and_match(im_path)
+    else if action == 2:
+        process(im_path)
+    
     clientsocket.close()
     print('finished!!')
     
