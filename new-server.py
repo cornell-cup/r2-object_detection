@@ -1,12 +1,14 @@
 import socket,os,sys
 import numpy as np
 from PIL import Image
-
-from test import infer_and_match
-from play import process
+import cv2
+#from test import infer_and_match
+#sys.path.append("/Users/lhtlinda/Desktop/rps-cv")
+#from play import process
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((socket.gethostbyname(socket.gethostname()), int(sys.argv[1])))
-
+sys.path.append("/Users/lhtlinda/Desktop/rock-paper-scissor-vision")
+from play import main 
 action = int(sys.argv[2])
 # 1 stands for detecting people, 2 stands for RockPaperScissors
 
@@ -35,7 +37,7 @@ while 1:
         s=int(s)
         shape1=1920
         shape0=1080
-        shape2=3
+        #shape2=3
         #print(shape0)
         
         #s=str(shape0)
@@ -88,8 +90,8 @@ while 1:
         #buf=clientsocket.recv(i)
         #print(len(buf))
     arr=np.frombuffer(buf,dtype="uint8")
-        #print(arr.shape)
-    arr=arr.reshape((shape0,shape1,shape2))
+    print(arr.shape)
+    arr=arr.reshape((shape0,shape1))
         #print(arr.shape)
         #print(arr)
         
@@ -101,8 +103,16 @@ while 1:
     im.save('test_images/image{}.jpg'.format(idx))
     if action == 1:
         infer_and_match(im_path)
-    else if action == 2:
-        process(im_path)
+    elif action == 2:
+        image=cv2.imread(im_path)
+        res=process(image)
+        print("result")
+        print(res)
+    elif action ==3:
+        image=arr
+        image=np.resize(image,(120,160))
+        res=main(image)
+
     
     clientsocket.close()
     print('finished!!')
