@@ -22,6 +22,7 @@ def main():
     time.sleep(2)
     camera.shutter_speed = camera.exposure_speed
     camera.exposure_mode = 'off'
+    camera.resolution = (120, 160)
     g = camera.awb_gains
     camera.awb_mode = 'off'
     camera.awb_gains = g
@@ -41,20 +42,27 @@ def main():
 
     #formulate a new picture:
     diff = hand - background
+    diff = np.clip(diff,0, a_max = None)
+    #print(diff)
     im = Image.fromarray(np.uint8(diff))
     im.save("diff.bmp")
     distance = np.sqrt(np.sum(np.square(diff), axis=2))
-    fg_mask = distance > 64
-    fg_mask = fg_mask * 255
-    im = Image.fromarray(np.uint8(fg_mask))
+    fg_mask = distance > 32
+    fg_mask2 = fg_mask * 255
+    im = Image.fromarray(np.uint8(fg_mask2))
     im.save("im.bmp")
     
-    frame = np.uint8(fg_mask/255)
+    frame = np.uint8(fg_mask2)
+    print(frame.shape)
+    frame2 = frame
+    #frame2=np.resize(frame,(120,160))
+    frame2 = Image.fromarray(np.uint8(frame2))
+    frame2.save("frame.bmp")
     frameBytes = frame.tobytes()
     byteLength = len(frameBytes)
     shape0 = frame.shape[0]
     shape1 = frame.shape[1]
-    print(frame.shape)
+    #print(frame.shape)
     s.send(str(byteLength).encode())
     s.close()
     connected = False       
