@@ -22,7 +22,7 @@ def main():
     time.sleep(2)
     camera.shutter_speed = camera.exposure_speed
     camera.exposure_mode = 'off'
-    camera.resolution = (120, 160)
+    camera.resolution = (160, 120)
     g = camera.awb_gains
     camera.awb_mode = 'off'
     camera.awb_gains = g
