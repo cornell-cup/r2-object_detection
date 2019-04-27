@@ -52,7 +52,7 @@ def main():
     im = Image.fromarray(np.uint8(fg_mask2))
     im.save("im.bmp")
     
-    frame = np.uint8(fg_mask2)
+    frame = np.uint8(fg_mask)
     print(frame.shape)
     frame2 = frame
     #frame2=np.resize(frame,(120,160))
