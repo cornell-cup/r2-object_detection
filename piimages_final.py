@@ -4,9 +4,9 @@ from PIL import Image
 import picamera
 import time
 import sys
-ip = sys.argv[1]
-portnum = int(sys.argv[2])
-option = int(sys.argv[3])
+ip = 192.168.4.102
+portnum = 5000
+option = 1
 def main():
     try:
         input("Please press Enter to take a picture")
@@ -57,5 +57,5 @@ def main():
             
     s1.close()
     time.sleep(.001)
-while True :
- main();
+
+
