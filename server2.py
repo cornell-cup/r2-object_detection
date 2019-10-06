@@ -1,7 +1,7 @@
 import socket,os,sys
 import numpy as np
 from PIL import Image
-import cv2
+#import cv2
 from test import infer_and_match
 #sys.path.append("/Users/lhtlinda/Desktop/rps-cv")
 #from play import process
