@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import pyrealsense2 as rs
 import numpy as np
 import os
@@ -5,24 +6,28 @@ import six.moves.urllib as urllib
 import sys
 print(sys.version_info)
 import tarfile
-import tensorflow as tf
+#import tensorflow as tf
 import zipfile
 import cv2
 import math
-from utils import label_map_util
-from kinematics import kinematics
+#from utils import label_map_util
+#from kinematics import kinematics
 
 from distutils.version import StrictVersion
 from collections import defaultdict
 from io import StringIO
-import matplotlib
-matplotlib.use('TkAgg')
-matplotlib.rcParams["backend"] = "TkAgg"
-import matplotlib.pyplot as plt
-print(matplotlib.get_backend())
-plt.switch_backend("TkAgg")
+#import matplotlib
+#matplotlib.use('TkAgg')
+#matplotlib.rcParams["backend"] = "TkAgg"
+#import matplotlib.pyplot as plt
+#print(matplotlib.get_backend())
+#plt.switch_backend("TkAgg")
 from PIL import Image
 import time
+
+import jetson.inference
+import jetson.utils
+'''
 MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
 PATH_TO_FROZEN_GRAPH = MODEL_NAME + '/frozen_inference_graph.pb'
 PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
@@ -86,6 +91,19 @@ def run_inference_for_single_image(image):
             output_coord.append(output_dict['detection_boxes'][0][i])
 
       return output_coord, output_classes
+'''
+threshold = 0.5
+net = jetson.inference.detectNet("ssd-mobilenet-v2", sys.argv, threshold)
+def run_inference_for_single_image(img):
+    tImg = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA).astype(np.float32)
+    cudaImg = jetson.utils.cudaFromNumpy(tImg)
+    
+    detections = net.Detect(cudaImg, tImg.shape[1], tImg.shape[0], "box,labels,conf")
+    print('\n\n\ndetections\n\n\n')
+    print(detections)
+    print(detections[0])
+    print([],[])
+    return detections
 
 # Create a pipeline
 pipeline = rs.pipeline()
@@ -114,7 +132,7 @@ clipping_distance = clipping_distance_in_meters / depth_scale
 # The "align_to" is the stream type to which we plan to align depth frames.
 align_to = rs.stream.color
 align = rs.align(align_to)
-
+'''
 try:
     while True:
         # Get frameset of color and depth
@@ -177,8 +195,64 @@ try:
         print("4")
         test2 = cv2.resize(depth_colormap, (1920, 1080))
         print("5")
-        if(math.sqrt((inx+ 0.06985)**2 + ( iny - 0.10795)**2 + (inz-0.05715)**2) < .7):
-            kinematics(inx+ 0.06985, iny - 0.10795, inz-0.05715);
+        #if(math.sqrt((inx+ 0.06985)**2 + ( iny - 0.10795)**2 + (inz-0.05715)**2) < .7):
+        #    kinematics(inx+ 0.06985, iny - 0.10795, inz-0.05715);
+        #cv2.imshow('potato', test2)
+        print("6")
+        key = cv2.waitKey(1)
+        
+        # Press esc or 'q' to close the image window
+        if key & 0xFF == ord('q') or key == 27:
+            cv2.destroyAllWindows()
+            break
+finally:
+    pipeline.stop()
+'''
+try:
+    while True:
+        # Get frameset of color and depth
+        frames = pipeline.wait_for_frames()
+        # frames.get_depth_frame() is a 640x360 depth image
+
+        # Align the depth frame to color frame
+        aligned_frames = align.process(frames)
+
+        # Get aligned frames
+        aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+        color_frame = aligned_frames.get_color_frame()
+
+        # Validate that both frames are valid
+        if not aligned_depth_frame or not color_frame:
+            continue
+
+        depth_image = np.asanyarray(aligned_depth_frame.get_data())
+        color_image = np.asanyarray(color_frame.get_data())
+        print(depth_image)
+        test = cv2.resize(color_image, (1920, 1080))
+        test_depth = cv2.resize(depth_image, (1920, 1080))
+        cv2.imwrite('test.jpg', test)
+        
+        detections = run_inference_for_single_image(test)
+	
+	# Remove background - Set pixels further than clipping_distance to grey
+        grey_color = 153
+        depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
+        bg_removed = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
+        # Render images
+        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+        print((coordinates[1]*bg_removed.shape[1], coordinates[0]*bg_removed.shape[0]))
+        cv2.rectangle(color_image, (int(coordinates[1]*bg_removed.shape[1]), int(coordinates[0]*bg_removed.shape[0])), (int(coordinates[3]*bg_removed.shape[1]), int(coordinates[2]*bg_removed.shape[0])), 100, 5)
+        print("1")
+        images = np.hstack((depth_colormap, color_image))
+        print("2")
+        cv2.namedWindow('Align Example', cv2.WINDOW_AUTOSIZE)
+        print("3")
+        cv2.imshow('Align Example', color_image)
+        print("4")
+        test2 = cv2.resize(depth_colormap, (1920, 1080))
+        print("5")
+        #if(math.sqrt((inx+ 0.06985)**2 + ( iny - 0.10795)**2 + (inz-0.05715)**2) < .7):
+        #    kinematics(inx+ 0.06985, iny - 0.10795, inz-0.05715);
         #cv2.imshow('potato', test2)
         print("6")
         key = cv2.waitKey(1)
