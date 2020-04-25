@@ -1,3 +1,6 @@
 .vscode/
 opencv-tmp/
 barcodes.csv
+*.jpg
+*.png
+__pycache__/
