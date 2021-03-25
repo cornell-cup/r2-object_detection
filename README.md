@@ -8,7 +8,7 @@ See [`requirements.txt`](./requirements.txt) for Python dependencies.
 Additionally, install Protobuf for your system and run:
 `protoc object_detection/protos/*.proto --python_out=.`
 
-To install protobuf, [go here](https://github.com/protocolbuffers/protobuf/releases), download the appropriate zip, unzip it to a folder, and set your PATH to also point to the bin.
+To install protobuf, [go here](https://github.com/protocolbuffers/protobuf/releases), download the appropriate zip for your OS (not language necessarily), unzip it to a folder, and set your PATH to also point to the bin.
 
 # CREDITS
 Tensorflow's research models for a frozen Object Detection model (SSD Mobilenet V1 COCO, [retrieved from previous commit](https://github.com/tensorflow/models/blob/d41fc8f4437e585656ac50a2d73bcc8146e05579/research/object_detection/g3doc/detection_model_zoo.md))
