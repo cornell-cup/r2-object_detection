@@ -1,0 +1,6 @@
+pyrealsense2
+numpy
+six
+tensorflow
+opencv-python
+matplotlib
