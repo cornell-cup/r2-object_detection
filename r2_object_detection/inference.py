@@ -8,7 +8,7 @@ import math
 from object_detection.utils import label_map_util
 from object_detection.utils import ops as utils_ops
 from cam_grasp_integration import get_grasp_on_image
-from utitlity_constants import PATH_TO_FROZEN_GRAPH, PATH_TO_LABELS, PATH_TO_OPTIMIZED_GRAPH
+from utitlity_constants import PATH_TO_FROZEN_GRAPH, PATH_TO_LABELS
 # from kinematics import kinematics
 import time
 
@@ -25,15 +25,13 @@ plt.switch_backend("TkAgg")
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
 # First deserialize your frozen graph:
-with tf.compat.v1.Session() as sess:
+with tf.compat.v1.Session() as sess_:
     with tf.compat.v2.io.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as f:
         frozen_graph = tf.compat.v1.GraphDef()
         frozen_graph.ParseFromString(f.read())
-ops = frozen_graph.get_operations()
 trt_graph = trt.create_inference_graph(
-    input_graph_def = frozen_graph, outputs=[
-        'num_detections', 'detection_boxes', 'detection_scores',
-        'detection_classes', 'detection_masks'
+    input_graph_def=frozen_graph, outputs=[
+        'num_detections', 'detection_boxes', 'detection_scores', 'detection_classes', 'detection_masks'
     ]
 )
 
@@ -122,7 +120,7 @@ def main():
 
     try:
         while True:
-            # Get frameset of color and depth
+            # Get frame_set of color and depth
             frames = pipeline.wait_for_frames()
             # frames.get_depth_frame() is a 640x360 depth image
 
@@ -201,6 +199,7 @@ def main():
             #    break
     finally:
         pipeline.stop()
+
 
 if __name__ == '__main__':
     main()
