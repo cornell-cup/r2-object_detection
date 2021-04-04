@@ -1,18 +1,18 @@
 import pyrealsense2 as rs
 import numpy as np
-import os
 import sys
 import tensorflow as tf
+from tensorflow.python.compiler.tensorrt import trt_convert as trt
 import cv2
 import math
 from object_detection.utils import label_map_util
 from object_detection.utils import ops as utils_ops
+from utitlity_constants import PATH_TO_FROZEN_GRAPH, PATH_TO_LABELS, PATH_TO_OPTIMIZED_GRAPH
 # from kinematics import kinematics
 import time
 
 import matplotlib
 import matplotlib.pyplot as plt
-# Why import matplotlib twice? -CD
 
 
 print(sys.version_info)
@@ -21,19 +21,20 @@ matplotlib.rcParams["backend"] = "TkAgg"
 print(matplotlib.get_backend())
 plt.switch_backend("TkAgg")
 
-MODEL_NAME = 'ssd_mobilenet_v1_coco_2018_01_28'
-PATH_TO_FROZEN_GRAPH = MODEL_NAME + '/frozen_inference_graph.pb'
-PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
-detection_graph = tf.Graph()
 
-with detection_graph.as_default():
-    od_graph_def = tf.compat.v1.GraphDef()
-    with tf.compat.v2.io.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as fid:
-        serialized_graph = fid.read()
-        od_graph_def.ParseFromString(serialized_graph)
-        tf.import_graph_def(od_graph_def, name='')
-        session = tf.compat.v1.Session()
+# First deserialize your frozen graph:
+with tf.compat.v1.Session() as sess:
+    with tf.compat.v2.io.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as f:
+        frozen_graph = tf.compat.v1.GraphDef()
+        frozen_graph.ParseFromString(f.read())
+ops = frozen_graph.get_operations()
+trt_graph = trt.create_inference_graph(
+    input_graph_def = frozen_graph, outputs=[
+        'num_detections', 'detection_boxes', 'detection_scores',
+        'detection_classes', 'detection_masks'
+    ]
+)
 
 
 def run_inference_for_single_image(image):
@@ -53,7 +54,7 @@ def run_inference_for_single_image(image):
         # The following processing is only for single image
         detection_boxes = tf.squeeze(tensor_dict['detection_boxes'], [0])
         detection_masks = tf.squeeze(tensor_dict['detection_masks'], [0])
-        # Reframe is required to translate mask from box coordinates to image coordinates and fit the image size.
+        # Re-frame is required to translate mask from box coordinates to image coordinates and fit the image size.
         real_num_detection = tf.cast(tensor_dict['num_detections'][0], tf.int32)
         detection_boxes = tf.slice(detection_boxes, [0, 0], [real_num_detection, -1])
         detection_masks = tf.slice(detection_masks, [0, 0, 0], [real_num_detection, -1, -1])
@@ -68,8 +69,8 @@ def run_inference_for_single_image(image):
 
     # Run inference
     t1 = time.time()
-    output_dict = session.run(tensor_dict,
-                              feed_dict={image_tensor: np.expand_dims(image, 0)})
+    with tf.compat.v1.Session() as sess:
+        output_dict = sess.run(tensor_dict, feed_dict={image_tensor: np.expand_dims(image, 0)})
     t2 = time.time()
     print("runtime")
     print(t2 - t1)

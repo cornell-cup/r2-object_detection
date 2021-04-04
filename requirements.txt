@@ -4,3 +4,4 @@ six
 tensorflow
 opencv-python
 matplotlib
+tensorrt
