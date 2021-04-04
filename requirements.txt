@@ -5,3 +5,5 @@ tensorflow
 opencv-python
 matplotlib
 tensorrt
+wheel
+pbr
