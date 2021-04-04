@@ -7,6 +7,7 @@ import cv2
 import math
 from object_detection.utils import label_map_util
 from object_detection.utils import ops as utils_ops
+from cam_grasp_integration import get_grasp_on_image
 from utitlity_constants import PATH_TO_FROZEN_GRAPH, PATH_TO_LABELS, PATH_TO_OPTIMIZED_GRAPH
 # from kinematics import kinematics
 import time
@@ -146,10 +147,13 @@ def main():
             output_coord, output_classes = run_inference_for_single_image(test)
             try:
 
-                coordinates = output_coord[output_classes.index("bottle")]
+                # coordinates = output_coord[output_classes.index("bottle")]
+                coordinates = output_coord[0]
                 x = (coordinates[1] + coordinates[3]) / 2 * 1920
                 y = (coordinates[0] + coordinates[2]) / 2 * 1080
                 inx = test_depth[int(y)][int(x)] * depth_scale
+
+                print("grasp coordinates", get_grasp_on_image(aligned_frames, coordinates))
             except:
                 print('not found')
                 coordinates = [0, 0, 0, 0]
@@ -174,29 +178,29 @@ def main():
             print((coordinates[1] * bg_removed.shape[1], coordinates[0] * bg_removed.shape[0]))
             cv2.rectangle(color_image,
                           (int(coordinates[1] * bg_removed.shape[1]), int(coordinates[0] * bg_removed.shape[0])),
-                          (int(coordinates[3] * bg_removed.shape[1]), int(coordinates[2] * bg_removed.shape[0])), 100, 5)
-            print("1")
-            images = np.hstack((depth_colormap, color_image))
-            print("2")
-            cv2.namedWindow('Align Example', cv2.WINDOW_AUTOSIZE)
-            print("3")
-            cv2.imshow('Align Example', color_image)
-            print("4")
-            test2 = cv2.resize(depth_colormap, (1920, 1080))
-            print("5")
-            # if math.sqrt((inx + 0.06985) ** 2 + (iny - 0.10795) ** 2 + (inz - 0.05715) ** 2) < .7:
-            #     kinematics(inx + 0.06985, iny - 0.10795, inz - 0.05715);
-            # cv2.imshow('potato', test2)
-            print("6")
-            key = cv2.waitKey(1)
+                          (int(coordinates[3] * bg_removed.shape[1]), int(coordinates[2] * bg_removed.shape[0])), 100,
+                          5)
+            # print("1")
+            # images = np.hstack((depth_colormap, color_image))
+            # print("2")
+            # cv2.namedWindow('Align Example', cv2.WINDOW_AUTOSIZE)
+            # print("3")
+            # cv2.imshow('Align Example', color_image)
+            # print("4")
+            # test2 = cv2.resize(depth_colormap, (1920, 1080))
+            # print("5")
+            # # if math.sqrt((inx + 0.06985) ** 2 + (iny - 0.10795) ** 2 + (inz - 0.05715) ** 2) < .7:
+            # #     kinematics(inx + 0.06985, iny - 0.10795, inz - 0.05715);
+            # # cv2.imshow('potato', test2)
+            # print("6")
+            # key = cv2.waitKey(1)
 
             # Press esc or 'q' to close the image window
-            if key & 0xFF == ord('q') or key == 27:
-                cv2.destroyAllWindows()
-                break
+            # if key & 0xFF == ord('q') or key == 27:
+            #    cv2.destroyAllWindows()
+            #    break
     finally:
         pipeline.stop()
-
 
 if __name__ == '__main__':
     main()
