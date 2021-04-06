@@ -13,13 +13,13 @@ from utitlity_constants import PATH_TO_FROZEN_GRAPH, PATH_TO_LABELS
 import time
 
 import matplotlib
-import matplotlib.pyplot as plt
 
 tf.compat.v1.disable_eager_execution()
 
 print(sys.version_info)
 matplotlib.use('TkAgg')
 matplotlib.rcParams["backend"] = "TkAgg"
+import matplotlib.pyplot as plt
 print(matplotlib.get_backend())
 plt.switch_backend("TkAgg")
 
