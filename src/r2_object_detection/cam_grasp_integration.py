@@ -69,7 +69,7 @@ def get_grasp_on_image(aligned_frames, bbox_coords):
     # TODO: translate these coords to depth frame size to get depth
     # need to scale x and y down bc depth frame is smaller scale than dgr
     # distance in meters at a given pixel
-    z1 = depth_frame.get_distance(x1*640/1920, y*480/1080)
+    z1 = depth_frame.get_distance(x1*640/1920, y1*480/1080)
     z2 = depth_frame.get_distance(x2*640/1920, y2*480/1080)
     # get confirmation that this output is fine
     return (x1*640/1920, y1*480/1080, z1), (x2*640/1920, y2*480/1080, z2)
