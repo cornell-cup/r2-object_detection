@@ -1,9 +1,9 @@
+import cv2
 import pyrealsense2 as rs
 import numpy as np
 import sys
 import tensorflow as tf
 from tensorflow.python.compiler.tensorrt import trt_convert as trt
-import cv2
 import math
 from object_detection.utils import label_map_util
 from object_detection.utils import ops as utils_ops
