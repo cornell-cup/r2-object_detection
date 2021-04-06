@@ -1,8 +1,3 @@
-import matplotlib
-matplotlib.use('TkAgg')
-matplotlib.rcParams["backend"] = "TkAgg"
-import matplotlib.pyplot as plt
-plt.switch_backend("TkAgg")
 import cv2
 import pyrealsense2 as rs
 import numpy as np
@@ -16,8 +11,6 @@ from cam_grasp_integration import get_grasp_on_image
 from utitlity_constants import PATH_TO_FROZEN_GRAPH, PATH_TO_LABELS
 import time
 
-print(sys.version_info)
-print(matplotlib.get_backend())
 tf.compat.v1.disable_eager_execution()
 
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
