@@ -15,6 +15,7 @@ import time
 import matplotlib
 import matplotlib.pyplot as plt
 
+tf.compat.v1.disable_eager_execution()
 
 print(sys.version_info)
 matplotlib.use('TkAgg')
@@ -26,7 +27,7 @@ category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABE
 
 # First deserialize your frozen graph:
 with tf.compat.v1.Session() as sess:
-    with tf.compat.v1.io.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as f:
+    with tf.compat.v2.io.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as f:
         frozen_graph = tf.compat.v1.GraphDef()
         frozen_graph.ParseFromString(f.read())
 trt_graph = trt.create_inference_graph(
