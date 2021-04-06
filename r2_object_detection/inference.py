@@ -20,64 +20,64 @@ with tf.compat.v1.Session() as sess:
     with tf.compat.v2.io.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as f:
         frozen_graph = tf.compat.v1.GraphDef()
         frozen_graph.ParseFromString(f.read())
+outputs = ['num_detections', 'detection_boxes', 'detection_scores', 'detection_classes']
 trt_graph = trt.create_inference_graph(
-    input_graph_def=frozen_graph, outputs=[
-        'num_detections', 'detection_boxes', 'detection_scores', 'detection_classes'
-        ], max_batch_size=1, max_workspace_size_bytes=1 << 3, precision_mode="FP32", minimum_segment_size=5
+    input_graph_def=frozen_graph, outputs=outputs, max_batch_size=1, max_workspace_size_bytes=1 << 3,
+    precision_mode="FP32", minimum_segment_size=5
 )
 
 
 def run_inference_for_single_image(image):
-    # Get handles to input and output tensors
-    ops = trt_graph.get_operations()
-    all_tensor_names = {output.name for op in ops for output in op.outputs}
-    tensor_dict = {}
-    for tensor_key in [
-        'num_detections', 'detection_boxes', 'detection_scores',
-        'detection_classes', 'detection_masks'
-    ]:
-        tensor_name = tensor_key + ':0'
-        if tensor_name in all_tensor_names:
-            tensor_dict[tensor_key] = trt_graph.get_tensor_by_name(
-                tensor_name)
-    if 'detection_masks' in tensor_dict:
-        # The following processing is only for single image
-        detection_boxes = tf.squeeze(tensor_dict['detection_boxes'], [0])
-        detection_masks = tf.squeeze(tensor_dict['detection_masks'], [0])
-        # Re-frame is required to translate mask from box coordinates to image coordinates and fit the image size.
-        real_num_detection = tf.cast(tensor_dict['num_detections'][0], tf.int32)
-        detection_boxes = tf.slice(detection_boxes, [0, 0], [real_num_detection, -1])
-        detection_masks = tf.slice(detection_masks, [0, 0, 0], [real_num_detection, -1, -1])
-        detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
-            detection_masks, detection_boxes, image.shape[0], image.shape[1])
-        detection_masks_reframed = tf.cast(
-            tf.greater(detection_masks_reframed, 0.5), tf.uint8)
-        # Follow the convention by adding back the batch dimension
-        tensor_dict['detection_masks'] = tf.expand_dims(
-            detection_masks_reframed, 0)
-    image_tensor = trt_graph.get_tensor_by_name('image_tensor:0')
+    with tf.compat.v1.Graph().as_default() as g:
+        tf.import_graph_def(trt_graph, name='')
+        # Get handles to input and output tensors
+        inputs_ = g.get_tensor_by_name('input_images:0')
+        outputs_ = [o+':0' for o in outputs]
+        all_tensor_names = outputs_
+        tensor_dict = {}
+        for tensor_key in outputs:
+            tensor_name = tensor_key + ':0'
+            if tensor_name in all_tensor_names:
+                tensor_dict[tensor_key] = g.get_tensor_by_name(
+                    tensor_name)
+        if 'detection_masks' in tensor_dict:
+            # The following processing is only for single image
+            detection_boxes = tf.squeeze(tensor_dict['detection_boxes'], [0])
+            detection_masks = tf.squeeze(tensor_dict['detection_masks'], [0])
+            # Re-frame is required to translate mask from box coordinates to image coordinates and fit the image size.
+            real_num_detection = tf.cast(tensor_dict['num_detections'][0], tf.int32)
+            detection_boxes = tf.slice(detection_boxes, [0, 0], [real_num_detection, -1])
+            detection_masks = tf.slice(detection_masks, [0, 0, 0], [real_num_detection, -1, -1])
+            detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
+                detection_masks, detection_boxes, image.shape[0], image.shape[1])
+            detection_masks_reframed = tf.cast(
+                tf.greater(detection_masks_reframed, 0.5), tf.uint8)
+            # Follow the convention by adding back the batch dimension
+            tensor_dict['detection_masks'] = tf.expand_dims(
+                detection_masks_reframed, 0)
+        image_tensor = g.get_tensor_by_name('image_tensor:0')
 
-    # Run inference
-    t1 = time.time()
-    with tf.compat.v1.Session() as sess:
-        output_dict = sess.run(tensor_dict, feed_dict={image_tensor: np.expand_dims(image, 0)})
-    t2 = time.time()
-    print("runtime")
-    print(t2 - t1)
+        # Run inference
+        t1 = time.time()
+        with tf.compat.v1.Session() as sess:
+            output_dict = sess.run(tensor_dict, feed_dict={image_tensor: np.expand_dims(image, 0)})
+        t2 = time.time()
+        print("runtime")
+        print(t2 - t1)
 
-    # all outputs are float32 numpy arrays, so convert types as appropriate
-    classes = output_dict['detection_classes'][0]
-    scores = output_dict['detection_scores'][0]
-    print(output_dict['detection_classes'])
-    print(output_dict['detection_scores'])
-    output_classes = []
-    output_coord = []
-    for i in list(range(len(classes))):
-        if scores[i] > 0.5:
-            output_classes.append(category_index[classes[i]]['name'])
-            output_coord.append(output_dict['detection_boxes'][0][i])
+        # all outputs are float32 numpy arrays, so convert types as appropriate
+        classes = output_dict['detection_classes'][0]
+        scores = output_dict['detection_scores'][0]
+        print(output_dict['detection_classes'])
+        print(output_dict['detection_scores'])
+        output_classes = []
+        output_coord = []
+        for i in list(range(len(classes))):
+            if scores[i] > 0.5:
+                output_classes.append(category_index[classes[i]]['name'])
+                output_coord.append(output_dict['detection_boxes'][0][i])
 
-    return output_coord, output_classes
+        return output_coord, output_classes
 
 
 def main():
