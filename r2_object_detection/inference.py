@@ -1,3 +1,8 @@
+import matplotlib
+matplotlib.use('TkAgg')
+matplotlib.rcParams["backend"] = "TkAgg"
+import matplotlib.pyplot as plt
+plt.switch_backend("TkAgg")
 import cv2
 import pyrealsense2 as rs
 import numpy as np
@@ -9,19 +14,11 @@ from object_detection.utils import label_map_util
 from object_detection.utils import ops as utils_ops
 from cam_grasp_integration import get_grasp_on_image
 from utitlity_constants import PATH_TO_FROZEN_GRAPH, PATH_TO_LABELS
-# from kinematics import kinematics
 import time
 
-import matplotlib
-
-tf.compat.v1.disable_eager_execution()
-
 print(sys.version_info)
-matplotlib.use('TkAgg')
-matplotlib.rcParams["backend"] = "TkAgg"
-import matplotlib.pyplot as plt
 print(matplotlib.get_backend())
-plt.switch_backend("TkAgg")
+tf.compat.v1.disable_eager_execution()
 
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
