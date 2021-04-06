@@ -22,7 +22,7 @@ with tf.compat.v1.Session() as sess:
         frozen_graph.ParseFromString(f.read())
 trt_graph = trt.create_inference_graph(
     input_graph_def=frozen_graph, outputs=[
-        'num_detections', 'detection_boxes', 'detection_scores', 'detection_classes', 'detection_masks'
+        'num_detections', 'detection_boxes', 'detection_scores', 'detection_classes'
         ], max_batch_size=1, max_workspace_size_bytes=1 << 3, precision_mode="FP32", minimum_segment_size=5
 )
 
