@@ -29,10 +29,11 @@ trt_graph = trt.create_inference_graph(
 
 def run_inference_for_single_image(image):
     with tf.compat.v1.Graph().as_default() as g:
-        tf.import_graph_def(trt_graph, name='')
         # Get handles to input and output tensors
         inputs_ = g.get_tensor_by_name('input_images:0')
         outputs_ = [o+':0' for o in outputs]
+
+        tf.import_graph_def(trt_graph, input_map={"input_images": inputs}, return_elements=outputs, name='')      
         all_tensor_names = outputs_
         tensor_dict = {}
         for tensor_key in outputs:
