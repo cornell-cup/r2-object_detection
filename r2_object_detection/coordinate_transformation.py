@@ -1,22 +1,19 @@
 import numpy as np
-from Draw_lib import draw
 
 def coordinate_transformation(x,y,z):
     # The default coordinate values ((x,y,z) coordinate in camera)
-    x=x
-    y=y
-    z=z
     default_coordinate = np.array([[x], [y], [z]])
 
     # The three translation parameters between two coordinate origins
+    # Notice that we put the origin of the camera in the frame of arm coordinate here
     diff_x=0
     diff_y=0
-    diff_z=10
+    diff_z=0.24
     diff_coordinates = np.array([[diff_x], [diff_y], [diff_z]])
 
     # The three rotational angles between two coordinate systems, should be in degree
-    theta_x=0*np.pi/180
-    theta_y=155*np.pi/180
+    theta_x=115*np.pi/180
+    theta_y=0*np.pi/180
     theta_z=0*np.pi/180
     angles = np.array([theta_x, theta_y, theta_z])
 
@@ -34,5 +31,4 @@ def coordinate_transformation(x,y,z):
     return(transformed_coordinate)
 
 if __name__ == '__main__':
-    print(coordinate_transformation(0,0,5))
-    draw(coordinate_transformation(1,1,1))
+    print(coordinate_transformation(-0.05,-0.13,0.704))
