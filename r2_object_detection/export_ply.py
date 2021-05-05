@@ -33,7 +33,7 @@ try:
     colorized = colorizer.process(frames)
 
     # Create save_to_ply object
-    ply = rs.save_to_ply("1.ply")
+    ply = rs.save_to_ply("cloud.ply")
 
     # Set options to the desired values
     # In this example we'll generate a textual PLY with normals (mesh is already created by default)
