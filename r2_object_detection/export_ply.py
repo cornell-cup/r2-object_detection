@@ -40,7 +40,7 @@ try:
     ply.set_option(rs.save_to_ply.option_ply_binary, False)
     ply.set_option(rs.save_to_ply.option_ply_normals, True)
 
-    print("Saving to 1.ply...")
+    print("Saving to cloud.ply...")
     # Apply the processing block to the frameset which contains the depth frame and the texture
     ply.process(colorized)
     print("Done")
