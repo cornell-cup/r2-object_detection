@@ -45,17 +45,16 @@ if __name__ == '__main__':
     detections = []
     try:
         for i in range(5):
+            while display.IsStreaming():
+                img = camera.Capture()
+                detections = net.Detect(img)
+                display.Render(img)
+                display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
+                if detections:
+                    break;
+                #for i in detections:
+                    #   print(i.ClassID, i.Confidence, i.Left, i.Right, i.Top, i.Bottom, i.Width, i.Height, i.Area, i.Center)
             try:
-                while display.IsStreaming():
-                    img = camera.Capture()
-                    detections = net.Detect(img)
-                    display.Render(img)
-                    display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
-                    if detections:
-                        break;
-                    #for i in detections:
-                     #   print(i.ClassID, i.Confidence, i.Left, i.Right, i.Top, i.Bottom, i.Width, i.Height, i.Area, i.Center)
-
                 #get frames
                 color_frame, depth_frame = cam.get_frames()
                 # Validate that both frames are not None and depth is not all 0
@@ -66,43 +65,38 @@ if __name__ == '__main__':
             except RuntimeError:
                 print("Couldn't get frames in time")
                 continue
-
+            
             color_img, depth_img, dgr = cam.get_imgs_from_frames(color_frame, depth_frame)
             
             gripper_h = 200
             width, height = dgr.shape[1], dgr.shape[0]
-            #perform grasp prediction
-            img_pt1, img_pt2 = grasp_coords_rel_img(dgr, (detections[0].Left, detections[0].Bottom, detections[0].Width, detections[0].Height))
+            # perform grasp prediction to get 2 grasp points (x,y)
+            # uses bounding box info - top left corner x,y and width/height
+            # from object inference
+            bbox_coords = (0, 0, width, height)
+            img_pt1, img_pt2 = grasp_coords_rel_img(dgr, bbox_coords)
             print(img_pt1, img_pt2)
             print(dgr[img_pt1[1], img_pt1[0]])
-            #convert grasp coords to cam and arm coords
-            cam_pt1 = proj_grasp_img_to_cam(img_pt1, depth_frame)
-            cam_pt2 = proj_grasp_img_to_cam(img_pt2, depth_frame)
-            print("Grab points at", cam_pt1, "and", cam_pt2, "relative to the camera")
+
+            # squeeze the x,y points towards the midpoint until depth at points
+            # is within some distance from the center depth
+            clamp_x1, clamp_y1, clamp_x2, clamp_y2, z1, z2 = clamp_z(img_pt1, img_pt2, depth_frame)
             
-            # keep checking pixels closer and closer to the center until the
-            # depth distance between the center and edge are 1 inch or less
-            distances = np.zeros((HEIGHT, WIDTH))
-            # compute a distance array
-            for x in range(WIDTH):
-                for y in range(HEIGHT):
-                    distances[HEIGHT, WIDTH] = depth_frame.get_distance(x,y)
-            # unit vector from edge pixel to the midpoint, will need to do some
-            ctr_x_img = (img_pt1[0] + img_pt2[0]) / 2
-            ctr_y_img = (img_pt1[1] + img_pt2[1]) / 2
-            for i in range(1): #calculate unit vector
-                ctr_x_img - img_pt1[i]
-            # interpolation to search along pixels in distance array
+            # Get 3D camera pts using x,y from grasp prediction and z from
+            # clamped points
+            #convert grasp coords to cam and arm coords, output is a tuple
+            gripper_pt1_cam = proj_pixel_to_point(img_pt1[0], img_pt1[1], z1, depth_frame)
+            gripper_pt2_cam = proj_pixel_to_point(img_pt2[0], img_pt2[1], z2, depth_frame)
+            print("Grab points at\n\t", gripper_pt1_cam, "and\n\t", gripper_pt2_cam, "\nrelative to the camera")
 
-            # while the difference between depths is more than 2cm, move the
-            # edge points on the image closer to the center
-            while depth_disparity > .02 and iters < 20:
-                pass
-
-            arm_pt1 = proj_grasp_cam_to_arm(cam_pt1)
-            arm_pt2 = proj_grasp_cam_to_arm(cam_pt2)
-            print("Grab points at", arm_pt1, "and", arm_pt2, "relative to where the arm is connected to C1C0")
+            # output of proj_grasp_cam_to_arm is a numpy array
+            gripper_pt1_arm = proj_grasp_cam_to_arm(gripper_pt1_cam)
+            gripper_pt2_arm = proj_grasp_cam_to_arm(gripper_pt2_cam)
+            print("Grab points at\n\t", gripper_pt1_arm, "and\n\t", gripper_pt2_arm, "\nrelative to where the arm is connected to C1C0")
             #plot grasp on image
+            gripper_w = .1 #10cm
+            grabbable(gripper_pt1_arm, gripper_pt2_arm, gripper_w)
+
             rect_points = calc_pred_rect(
                 #grab points will show the canny and dgr with the grasps
                 dgr, img_pt1, img_pt2, gripper_h)
@@ -112,6 +106,10 @@ if __name__ == '__main__':
             # colorized depth image
             cv2.imshow("original", color_img)
             cv2.imshow("white to black depth", depth_img)
+
+            cv2.circle(depth_img, (int(clamp_x1), int(clamp_y1)), 5, (0, 0, 255), -1)
+            cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
+            cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
 
             if key & 0xFF == ord('q') or key == 27:

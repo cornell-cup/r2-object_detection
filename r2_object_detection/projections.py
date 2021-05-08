@@ -77,14 +77,14 @@ def clamp_z(img_pt1, img_pt2, depth_frame):
     while (abs(depth_disparity_1) > .02 or abs(depth_disparity_2) > .02) and iters < 10:
         # move in direction of the unit vector
         if abs(depth_disparity_1) > .02:
-            print("moving pt 1 in")
+            #print("moving pt 1 in")
             temp_x1 += unit_vec1[0]*scale
             temp_y1 += unit_vec1[1]*scale
         if abs(depth_disparity_2) > .02:
-            print("moving pt 2 in")
+            #print("moving pt 2 in")
             temp_x2 += unit_vec2[0]*scale
             temp_y2 += unit_vec2[1]*scale
-        print("clamped by 1 iter", temp_x1, temp_y1)
+        #print("clamped by 1 iter", temp_x1, temp_y1)
         depth_disparity_1 = depth_frame.get_distance(int(temp_x1), int(temp_y1)) - depth_frame.get_distance(int(ctr_x_img), int(ctr_y_img))
         depth_disparity_2 = depth_frame.get_distance(int(temp_x2), int(temp_y2)) - depth_frame.get_distance(int(ctr_x_img), int(ctr_y_img))
         iters += 1
@@ -94,8 +94,8 @@ def clamp_z(img_pt1, img_pt2, depth_frame):
 
 def proj_grasp_img_to_cam(img_grasp_pt, depth_frame : rs.depth_frame):
     """performs the projection from a 2D pixel in the image to a 3D world point
-    in meters using the 2D x, y point, camera intrinsics, and depth from the
-    depth frame.
+    in meters using the 2D x, y point, camera intrinsics, and depth at x, y
+    pixels.
     """
     grasp_arr = np.asarray(img_grasp_pt) 
     x, y = np.around(grasp_arr).astype(int)
@@ -105,6 +105,13 @@ def proj_grasp_img_to_cam(img_grasp_pt, depth_frame : rs.depth_frame):
     depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
     pt_3D = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], z)
 
+    return pt_3D
+
+def proj_pixel_to_point(x, y, z, depth_frame):
+    """Performs pixel to point projections with known x, y pixels and known
+    world depth z."""
+    depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
+    pt_3D = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], z)
     return pt_3D
 
 def proj_grasp_cam_to_arm(pt_3D):

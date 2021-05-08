@@ -22,7 +22,6 @@ class Camera:
     config = rs.config()
     config.enable_stream(rs.stream.depth, w, h, rs.format.z16, 30)
     config.enable_stream(rs.stream.color, w, h, rs.format.bgr8, 30)
-
     # Start streaming
     profile = self.pipeline.start(config)
 
