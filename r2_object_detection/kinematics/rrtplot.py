@@ -62,8 +62,6 @@ def plot_nodes(ax, float_vertices):
 
 
 def plot_edges(ax, G, float_vertices):
-    print("edges: {}".format(G.edges))
-    print("float_vertices: {}".format(float_vertices))
     lines = [(float_vertices[edge[0]], float_vertices[edge[1]]) for edge in G.edges]
 
     lc = art3d.Line3DCollection(lines, colors='black', linewidths=1)

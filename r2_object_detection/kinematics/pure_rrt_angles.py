@@ -101,11 +101,11 @@ def valid_configuration(angles):
     #  for a given a1, an a2 is always valid. However, the a3 is not necessarily valid:
     #  use spherical coordinates for validity
     if link_lengths[0] * math.cos(angles[1]) < 0:
-        print("not valid, first condition: {}".format(angles))
+        #print("not valid, first condition: {}".format(angles))
         return False
 
     if link_lengths[1] * math.cos(angles[2]) + link_lengths[0] * math.cos(angles[1]) < 0:
-        print("not valid, second condition: {}".format(angles))
+        #print("not valid, second condition: {}".format(angles))
         return False
     return True, [(angles[0] + 360) % 360, (angles[1] + 360) % 360, \
            (angles[2] + 360) % 360, (angles[3] + 360) % 360, \
