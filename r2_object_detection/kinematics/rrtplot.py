@@ -29,8 +29,8 @@ def plot_3d(G, path, obstacles):
 
     if path is not None:
         plot_path(ax, path)
-        plot_arm_configs(ax, path)
-    #plot_arm_configs(ax, G.nodes)
+        plot_arm_configs(ax, path, obstacles)
+
     ax.scatter3D(G.start_node.end_effector_pos[0], G.start_node.end_effector_pos[1], G.start_node.end_effector_pos[2], c='black')
     ax.scatter3D(G.end_node.end_effector_pos[0], G.end_node.end_effector_pos[1], G.end_node.end_effector_pos[2], c='black')
 
@@ -78,10 +78,18 @@ def plot_path(ax, path):
     ax.add_collection(lc2)
 
 
-def plot_arm_configs(ax, path):
-    path_arm_edges = []
+def plot_arm_configs(ax, path, obstacles):
+    color = 'green'
     for i in range(0, len(path)):
-        path_arm_edges.append(([0, 0, 0], path[i].joint_positions[0]))
-        path_arm_edges.append((path[i].joint_positions[0], path[i].joint_positions[1]))
-    lc3 = art3d.Line3DCollection(path_arm_edges, colors='green', linewidths=1)
-    ax.add_collection(lc3)
+        for obstacle in obstacles:
+            if collision_detection.arm_is_colliding(path[i].to_nlinkarm(), obstacle):
+                color = 'red'
+                break
+        v1 = []
+        v2 = []
+        for j in range(3):
+            v1.append([0, path[i].joint_positions[0][j]])
+            v2.append([path[i].joint_positions[0][j], path[i].joint_positions[1][j]])
+
+        ax.plot(v1[0], v1[1], zs=v1[2], color=color)
+        ax.plot(v2[0], v2[1], zs=v2[2], color=color)
