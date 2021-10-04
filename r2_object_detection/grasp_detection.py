@@ -1,11 +1,16 @@
-import math
 import cv2
 import imutils
 import numpy as np
 
 
 def grab_points(x1, y1, width_box, height_box, image):
-
+    """ 
+    Parameters
+    - image, an ndarray of pixels
+    - sigma
+    Returns
+    - image with canny edge detection run on each channel's median
+    """
     def auto_canny(image, sigma=0.33):
 
         # compute the median of the single channel pixel intensities
@@ -19,13 +24,18 @@ def grab_points(x1, y1, width_box, height_box, image):
         # return the edged image
         return edged
 
-    #  applies Gaussian blur and canny edge detection to the image
-    #  parameters are the image file, the midpoint, and canny edge
-    #  thresholds
-
+    """ 
+    Parameters
+    - image_file, not sure why its named _file but it is an ndarray
+    - width
+    - height
+    Returns
+    - k, where k is a 3D image (for some reason...?) of white contours on black background
+    - [cX, cY], the center of mass coordinates in 2D
+    """
     def canny_edge(image_file, width, height):
 
-        # convert image to grayscale and run canny edge detection on it
+        # convert (height, width, 3) image to grayscale and run canny edge detection on it
         grayscale = cv2.cvtColor(image_file, cv2.IMREAD_GRAYSCALE)
 
         # blur the grayscale image
@@ -57,56 +67,69 @@ def grab_points(x1, y1, width_box, height_box, image):
         # add more contours to the grayscale canny image from the contrast image
         cnts = cv2.findContours(edge, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
+        # find contour with greatest area
         cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
+        # 3 chan image of contours
         k = np.zeros(shape=[height, width, 3], dtype=np.uint8)
 
         # Draw the largest contour on an all-black image
+        # But the -1 means all contours are drawn?
         cv2.drawContours(k, [cnts], -1, (255, 255, 255), 1)
         M = cv2.moments(cnts)
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
         return k, [cX, cY]
 
-    def distance(x1, y1, x2, y2):
-        return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-
-    #  uses the canny edge image and the midpoint to determine the two points
-    #  that the robot arm needs to grab
+    """ 
+    Parameters
+    - original, the original image
+    - edge, the edge image
+    - mid_contour, the coordinate (x, y) of the center of mass
+    Returns
+    - coordinates of two grasp points and the distance
+    """
     def shortest_path(original, edge, mid_contour, w, h):
-        pix_val = []
-        half_cols = w//2
-        total_cols = w
-        total_rows = h
-        #  range goes from halfway through the x direction and
-        #  the whole way in the y direction
-        for i in range(half_cols):
-            for j in range(total_rows):
-                g = edge[j][i][1]
-                if g == 255:
-                    pix_val.append([i, j])
+        g = edge[:h, :w, 1]
+
+        # array of row indices and array of col indices of contour points
+        pix_val = np.where(g == 255)
 
         min_distance = float("inf")
 
         val_x1, val_y1, val_x2, val_y2 = -1, -1, -1, -1
 
-        for coor in pix_val:
-            col, row = coor[0], coor[1]
-            theta = math.atan2((mid_contour[0] - col), (mid_contour[1] - row))
-            for radius in range(int(min(total_rows, total_cols)/2)):
-                new_col = min(mid_contour[0] +
-                              math.sin(theta)*radius, total_cols-1)
-                new_row = min(mid_contour[1] +
-                              math.cos(theta)*radius, total_rows-1)
-                g = edge[int(new_row)][int(new_col)][1]
-                if g == 255:
-                    dist = distance(new_col, new_row, col, row)
-                    if dist < min_distance:
-                        val_x1 = col
-                        val_y1 = row
-                        val_x2 = new_col
-                        val_y2 = new_row
-                        min_distance = dist
-        # changed edge to original to draw on original img
+        row_numbers, col_numbers = pix_val[0], pix_val[1]
+        # coords is the coordinates in pairs
+        coords = np.concatenate(
+            [row_numbers[:, None], col_numbers[:, None]], axis=1)
+
+        # theta is the angle b/w each coordinate and the centroid of the object
+        theta = np.degrees(np.arctan2(
+            mid_contour[0] - col_numbers, mid_contour[1] - row_numbers))
+
+        # dictionary mapping angles to coords
+        coords_of_theta = {}
+
+        # put thetas with corresponding coordinates into dictionary
+        for i in range(len(theta)):
+            coords_of_theta[int(theta[i])] = coords[i]
+
+        for i in range(len(theta)):
+            # wrap angle ranges
+            angle = int(theta[i])
+            opposite_angle = angle + 180
+            if opposite_angle > 180:
+                opposite_angle = -180 + angle
+            # look for opposing coords with shortest distance between
+            if opposite_angle in coords_of_theta:  # mod to get in range -180 to 180
+                dist = np.linalg.norm(
+                    coords_of_theta[angle] - coords_of_theta[opposite_angle])
+                if dist < min_distance:
+                    # row = y coordinate, col = x coordinate
+                    val_y1, val_x1 = coords_of_theta[angle]
+                    val_y2, val_x2 = coords_of_theta[opposite_angle]
+                    min_distance = dist
+
         cv2.circle(original, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
         cv2.circle(original, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
         cv2.circle(original, (int(mid_contour[0]), int(
@@ -118,9 +141,9 @@ def grab_points(x1, y1, width_box, height_box, image):
             mid_contour[1])), 3, (255, 0, 255), -1)
 
         # Uncomment to see final image/edges/grasping points!
-        # cv2.imshow("canny with points", edge)
-        # cv2.imshow("points", original)
-        # cv2.waitKey(0)
+        cv2.imshow("canny with points", edge)
+        cv2.imshow("points", original)
+        cv2.waitKey(0)
 
         return val_x1, val_y1, val_x2, val_y2, min_distance
 
@@ -128,10 +151,10 @@ def grab_points(x1, y1, width_box, height_box, image):
     width, height = width_box, height_box
     cropped_image = raw_img[y1:y1+height_box, x1:x1+width_box]
 
+    # canny edge return
     ceRet = canny_edge(cropped_image, width, height)
     edge_image = ceRet[0]
 
     shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist = shortest_path(
         raw_img, edge_image, ceRet[1], width, height)
     return shortest_x1 + x1, shortest_y1 + y1, shortest_x2 + x1, shortest_y2 + y1, shortest_dist
-
