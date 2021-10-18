@@ -5,32 +5,22 @@ import numpy as np
 class ObjectDetectionObject:
     """
     Instance Attributes:
-    operations - name of the process completed/to be completed
-    data - input/output of the given function
-
+    operations - list of name of the process completed/to be completed
+    data - input of the corresponding operation in operations if requesting
     """
 
     def __init__(self, operations, data):
-        # if we have more things we want to compute, we can name what process
-        # to be run on the data
         # Sender -- [functions], [corresponding data] -->
         # <-- [function], [response data] -- Responder (runs function on data)
         # Concerns:
         # - Have to know what function name should correspond to what actual
         # function
-        # - sender has to know what type of data the responder expects for the function
+        # - sender has to know what type of data the responder expects for the
+        #   function
+        # Maybe just pass around ObjectDetectionObjects?
         self.operations : List[str] = operations
         self.data : List = data
 
-    # def package_object(self):
-    #     """
-    #     Example Output
-    #     {
-    #         "function" : "Object Inference",
-    #         "data" = [RGB_img]
-    #     }
-    #     """
-    #     pass
     def operations(self):
         return self.operations
 
