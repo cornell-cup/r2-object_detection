@@ -118,8 +118,8 @@ def grab_points(x1, y1, width_box, height_box, image):
             mid_contour[1])), 3, (255, 0, 255), -1)
 
         # Uncomment to see final image/edges/grasping points!
-        # cv2.imshow("canny with points", edge)
-        # cv2.imshow("points", original)
+        cv2.imshow("canny with points", edge)
+        cv2.imshow("points", original)
         # cv2.waitKey(0)
 
         return val_x1, val_y1, val_x2, val_y2, min_distance
@@ -132,6 +132,6 @@ def grab_points(x1, y1, width_box, height_box, image):
     edge_image = ceRet[0]
 
     shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist = shortest_path(
-        raw_img, edge_image, ceRet[1], width, height)
+        cropped_image, edge_image, ceRet[1], width, height)
     return shortest_x1 + x1, shortest_y1 + y1, shortest_x2 + x1, shortest_y2 + y1, shortest_dist
 

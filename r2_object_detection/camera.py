@@ -89,6 +89,12 @@ class Camera:
     dgr = cv2.merge((depth_colorized[:, :, 0], g, r))
 
     return color_image, depth_colorized, dgr
+  
+  def __enter__(self):
+      return self
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+      self.stop()
 
   def stop(self):
     self.pipeline.stop()

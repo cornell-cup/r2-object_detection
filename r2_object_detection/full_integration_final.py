@@ -55,29 +55,38 @@ if __name__ == '__main__':
                 print("Couldn't get frames in time")
                 continue
             
-            full_color_img, full_depth_img, full_dgr = cam.get_imgs_from_frames(color_frame, depth_frame)
+            color_img, depth_img, dgr = cam.get_imgs_from_frames(color_frame, depth_frame)
             # color_img: H, W, C
             # print(color_img.shape)
-            color_img_cuda = jetson.utils.cudaFromNumpy(full_color_img)
+            color_img_cuda = jetson.utils.cudaFromNumpy(color_img)
             detections = net.Detect(color_img_cuda)
+            if not detections:
+                print('Nothing detected')
+                continue
             # For now selecting first detection, later find object asked for
             detection = detections[0]
             # Trim image
             top, bottom, left, right = detection.Top, detection.Bottom, detection.Left,detection.Right
             top, bottom, left, right = round(top), round(bottom), round(left), round(right)
-            color_img, depth_img, dgr = full_color_img[top:bottom, left:right], full_depth_img[top:bottom, left:right], full_dgr[top:bottom, left:right]
+            color_img_cropped, depth_img_cropped, dgr_cropped = color_img[top:bottom, left:right], depth_img[top:bottom, left:right], dgr[top:bottom, left:right]
             print(color_img.shape, depth_img.shape, dgr.shape)
 
             #display.Render(color_img_cuda)
             #display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
             gripper_h = 200
-            width, height = dgr.shape[1], dgr.shape[0]
+            width, height = right-left, bottom-top
             # perform grasp prediction to get 2 grasp points (x,y)
             # uses bounding box info - top left corner x,y and width/height
             # from object inference
-            bbox_coords = (0, 0, width, height)
-            img_pt1, img_pt2 = grasp_coords_rel_img(dgr, bbox_coords)
-            print(img_pt1, img_pt2)
+            bbox = (left, top, width, height)
+            # print(bbox_coords)
+            # print(f'left:{left}, right:{right}, top:{top}, bottom:{bottom}, width:{width}, height:{height}')
+            #bbox = (left, top, round(detection.Width), round(detection.Height))
+            print(bbox)
+            img_pt1, img_pt2 = grasp_coords_rel_img(dgr, bbox)
+            print('img_pt1: ', img_pt1)
+            print('img_pt2: ', img_pt2)
+            print(dgr.shape)
             print(dgr[img_pt1[1], img_pt1[0]])
 
             # squeeze the x,y points towards the midpoint until depth at points
