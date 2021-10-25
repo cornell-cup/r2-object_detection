@@ -1,4 +1,5 @@
-import pickle
+# import pickle
+import json
 from Network import *
 
 
@@ -19,7 +20,7 @@ class Server(Network):
             print("client", x[1])
             self.client = x[1]
             self.socket.settimeout(1)  # interferes with stopping on further calls
-            y= pickle.loads(x[0])
+            y= json.loads(x[0].decode('utf-8'))
             if y['id'] != self.send_ID:
                 self.send_update(self.last_sent)  # re-attempt last send operation
                 self.socket.settimeout(1)  # interferes with stopping on further calls
@@ -34,7 +35,7 @@ class Server(Network):
     def send_update(self, update):
         self.send_ID+= 1
         self.last_sent= update
-        self.socket.sendto(pickle.dumps({'id': self.send_ID, 'content': update}), self.client)
+        self.socket.sendto(json.dumps({'id': self.send_ID, 'content': update}).encode('utf-8'), self.client)
 
 
 # test with Client.py main method

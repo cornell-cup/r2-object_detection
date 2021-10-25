@@ -1,4 +1,4 @@
-import pickle
+# import pickle
 from networking.Network import *
 from networking.ObjectDetection import *
 from networking.SensorState import *
@@ -21,7 +21,7 @@ class Client(Network):
     def send_data(self, data):
         """ sends json-like nested data containing sensor, accelerometer, etc.
         """
-        x= pickle.dumps({'id': self.receive_ID, 'data': data})
+        x= json.dumps({'id': self.receive_ID, 'data': data}).encode('utf-8')
         print("size: ", sys.getsizeof(x))
         print(data)
         self.socket.sendto(x, self.server)
@@ -34,7 +34,7 @@ class Client(Network):
             # print(x[1], self.server)
             x = self.socket.recvfrom(4096)
             # print(x[1], self.server)
-        y= pickle.loads(x[0])
+        y= json.loads(x[0].decode('utf-8'))
 
         self.receive_ID= y['id']
         print(y, type(y['content']))
