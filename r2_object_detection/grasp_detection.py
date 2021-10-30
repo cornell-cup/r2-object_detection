@@ -91,8 +91,8 @@ def grab_points(image):
     Returns
     - coordinates of two grasp points and the distance
     """
-    def shortest_path(original, edge, mid_contour, w, h):
-        g = edge[:h, :w, 1]
+    def shortest_path(original, edge, mid_contour):
+        g = edge[:, :, 1]
 
         # array of row indices and array of col indices of contour points
         pix_val = np.where(g == 255)
@@ -146,7 +146,8 @@ def grab_points(image):
         # Uncomment to see final image/edges/grasping points!
         cv2.imshow("canny with points", edge)
         cv2.imshow("points", original)
-        cv2.waitKey(0)
+
+        # cv2.waitKey(0)
 
         return val_x1, val_y1, val_x2, val_y2, min_distance
 
@@ -157,3 +158,4 @@ def grab_points(image):
     shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist = shortest_path(
         image, edge_image, ceRet[1])
     return shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist
+

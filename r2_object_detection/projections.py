@@ -28,7 +28,7 @@ def grasp_coords_rel_img(img, bbox):
     bbox should be a tuple (left, right, top, bottom)
     Calculates these points using the grasp algorithm involving canny edge
     detection"""
-    cropped_img = img[bbox[0]: bbox[1], bbox[2]: bbox[3]]
+    cropped_img = img[bbox[2]: bbox[3], bbox[0]: bbox[1]]
     x1, y1, x2, y2, shortest_dist = grab_points(cropped_img)
     # get loc on full img
     x1 = bbox[0] + x1
