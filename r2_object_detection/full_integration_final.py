@@ -32,7 +32,6 @@ from projections import *
 
 #  this is a test comment
 net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
-camera = jetson.utils.videoSource("/dev/video1")      # '/dev/video0' for V4L2
 display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
 
 """Run grasp detection code with the intel realsense camera"""
@@ -41,25 +40,15 @@ WIDTH = 640
 HEIGHT = 480
 
 if __name__ == '__main__':
-    cam = Camera(WIDTH, HEIGHT)
     detections = []
-    try:
-        for i in range(5):
-            while display.IsStreaming():
-                img = camera.Capture()
-                detections = net.Detect(img)
-                display.Render(img)
-                display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
-                if detections:
-                    break;
-                #for i in detections:
-                    #   print(i.ClassID, i.Confidence, i.Left, i.Right, i.Top, i.Bottom, i.Width, i.Height, i.Area, i.Center)
+    with Camera(WIDTH, HEIGHT) as cam:
+        for i in range(5): 
             try:
                 #get frames
                 color_frame, depth_frame = cam.get_frames()
                 # Validate that both frames are not None and depth is not all 0
                 # TODO: figure out why depth is weird sometimes
-                if not depth_frame or not color_frame or not np.all(depth_frame == 0):
+                if not depth_frame.is_frame() or not color_frame.is_frame():
                     print("frames not captured")
                     continue
             except RuntimeError:
@@ -67,15 +56,37 @@ if __name__ == '__main__':
                 continue
             
             color_img, depth_img, dgr = cam.get_imgs_from_frames(color_frame, depth_frame)
-            
+            # color_img: H, W, C
+            # print(color_img.shape)
+            color_img_cuda = jetson.utils.cudaFromNumpy(color_img)
+            detections = net.Detect(color_img_cuda)
+            if not detections:
+                print('Nothing detected')
+                continue
+            # For now selecting first detection, later find object asked for
+            detection = detections[0]
+            # Trim image
+            top, bottom, left, right = detection.Top, detection.Bottom, detection.Left,detection.Right
+            top, bottom, left, right = round(top), round(bottom), round(left), round(right)
+            color_img_cropped, depth_img_cropped, dgr_cropped = color_img[top:bottom, left:right], depth_img[top:bottom, left:right], dgr[top:bottom, left:right]
+            print(color_img.shape, depth_img.shape, dgr.shape)
+
+            #display.Render(color_img_cuda)
+            #display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
             gripper_h = 200
-            width, height = dgr.shape[1], dgr.shape[0]
+            width, height = right-left, bottom-top
             # perform grasp prediction to get 2 grasp points (x,y)
             # uses bounding box info - top left corner x,y and width/height
             # from object inference
-            bbox_coords = (0, 0, width, height)
-            img_pt1, img_pt2 = grasp_coords_rel_img(dgr, bbox_coords)
-            print(img_pt1, img_pt2)
+            bbox = (max(0, left-20), min(WIDTH-1, right+20), max(0, top), min(HEIGHT-1, bottom))
+            # print(bbox_coords)
+            # print(f'left:{left}, right:{right}, top:{top}, bottom:{bottom}, width:{width}, height:{height}')
+            #bbox = (left, top, round(detection.Width), round(detection.Height))
+            print(bbox)
+            img_pt1, img_pt2 = grasp_coords_rel_img(dgr, bbox)
+            print('img_pt1: ', img_pt1)
+            print('img_pt2: ', img_pt2)
+            print(dgr.shape)
             print(dgr[img_pt1[1], img_pt1[0]])
 
             # squeeze the x,y points towards the midpoint until depth at points
@@ -104,8 +115,14 @@ if __name__ == '__main__':
             cv2.imshow("grasp", dgr)
 
             # colorized depth image
-            cv2.imshow("original", color_img)
+            cv2.imshow("original", cv2.cvtColor(color_img, cv2.COLOR_RGBA2BGR))
             cv2.imshow("white to black depth", depth_img)
+
+            # display detections
+            print ("displaying detections... " )
+            cv2imgRGBA = jetson.utils.cudaToNumpy(color_img_cuda, WIDTH, HEIGHT, 4)
+            cv2img = cv2.cvtColor(cv2imgRGBA, cv2.COLOR_RGBA2BGR)
+            cv2.imshow('detections', cv2img)
 
             cv2.circle(depth_img, (int(clamp_x1), int(clamp_y1)), 5, (0, 0, 255), -1)
             cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
@@ -115,5 +132,3 @@ if __name__ == '__main__':
             if key & 0xFF == ord('q') or key == 27:
                 cv2.destroyAllWindows()
                 break
-    finally:
-        cam.stop()

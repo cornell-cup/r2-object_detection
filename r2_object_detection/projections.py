@@ -22,19 +22,19 @@ THETA_Y = 0 * np.pi / 180
 THETA_Z = 0 * np.pi / 180
 
 
-def grasp_coords_rel_img(cropped_img, bbox_coords):
+def grasp_coords_rel_img(img, bbox):
     """two grabber points of form (x,y) where x and y are 2D coordinates
-    relative to the camera image. (0,0) represents the top left corner.
+    relative to the passed in image. (0,0) represents the top left corner.
+    bbox should be a tuple (left, right, top, bottom)
     Calculates these points using the grasp algorithm involving canny edge
     detection"""
-    #cropped_img should be cropped dgr image
-    x1, y1, x2, y2, shortest_dist = grab_points(
-    bbox_coords[0], bbox_coords[1], bbox_coords[2], bbox_coords[3], cropped_img)
+    cropped_img = img[bbox[2]: bbox[3], bbox[0]: bbox[1]]
+    x1, y1, x2, y2, shortest_dist = grab_points(cropped_img)
     # get loc on full img
-    x1 = bbox_coords[0] + x1
-    y1 = bbox_coords[1] + y1
-    x2 = bbox_coords[0] + x2
-    y2 = bbox_coords[1] + y2
+    x1 = bbox[0] + x1
+    y1 = bbox[2] + y1
+    x2 = bbox[0] + x2
+    y2 = bbox[2] + y2
 
     return (x1, y1), (x2, y2)
 
