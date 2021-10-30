@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 import collision_detection
-''' Handles all visualizations of multiple arm poses. '''
+"""
+Written by Simon Kapen, Spring 2021.
+Handles all visualizations of multiple arm poses. 
+"""
 
 
 def arr_to_int(arr):

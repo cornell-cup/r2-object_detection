@@ -1,3 +1,7 @@
+"""
+Written by Simon Kapen, Spring 2021.
+"""
+
 import numpy as np
 from kinematics import FK
 import visualization

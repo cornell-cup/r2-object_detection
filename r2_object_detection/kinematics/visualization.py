@@ -15,9 +15,11 @@ origin = [0, 0, 0]
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
+
 def joint_positions(theta_1, phi_1, theta_2, phi_2):
         shoulder_coord = [r_1 * np.sin(theta_1) * np.cos(phi_1), r_1 *
                           np.sin(theta_1) * np.sin(phi_1), r_1 * np.cos(theta_1)]
+
         elbow_coord = [shoulder_coord[0] + r_2 * np.sin(theta_2) * np.cos(phi_2), shoulder_coord[1] + r_2 *
                        np.sin(theta_2) * np.sin(phi_2), shoulder_coord[2] + r_2 * np.cos(theta_2)]
 

@@ -263,7 +263,7 @@ def arm_is_colliding(arm, cube):
 if __name__ == "__main__":
     fig = plt.figure()
     ax = plt.axes(projection="3d")
-    cube = [0.1, 0, 0, 0.2]
+    cube = [-.1, 0, .2, 1]
     plot_linear_cube(ax, cube)
     arm = NLinkArm(2, np.array([0.222, 0.3]))
     print("points, ", len(arm.get_points()))

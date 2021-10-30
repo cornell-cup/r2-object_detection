@@ -1,5 +1,5 @@
 """
-Written by Simon Kapen and Alison Duan.
+Written by Simon Kapen and Alison Duan, Spring 2021.
 Dijkstra algorithm and RRTGraph structure adapted from Fanjin Zeng on github, 2019.
 """
 
@@ -59,7 +59,7 @@ def nearest(G, node):
 def steer(rand_angles, near_angles, step_size):
     """ Generates a new node based on the random node and the nearest node. """
 
-    dirn = true_angle_distance(np.array(near_angles), np.array(rand_angles))
+    dirn = true_angle_distances_arm(np.array(near_angles), np.array(rand_angles))
     length = np.linalg.norm(dirn)
     dirn = (dirn / length) * min(step_size, length)
 
@@ -128,19 +128,26 @@ def random_angle_config():
     return rand_angles
 
 
-def true_angle_distance(angles_1, angles_2):
-    """ Returns [angles_2] - [angles_1], accounting for angle wrap.
+def true_angle_distance(angle_1, angle_2):
+    """ Returns [angle_2] - [angle_1], accounting for angle wrap.
+            Example: true_angle_distance(PI/6, 11PI/6) is PI/3, not 5PI/3. """
+
+    difference = angle_2 - angle_1
+    if difference > math.pi:
+        difference = -(2 * math.pi - angle_2 + angle_1)
+    elif difference < -math.pi:
+        difference = 2 * math.pi - angle_1 + angle_2
+
+    return difference
+
+
+def true_angle_distances_arm(angles_1, angles_2):
+    """ Returns [angles_2] - [angles_1], accounting for angle wrap. Calculates each angle in an arm configuration.
         Example: true_angle_distance(PI/6, 11PI/6) is PI/3, not 5PI/3. """
     new_angles = []
 
     for angle1, angle2 in zip(angles_1, angles_2):
-        difference = angle2 - angle1
-        if difference > math.pi:
-            difference = 2 * math.pi - angle2 + angle1
-        elif difference < -math.pi:
-            difference = 2 * math.pi - angle1 + angle2
-
-        new_angles.append(difference)
+        new_angles.append(true_angle_distance(angle1, angle2))
 
     return new_angles
 
@@ -180,7 +187,7 @@ def rrt(start_angles, end_angles, obstacles, n_iter, radius, stepSize, threshold
             endidx = G.add_vex(G.end_node)
             G.add_edge(newidx, endidx, end_eff_dist_to_goal)
             G.success = True
-
+            print("")
             break
 
     return G
@@ -263,6 +270,8 @@ if __name__ == '__main__':
     angles = [round(x[0], 5) for x in kinematics(x, y, z).tolist()]
 
     endpos = (math.radians(angles[1]), math.radians(angles[0]), math.radians(angles[3]), math.radians(angles[2]), 0, 0)
+
+    print("endpos: {}".format(endpos))
     # print("angle 1: ", math.radians(angles[1]))
     # print("angle 2: ", math.radians(angles[0]))
     # print("angle 3: ", math.radians(angles[3]))
