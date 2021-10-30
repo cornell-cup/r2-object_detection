@@ -2,8 +2,10 @@ import cv2
 import imutils
 import numpy as np
 
-
-def grab_points(x1, y1, width_box, height_box, image):
+"""
+returns the grasping coordinates on the passed in image
+"""
+def grab_points(image):
     """ 
     Parameters
     - image, an ndarray of pixels
@@ -26,17 +28,18 @@ def grab_points(x1, y1, width_box, height_box, image):
 
     """ 
     Parameters
-    - image_file, not sure why its named _file but it is an ndarray
+    - image
     - width
     - height
     Returns
-    - k, where k is a 3D image (for some reason...?) of white contours on black background
+    - k, a 3D image of white contours on black background
     - [cX, cY], the center of mass coordinates in 2D
     """
-    def canny_edge(image_file, width, height):
+    def canny_edge(image):
 
+        width, height = image.shape[1], image.shape[0]
         # convert (height, width, 3) image to grayscale and run canny edge detection on it
-        grayscale = cv2.cvtColor(image_file, cv2.IMREAD_GRAYSCALE)
+        grayscale = cv2.cvtColor(image, cv2.IMREAD_GRAYSCALE)
 
         # blur the grayscale image
         blurred = cv2.GaussianBlur(grayscale, (5, 5), cv2.BORDER_DEFAULT)
@@ -47,7 +50,7 @@ def grab_points(x1, y1, width_box, height_box, image):
         cnts = imutils.grab_contours(cnts)
 
         #  apply Gaussian blur on source image
-        blurred = cv2.GaussianBlur(image_file, (5, 5), cv2.BORDER_DEFAULT)
+        blurred = cv2.GaussianBlur(image, (5, 5), cv2.BORDER_DEFAULT)
         #  apply contrast to the blurred image
         l, a, b = cv2.split(blurred)
 
@@ -147,14 +150,10 @@ def grab_points(x1, y1, width_box, height_box, image):
 
         return val_x1, val_y1, val_x2, val_y2, min_distance
 
-    raw_img = image
-    width, height = width_box, height_box
-    cropped_image = raw_img[y1:y1+height_box, x1:x1+width_box]
-
     # canny edge return
-    ceRet = canny_edge(cropped_image, width, height)
+    ceRet = canny_edge(image)
     edge_image = ceRet[0]
 
     shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist = shortest_path(
-        raw_img, edge_image, ceRet[1], width, height)
-    return shortest_x1 + x1, shortest_y1 + y1, shortest_x2 + x1, shortest_y2 + y1, shortest_dist
+        image, edge_image, ceRet[1])
+    return shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist
