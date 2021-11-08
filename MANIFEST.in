@@ -1,0 +1,5 @@
+include AUTHORS
+include PACKAGES
+include VERSION
+include requirements.txt
+include c1c0_scheduler/*

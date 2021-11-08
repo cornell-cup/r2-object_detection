@@ -1,9 +1,7 @@
-pyrealsense2
-numpy
-six
-tensorflow
-opencv-python
+pyrealsense2~=2.45.0.3217
+numpy~=1.19.5
+opencv-python~=4.5.2.52
+imutils~=0.5.4
 matplotlib
-tensorrt
 wheel
-pbr
+pyserial~=3.5

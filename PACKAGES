@@ -1,0 +1,8 @@
+{
+  "packages": [
+    "c1c0_object_detection",
+    "c1c0_object_detection.networking"
+    "c1c0_object_detection.object_detection"
+    "c1c0_object_detection.kinematics"
+  ]
+}
