@@ -18,7 +18,7 @@ def sel_features(input_matrix):
     return input_vec
 
 
-def kmeans(input_matrix, thresh, n=5,  max_iter=10, debug=False):
+def kmeans(input_matrix, thresh, n=5,  max_iter=5, debug=False):
     """
     Runs kmeans clustering on point cloud data. Returns a clustering with
     n clusters. n is determined when previous loss - curr loss < threshold 
@@ -73,7 +73,9 @@ def viz_image(org_image, labels):
     """
     """cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))"""
     org_image_cop = org_image
+    cv2.imshow("original image", org_image)
     max_label = np.max(labels)
+    print ("num labels: ", max_label)
     mul_fact = 255/max_label
 
     for i in range(0,max_label+1):

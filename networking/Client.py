@@ -38,6 +38,7 @@ class Client(Network):
 
         self.receive_ID= y['id']
         print(y, type(y['content']))
+        self.socket.close()
         return "content: " + str(y['content'])
 
 # test to make sure that SensorState object is <= 4096 bytes
