@@ -109,17 +109,7 @@ if __name__ == '__main__':
             gripper_w = .1 #10cm
             grabbable(gripper_pt1_arm, gripper_pt2_arm, gripper_w)
 
-            # send grasp coordinates to external server for processing
-            # request should return an arm configuration
-            robot = Client()
-            data_packet = [gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
-            robot.send_data(data_packet)
-
-            # TODO: add in a check to make sure we actually receive an arm config
-            arm_config = robot.listen()
-            print(arm_config)
-
-            # send arm_config to the arm to move
+            
 
 
             #plot grasp on image
@@ -144,6 +134,19 @@ if __name__ == '__main__':
             cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
             cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
+
+
+	    # send grasp coordinates to external server for processing
+            # request should return an arm configuration
+            robot = Client()
+            data_packet = [gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
+            robot.send_data(data_packet)
+
+            # TODO: add in a check to make sure we actually receive an arm config
+            arm_config = robot.listen()
+            print(arm_config)
+
+            # send arm_config to the arm to move
 
             if key & 0xFF == ord('q') or key == 27:
                 cv2.destroyAllWindows()
