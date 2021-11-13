@@ -42,6 +42,7 @@ HEIGHT = 480
 
 if __name__ == '__main__':
     detections = []
+    robot = Client()
     with Camera(WIDTH, HEIGHT) as cam:
         for i in range(5): 
             try:
@@ -138,7 +139,6 @@ if __name__ == '__main__':
 
 	    # send grasp coordinates to external server for processing
             # request should return an arm configuration
-            robot = Client()
             data_packet = [gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
             robot.send_data(data_packet)
 
