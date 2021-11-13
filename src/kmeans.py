@@ -5,20 +5,37 @@ import sys
 import get_depth_frame as df
 import time
 import cv2
+from sklearn import preprocessing
+
+
+def process_features(X):
+    """
+    Preprocess features before feeding into algorithm
+    """
+    X_trans = preprocessing.normalize(X.T, norm='l2').T
+    return X_trans
+
+
 
 def sel_features(input_matrix):
     """
     Selects the desired features in a depth frame
     TODO: Reformat the depth frame or reshape the output
     """
-    tmp =  input_matrix.flatten()
+    coord_list = []
+    for y in reversed(range(0, len(input_matrix))):
+        for x in range (0, len(input_matrix[0])):
+            coord_list.append([input_matrix[y,x],x,abs(y-len(input_matrix)+1)])
+
+
     print ("Shape of input matrix: ", input_matrix.shape)
-    input_vec = np.reshape(tmp, (len(tmp), 1))
+    input_vec = np.array(coord_list)
+    print (input_vec)
     print ("shape of input: ", input_vec.shape)
     return input_vec
 
 
-def kmeans(input_matrix, thresh, n=5,  max_iter=10, debug=False):
+def kmeans(input_matrix, thresh, n=5,  max_iter=5, debug=False):
     """
     Runs kmeans clustering on point cloud data. Returns a clustering with
     n clusters. n is determined when previous loss - curr loss < threshold 
@@ -35,6 +52,8 @@ def kmeans(input_matrix, thresh, n=5,  max_iter=10, debug=False):
         raise ("max_iter has to be 1 or greater")
 
     features = sel_features(input_matrix)
+    features = process_features(features)
+    print ("Processed features:  ", features)
     start = time.time()
     while True:
         iters += 1
@@ -71,7 +90,7 @@ def viz_image(org_image, labels):
     Given the original image and a list of labels that 
     assign each pixel to a label, make a mask of the image
     """
-    """cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))"""
+    cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
     org_image_cop = org_image
     max_label = np.max(labels)
     mul_fact = 255/max_label
@@ -89,8 +108,22 @@ def main():
     print (org_image.shape)
     cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
     cv2.waitKey()
-    points = kmeans(dist_matrix, 2, debug=True)
-    viz_image(org_image, points)
+    img = org_image
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    twoDimg = img.reshape((-1,3))
+    twoDimg = np.float32(twoDimg)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    K=5
+    attempts = 10
+    ret, label, center = cv2.kmeans(twoDimg, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    result_image = res.reshape((img.shape))
+    cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
+    cv2.imshow("result: ",result_image)
+    cv2.waitKey()
+    #points = kmeans(dist_matrix, 2, debug=True)
+    #viz_image(org_image, points)
 
 if __name__ == "__main__":
     main()
