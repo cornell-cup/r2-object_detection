@@ -39,7 +39,7 @@ display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
 WIDTH = 640
 HEIGHT = 480
 
-if __name__ == '__main__':
+def main():
     detections = []
     with Camera(WIDTH, HEIGHT) as cam:
         for i in range(5): 
@@ -128,7 +128,14 @@ if __name__ == '__main__':
             cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
             cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
+            print("potato")
 
             if key & 0xFF == ord('q') or key == 27:
+                print("quitting")
                 cv2.destroyAllWindows()
                 break
+
+if __name__ == '__main__':
+    main()
+    print("completed")
+
