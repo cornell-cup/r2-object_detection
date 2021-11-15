@@ -110,11 +110,7 @@ if __name__ == '__main__':
             gripper_w = .1 #10cm
             grabbable(gripper_pt1_arm, gripper_pt2_arm, gripper_w)
 
-            
-
-
             #plot grasp on image
-
             rect_points = calc_pred_rect(
                 #grab points will show the canny and dgr with the grasps
                 dgr, img_pt1, img_pt2, gripper_h)
@@ -136,8 +132,7 @@ if __name__ == '__main__':
             cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
 
-
-	    # send grasp coordinates to external server for processing
+	        # send grasp coordinates to external server for processing
             # request should return an arm configuration
             data_packet = [gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
             robot.send_data(data_packet)
