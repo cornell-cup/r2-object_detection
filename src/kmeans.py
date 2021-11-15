@@ -103,14 +103,19 @@ def viz_image(org_image, labels):
 
 
 def main():
-    dist_matrix, org_image = df.get_depth_frame()
+    dist_matrix, org_image, depth_img = df.get_depth_frame()
     print ("displaying image: ")
     print (org_image.shape)
     cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
+    cv2.imshow("depth", depth_img)
     cv2.waitKey()
     img = org_image
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+
     twoDimg = img.reshape((-1,3))
+    twoDdepth_img = depth_img.reshape((-1,1))
+    print ("depth image shape : ", depth_img.shape)
     twoDimg = np.float32(twoDimg)
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     K=5
