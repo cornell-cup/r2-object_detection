@@ -5,7 +5,7 @@ import pyrealsense2 as rs
 import math
 # import matplotlib.pyplot as plt
 # from mpl_toolkits import mplot3d #import art3d
-from grasp_detection import grab_points
+from .grasp_detection import grab_points
 
 """Collection of utility functions for grasp detection, such as getting
 grasp coordinates relative to a given coordinate system, and plotting grasp
