@@ -1,4 +1,11 @@
 """
+Implementation of the Rapidly-Exploring Random Tree algorithm using precision arm configurations as nodes.
+
+Given a start configuration and end configuration received from the ECE subteam, and a set of obstacles received from
+the object detection algorithm, the algorithm attempts to find a collision-free path from the start configuration to the
+end configuration. This is done by growing a tree pseudo-randomly, and returning a set of configurations which is then
+passed to the ECE subteam.
+
 Written by Simon Kapen and Alison Duan, Spring 2021.
 Dijkstra algorithm and RRTGraph structure adapted from Fanjin Zeng on github, 2019.
 """
@@ -16,21 +23,22 @@ import line
 from rrtnode import RRTNode
 from rrtgraph import Graph
 from rrtplot import plot_3d
+import kinpy as kp
+
+# Global arm configuration
+chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 
 
-def point_is_colliding(node, obstacles):
-    for obs in obstacles:
-        colliding_x = obs[0] <= node.end_effector_pos[0] <= obs[0] + obs[3]
-        colliding_y = obs[1] <= node.end_effector_pos[1] <= obs[1] + obs[3]
-        colliding_z = obs[2] <= node.end_effector_pos[2] <= obs[2] + obs[3]
+def arm_is_colliding(node: RRTNode, obstacles):
+    """Checks if an arm configuration is colliding with any obstacle in the c-space.
 
-        if colliding_x and colliding_y and colliding_z:
-            return True
+    Converts each node into an NLinkArm, which is be used by collision_detection.py to determine if
+    that arm configuration is colliding with an obstacle.
 
-    return False
-
-
-def arm_is_colliding(node, obstacles):
+    Args:
+        node: An instance of rrtnode.RRTNode.
+        obstacles: An array of float arrays representing obstacles.
+    """
     arm = node.to_nlinkarm()
 
     for obs in obstacles:
@@ -39,56 +47,77 @@ def arm_is_colliding(node, obstacles):
     return False
 
 
-def nearest(G, node):
-    """ Finds the nearest node to [node] in cartesian space. """
+def nearest(g: Graph, node: RRTNode):
+    """ Finds the nearest node to the input node in cartesian space, by end effector position.
 
-    new_node = None
-    new_node_index = None
+     Returns:
+         An instance of the nearest node to the input node, as well as its index in the hashtable of the input graph.
+     """
+
+    nearest_node = None
+    nearest_node_index = None
     min_dist = float("inf")
 
-    for idx, v in enumerate(G.nodes):
+    for idx, v in enumerate(g.nodes):
         dist = line.distance(v.end_effector_pos, node)
         if dist < min_dist:
             min_dist = dist
-            new_node_index = idx
-            new_node = v
+            nearest_node_index = idx
+            nearest_node = v
 
-    return new_node, new_node_index
+    return nearest_node, nearest_node_index
 
 
 def steer(rand_angles, near_angles, step_size):
-    """ Generates a new node based on the random node and the nearest node. """
+    """Generates a new node a certain distance along the path between the nearest node to the random node.
+
+    Args:
+        rand_angles: The angles of the randomly generated node.
+        near_angles: The angles of the node closest to the randomly generated node.
+        step_size: The distance from the nearest node for the new node to be generated.
+
+    Returns:
+        An instance of RRTNode representing the new node of the tree.
+    """
 
     dirn = true_angle_distances_arm(np.array(near_angles), np.array(rand_angles))
     length = np.linalg.norm(dirn)
     dirn = (dirn / length) * min(step_size, length)
 
     new_angles = (near_angles[0] + dirn[0], near_angles[1] + dirn[1], near_angles[2] + dirn[2],
-                  near_angles[3] + dirn[3], near_angles[4], near_angles[5])
+                  near_angles[3] + dirn[3], near_angles[4] + dirn[4])
     return RRTNode(new_angles)
 
 
-def extend_heuristic(G, rand_node, step_size, threshold, obstacles):
-    """ Extends RRT T from the node closest to the end node, in the direction of [rand_node]. If the node
-        being extended from has failed too many times (generates an colliding configuration or does not get closer
-        to the end node), it is removed from the ranking."""
-    near_node = G.ranking[0]
+def extend_heuristic(g: Graph, rand_node: RRTNode, step_size: float, threshold: int, obstacles):
+    """Extends RRT T from the node closest to the end node, in the direction of rand_node. If the node
+    being extended from has failed too many times (generates an colliding configuration or does not get closer
+    to the end node), it is removed from the ranking.
+
+    Arguments:
+        g: A rrtgraph.Graph instance.
+        rand_node: An RRTNode instance representing the randomly generated node.
+        step_size: The distance from the nearest node for the new node to be generated.
+        threshold: The maximum amount of extension failures per node.
+        obstacles: An array of float arrays representing obstacles.
+    """
+    near_node = g.ranking[0]
     new_node = steer(rand_node.angles, near_node.angles, step_size)
 
-    if G.dist_to_end(new_node) < G.dist_to_end(near_node) and not arm_is_colliding(new_node, obstacles):
-        nearest_to_new, nearest_to_new_idx = nearest(G, new_node.end_effector_pos)
+    if g.dist_to_end(new_node) < g.dist_to_end(near_node) and not arm_is_colliding(new_node, obstacles):
+        nearest_to_new, nearest_to_new_idx = nearest(g, new_node.end_effector_pos)
 
-        newidx = G.add_vex(new_node)
+        newidx = g.add_vex(new_node)
         dist = line.distance(new_node.end_effector_pos, nearest_to_new.end_effector_pos)
-        G.add_edge(newidx, nearest_to_new_idx, dist)
-        return new_node, G.node_to_index[new_node]
+        g.add_edge(newidx, nearest_to_new_idx, dist)
+        return new_node, g.node_to_index[new_node]
 
     near_node.inc_fail_count()
-    near_idx = G.node_to_index[near_node]
+    near_idx = g.node_to_index[near_node]
     if near_node.fail_count > threshold:
-        G.ranking.remove(near_node)
+        g.ranking.remove(near_node)
 
-        parent = G.get_parent(near_idx)
+        parent = g.get_parent(near_idx)
         parent.inc_fail_count()
 
     return near_node, near_idx
@@ -107,22 +136,21 @@ def valid_configuration(angles):
     if link_lengths[1] * math.cos(angles[2]) + link_lengths[0] * math.cos(angles[1]) < 0:
         #print("not valid, second condition: {}".format(angles))
         return False
-    return True, [(angles[0] + 360) % 360, (angles[1] + 360) % 360, \
-           (angles[2] + 360) % 360, (angles[3] + 360) % 360, \
-           (angles[4] + 360) % 360, (angles[5] + 360) % 360]
+    return True, [(angles[0] + math.pi*2) % math.pi*2, (angles[1] + math.pi*2) % math.pi*2, \
+           (angles[2] + math.pi*2) % math.pi*2, (angles[3] + math.pi*2) % math.pi*2, \
+           (angles[4] + math.pi*2) % math.pi*2]
 
 
 def random_angle_config():
     """ Returns a set of random angles within a range of the goal state angles. """
-    rand_angles = [0, 0, 0, 0, 0, 0]
+    rand_angles = [0, 0, 0, 0, 0]
 
     while True:
-        for a in range(0, 6):
+        for a in range(0, 5):
             # Random number from -2pi to 2pi
             rand_angles[a] = (random.random() * 2 - 1) * 2 * np.pi
 
         if valid_configuration(rand_angles):
-
             return rand_angles
 
     return rand_angles
@@ -152,7 +180,23 @@ def true_angle_distances_arm(angles_1, angles_2):
     return new_angles
 
 
-def rrt(start_angles, end_angles, obstacles, n_iter, radius, stepSize, threshold):
+def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.02, stepSize=.4, threshold=4):
+    """Uses the RRT algorithm to determine a collision-free path from start_angles to end_angles.
+
+    Args:
+        start_angles: An array of length 5 representing the initial angle configuration of the arm.
+        end_angles: An array of length 5 representing the desired angle configuration.
+        obstacles: An array of float arrays representing cube obstacles.
+        n_iter: Maximum number of iterations to find a path.
+        radius: Maximum distance between the end_angles and the second-to-last node in a path.
+        stepSize: Distance between nodes in the graph.
+        threshold: Maximum number of times a new node can fail to expand from any given node in the graph.
+
+    Returns:
+        An instance of rrtgraph.Graph containing a list of instances of RRTNode, and a path of RRTNode instances between
+        the start and end nodes, if successful.
+        A boolean indicator representing whether a path was found.
+    """
     G = Graph(start_angles, end_angles)
 
     for i in range(n_iter):
@@ -278,9 +322,10 @@ if __name__ == '__main__':
     # print("angle 4: ", math.radians(angles[2]))
     # endpos = (1, 1, 0, 1, 0, 0)
 
-    obstacles = [[0.2, 0.0, 0.15, 0.2]]
-    n_iter = 1000
-    radius = 0.01
+    obstacles = [[-0.3, 0.0, 0.15, 0.2]]
+    # obstacles = []
+    n_iter = 800
+    radius = 0.02
     stepSize = .5
     threshold = 2
     start_time = time.time()

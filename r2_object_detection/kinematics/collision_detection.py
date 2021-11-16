@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import sys
 from visualization import joint_positions
+import kinpy as kp
 
 """****************************************************************************
 A script to configure a robot arm and collisions (represented as cubes).
@@ -12,6 +13,8 @@ the collision detection (result of collision is printed through command line).
 TODO: Implement path-planning algo | Integrate with camera's point cloud output
 ****************************************************************************"""
 
+# Global arm configuration
+chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 
 class NLinkArm(object):
     """
@@ -40,7 +43,7 @@ class NLinkArm(object):
                               len(points) == n_links + 1.
     """
 
-    def __init__(self, dof, link_lengths):
+    def __init__(self, dof, link_lengths, points):
         """
         Initialize a configuration of a robot arm with [dof] degrees of freedom.
         """
@@ -48,8 +51,8 @@ class NLinkArm(object):
         self.link_lengths = link_lengths
         self.yaws = np.array([0. for _ in range(dof)])
         self.pitches = np.array([0. for _ in range(dof)])
-        self.points = np.array([[0., 0., 0.] for _ in range(dof + 1)])
-        self.update_points_alternate()
+        self.points = points
+        # self.update_points()
 
     def update_yaw(self, yaws):
         """
@@ -79,6 +82,11 @@ class NLinkArm(object):
 
     def update_points(self):
         """
+        Redefine points according to yaw and pitch angles, using kinpy calculations
+        """
+
+    def update_points_that_sucks(self):
+        """
         Redefine the points according to yaw and pitch angles, to match the method used in visualization.py
         """
         # def joint_positions(theta_1, phi_1, theta_2, phi_2):
@@ -92,7 +100,6 @@ class NLinkArm(object):
                            np.sin(theta_1) * np.sin(phi_1), r_1 * np.cos(theta_1)]
         self.points[2] = [shoulder_coord[0] + r_2 * np.sin(theta_2) * np.cos(phi_2), shoulder_coord[1] + r_2 *
                            np.sin(theta_2) * np.sin(phi_2), shoulder_coord[2] + r_2 * np.cos(theta_2)]
-
 
     def update_points_alternate(self):
         """

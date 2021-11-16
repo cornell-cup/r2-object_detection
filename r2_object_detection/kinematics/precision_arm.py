@@ -20,13 +20,9 @@ class PrecisionArm:
     """
 
     def __init__(self):
-        # will probably need new measurements of these
-        link1_len = 0.066675
-        link2_len = 0.104775
-
-        th1_bounds = (math.pi * 3 / 8, math.pi * 5 / 8)
-        th2_bounds = (math.pi * 3 / 8, math.pi * 5 / 8)
-        th3_bounds = (math.pi * 3 / 8, math.pi * 5 / 8)
+        th1_bounds = (math.pi / 2, 3 * math.pi / 2)
+        th2_bounds = (math.pi / 2, 3 * math.pi / 2)
+        th3_bounds = (math.pi / 2, 3 * math.pi / 2)
         # th4_bounds = (math.pi * 3 / 2, math.pi / 2)
 
         self.bounds = [th1_bounds, th2_bounds, th3_bounds, th3_bounds, th3_bounds, th3_bounds]

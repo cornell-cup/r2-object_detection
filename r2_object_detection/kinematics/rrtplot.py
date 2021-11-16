@@ -34,8 +34,8 @@ def plot_3d(G, path, obstacles):
         plot_path(ax, path)
         plot_arm_configs(ax, path, obstacles)
 
-    ax.scatter3D(G.start_node.end_effector_pos[0], G.start_node.end_effector_pos[1], G.start_node.end_effector_pos[2], c='black')
-    ax.scatter3D(G.end_node.end_effector_pos[0], G.end_node.end_effector_pos[1], G.end_node.end_effector_pos[2], c='black')
+    ax.scatter3D(G.start_node.end_effector_pos[0], G.start_node.end_effector_pos[1], G.start_node.end_effector_pos[2], c='red')
+    ax.scatter3D(G.end_node.end_effector_pos[0], G.end_node.end_effector_pos[1], G.end_node.end_effector_pos[2], c='purple')
 
     # obstacles
     for obs in obstacles:
@@ -82,17 +82,25 @@ def plot_path(ax, path):
 
 
 def plot_arm_configs(ax, path, obstacles):
-    color = 'green'
     for i in range(0, len(path)):
+        color = 'green'
         for obstacle in obstacles:
             if collision_detection.arm_is_colliding(path[i].to_nlinkarm(), obstacle):
                 color = 'red'
                 break
         v1 = []
         v2 = []
+        v3 = []
+        v4 = []
         for j in range(3):
-            v1.append([0, path[i].joint_positions[0][j]])
-            v2.append([path[i].joint_positions[0][j], path[i].joint_positions[1][j]])
+            v1.append([path[i].joint_positions[0][j], path[i].joint_positions[1][j]])
+            v2.append([path[i].joint_positions[1][j], path[i].joint_positions[2][j]])
+            v3.append([path[i].joint_positions[2][j], path[i].joint_positions[3][j]])
+            v4.append([path[i].joint_positions[3][j], path[i].joint_positions[4][j]])
 
         ax.plot(v1[0], v1[1], zs=v1[2], color=color)
         ax.plot(v2[0], v2[1], zs=v2[2], color=color)
+        ax.plot(v3[0], v3[1], zs=v3[2], color=color)
+        ax.plot(v4[0], v4[1], zs=v4[2], color=color)
+
+    #ax.text(-0.3, -0.3, 0.4, "bruh")
