@@ -30,7 +30,7 @@ import numpy as np
 from src.camera import Camera
 from src.projections import *
 from networking.Client import Client
-import arm.publish_arm_updates as arm 
+#import arm.publish_arm_updates as arm 
 
 #  this is a test comment
 net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
@@ -39,7 +39,7 @@ display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
 # Read from the coco dataset
 coco_dataset = []
 with open('./coco.txt', 'r') as coco_file: 
-    coco_dataset = coco_file.readlines()
+    coco_dataset = [object.strip('\n') for object in coco_file.readlines()]
 
 """Run grasp detection code with the intel realsense camera"""
 
@@ -68,9 +68,19 @@ def run_object_detection(target_object):
             # print(color_img.shape)
             color_img_cuda = jetson.utils.cudaFromNumpy(color_img)
             detections = net.Detect(color_img_cuda)
-            target_id = coco_dataset.find(target_object)
-            if not detections or target_id not in detections:
-                print('Nothing detected')
+
+            target_id = coco_dataset.index(target_object)+1
+         
+            found_target = False
+            print([d.ClassID for d in detections])
+            for obj in detections:
+                if obj.ClassID-10 == target_id: 
+                    found_target = True
+                    break
+
+
+            if not detections or not found_target:
+                print('Target not detected')
                 continue
             else: 
                 print('found', target_object)
@@ -160,4 +170,4 @@ def run_object_detection(target_object):
             #     break
 
 if __name__ == '__main__':
-    run_object_detection('bottle')
+    run_object_detection('teddy bear')
