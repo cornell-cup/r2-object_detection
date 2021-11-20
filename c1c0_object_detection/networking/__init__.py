@@ -1,1 +1,1 @@
-from . import client_test, server_test
+from . import Client

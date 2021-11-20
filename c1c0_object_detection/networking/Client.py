@@ -12,7 +12,7 @@ def jprint(obj):
 class Client(Network):
     def __init__(self):
         super().__init__()
-        self.socket.bind((self.get_ip(), 4005))
+        self.socket.bind((self.get_ip(), 4004))
         #self.socket.settimeout(4)  # interferes with stopping
         self.receive_ID= 0
 
@@ -23,6 +23,7 @@ class Client(Network):
         x= json.dumps({'id': self.receive_ID, 'data': data}).encode('utf-8')
         print("size: ", sys.getsizeof(x))
         print(data)
+        print(self.socket)
         self.socket.sendto(x, self.server)
 
     def listen(self):
