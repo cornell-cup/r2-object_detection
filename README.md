@@ -4,6 +4,8 @@ Our goal is to be able to detect objects dynamically with the camera on the robo
 
 # Requirements
 See [`requirements.txt`](./requirements.txt) for Python dependencies.
+Note that pyrealsense2 must be built from source for ARM architecture.
+For development purposes, matplotlib is also required.
 
 Additionally, install Protobuf for your system and run:
 `protoc object_detection/protos/*.proto --python_out=.`
