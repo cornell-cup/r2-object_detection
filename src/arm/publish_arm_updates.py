@@ -1,4 +1,6 @@
 import R2Protocol as r2
+from networking.Client import *
+import numpy as np
 
 # Dedicate a /dev port for specifically the precise arm
 ser = serial.Serial(
@@ -27,9 +29,14 @@ def writeToSerial(writeArray):
 	# send the encoded array across the Jetson Serial lines
 	ser.write(write_byte)
 
+
 def publish_updates(updates):
     for index, update_array in enumerate(updates): 
         writeToSerial(update_array)
         print("array {} sent: {}".format(index, update_array))
         time.sleep(5)
-	
+
+
+def read_startpos():
+    encoder_readings = None
+    return encoder_readings
