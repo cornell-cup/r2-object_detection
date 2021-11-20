@@ -30,13 +30,33 @@ def writeToSerial(writeArray):
 	ser.write(write_byte)
 
 
-def publish_updates(updates):
+def publish_updates(updates, timeout):
+    ''' This function publishes updates to the arm configuration by writing 
+        to the serial buffer. We use R2Protocol to write to the arduino, which 
+        will connect/write to the motor controllers directly. 
+
+        Parameters: 
+            - updates: a list of update integer lists of size 6. Each update 
+                       list consists of 6 angle configurations in radians, 
+                       which will need to be converted to degrees before being
+                       written to the serial buffer. 
+            - timeout: an integer that represents the time between updates that 
+                       the arm is allotted to move to the desired position. 
+    '''
     for index, update_array in enumerate(updates): 
         writeToSerial(update_array)
         print("array {} sent: {}".format(index, update_array))
-        time.sleep(5)
+        time.sleep(timeout)
 
 
 def read_startpos():
+    ''' This function will read from R2Protocol to get the current angle 
+        configuration of the precise arm.
+
+        Returns: 
+            - encoder_readings: List of 6 integer angles (degrees) that 
+                                represents the current angle position of 
+                                the arm. 
+    ''' 
     encoder_readings = None
     return encoder_readings
