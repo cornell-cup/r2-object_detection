@@ -41,7 +41,7 @@ def kmeans(input_matrix, thresh, n=5,  max_iter=5, debug=False):
     n clusters. n is determined when previous loss - curr loss < threshold 
     Requires that max_iter >= 1.
     Returns a 2D array where the value at index [i,j] is the label assigned
-    to that index. So if [0,0] has value 1, it cv2.imshow("segmentation", org_image_cop)means [0,0] has label 1.\
+    to that index. So if [0,0] has value 1, it cv2.imshow("segmentation", image_cop)means [0,0] has label 1.\
     UPDATE: function now just returns a reshaped matrix containing the
     list of labels
     """
@@ -85,30 +85,33 @@ def visualize(hist):
     plt.show()
 
 
-def viz_image(org_image, labels):
+def viz_image(images, names):
     """
-    Given the original image and a list of labels that 
-    assign each pixel to a label, make a mask of the image
+    Given a list of images and their corresponding names, display them
     """
-    org_image_cop = org_image
-    max_label = np.max(labels)
-    mul_fact = 255/max_label
+    #cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
+    for i in range(len(images)):
+        cv2.imshow(names[i], images[i])
+    key = cv2.waitKey(0)
 
-    for i in range(0,max_label+1):
-        mask = labels == i
-        org_image_cop[mask] = i*mul_fact
-    cv2.imshow("segmentation", org_image_cop)
+    if key & 0xFF == ord('q') or key == 27:
+        cv2.destroyAllWindows()
 
+    if key & 0xFF == ord('r'):
+        cv2.destroyAllWindows()
 
-def cv_kmeans(org_img, rgbd_img):
+def cv_kmeans(input_matrix):
+    """ Performs kmeans clustering on the input matrix. Expect the input_matrix to have dimension (k, d, c) where k
+	and d are the image dimension and c is the number of channels in the image
+    """
+    
+    img = input_matrix
+    print ("image shape: ", img.shape,"image: ", img)
+    c = img.shape[-1]
 
     
-    img = rgbd_img
-    print ("image: ", img)
-    
-    twoDimg = img.reshape((-1,4))
+    twoDimg = img.reshape((-1,c))
     #twoDdepth_img = depth_img.reshape((-1,1))
-    print ("depth image shape : ", rgbd_img.shape)
     #twoDimg = np.float32(twoDimg)
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     K=10
@@ -121,28 +124,17 @@ def cv_kmeans(org_img, rgbd_img):
     
     res = center[label.flatten()]
     result_image = res.reshape((img.shape))
-    #cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
-    cv2.imshow("original", org_img)
-    cv2.imshow("result is: ",result_image)
-    key = cv2.waitKey(0)
+    return result_image
 
-    if key & 0xFF == ord('q') or key == 27:
-        cv2.destroyAllWindows()
-
-    if key & 0xFF == ord('r'):
-        cv2.destroyAllWindows()
-
-def main():
-    org_image, depth_img, rgbd = df.get_depth_frame()
-    #cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
-    #cv2.imshow("depth", depth_img)
-    #cv2.waitKey()
-    print ("displaying image: ")
-    print (org_image.shape)
-    cv_kmeans(org_image, rgbd)
 
 
     
+
+def main():
+    org_image, depth_img, rgbd = df.get_depth_frame()
+    print (org_image.shape)
+    result_img = cv_kmeans(rgbd)
+    viz_image([org_image, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
 
 
 
