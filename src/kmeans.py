@@ -100,9 +100,11 @@ def viz_image(org_image, labels):
     cv2.imshow("segmentation", org_image_cop)
 
 
-def cv_kmeans(org_image, rgbd_img):
+def cv_kmeans(org_img, rgbd_img):
 
+    
     img = rgbd_img
+    print ("image: ", img)
     
     twoDimg = img.reshape((-1,4))
     #twoDdepth_img = depth_img.reshape((-1,1))
@@ -120,11 +122,15 @@ def cv_kmeans(org_image, rgbd_img):
     res = center[label.flatten()]
     result_image = res.reshape((img.shape))
     #cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
-    cv2.imshow("original", org_image)
-    cv2.imshow("result: ",result_image)
-    cv2.waitKey()
+    cv2.imshow("original", org_img)
+    cv2.imshow("result is: ",result_image)
+    key = cv2.waitKey(0)
 
+    if key & 0xFF == ord('q') or key == 27:
+        cv2.destroyAllWindows()
 
+    if key & 0xFF == ord('r'):
+        cv2.destroyAllWindows()
 
 def main():
     org_image, depth_img, rgbd = df.get_depth_frame()
@@ -134,7 +140,7 @@ def main():
     print ("displaying image: ")
     print (org_image.shape)
     cv_kmeans(org_image, rgbd)
-(230400, 4)
+
 
     
 
