@@ -26,6 +26,7 @@ import jetson.utils
 import math
 import cv2
 import numpy as np
+import sys
 
 from src.camera import Camera
 from src.projections import *
@@ -170,4 +171,5 @@ def run_object_detection(target_object):
             #     break
 
 if __name__ == '__main__':
-    run_object_detection('teddy bear')
+    target_obj = sys.argv[1]
+    run_object_detection(target_obj)
