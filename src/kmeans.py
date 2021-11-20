@@ -90,7 +90,6 @@ def viz_image(org_image, labels):
     Given the original image and a list of labels that 
     assign each pixel to a label, make a mask of the image
     """
-    cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
     org_image_cop = org_image
     max_label = np.max(labels)
     mul_fact = 255/max_label
@@ -99,36 +98,47 @@ def viz_image(org_image, labels):
         mask = labels == i
         org_image_cop[mask] = i*mul_fact
     cv2.imshow("segmentation", org_image_cop)
+
+
+def cv_kmeans(org_image, rgbd_img):
+
+    img = rgbd_img
+    
+    twoDimg = img.reshape((-1,4))
+    #twoDdepth_img = depth_img.reshape((-1,1))
+    print ("depth image shape : ", rgbd_img.shape)
+    #twoDimg = np.float32(twoDimg)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    K=10
+    attempts = 10
+    print (img.shape)
+    print (twoDimg.shape)
+    ret, label, center = cv2.kmeans(twoDimg, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
+    print ("running kmeans")
+    center = np.uint8(center)
+    
+    res = center[label.flatten()]
+    result_image = res.reshape((img.shape))
+    #cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
+    cv2.imshow("original", org_image)
+    cv2.imshow("result: ",result_image)
     cv2.waitKey()
+
 
 
 def main():
-    dist_matrix, org_image, depth_img = df.get_depth_frame()
+    org_image, depth_img, rgbd = df.get_depth_frame()
+    #cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
+    #cv2.imshow("depth", depth_img)
+    #cv2.waitKey()
     print ("displaying image: ")
     print (org_image.shape)
-    cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
-    cv2.imshow("depth", depth_img)
-    cv2.waitKey()
-    img = org_image
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    cv_kmeans(org_image, rgbd)
+(230400, 4)
+
     
 
-    twoDimg = img.reshape((-1,3))
-    twoDdepth_img = depth_img.reshape((-1,1))
-    print ("depth image shape : ", depth_img.shape)
-    twoDimg = np.float32(twoDimg)
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    K=5
-    attempts = 10
-    ret, label, center = cv2.kmeans(twoDimg, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
-    center = np.uint8(center)
-    res = center[label.flatten()]
-    result_image = res.reshape((img.shape))
-    cv2.imshow("original", cv2.cvtColor(org_image, cv2.COLOR_RGBA2BGR))
-    cv2.imshow("result: ",result_image)
-    cv2.waitKey()
-    #points = kmeans(dist_matrix, 2, debug=True)
-    #viz_image(org_image, points)
+
 
 if __name__ == "__main__":
     main()
