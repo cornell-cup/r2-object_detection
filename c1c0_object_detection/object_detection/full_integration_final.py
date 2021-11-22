@@ -130,10 +130,13 @@ def main():
             key = cv2.waitKey(0)
             print("potato")
 
+            # quit entirely, or continue to next iter
             if key & 0xFF == ord('q') or key == 27:
                 print("quitting")
                 cv2.destroyAllWindows()
                 break
+            if key & 0xFF == ord('r'):
+                cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
