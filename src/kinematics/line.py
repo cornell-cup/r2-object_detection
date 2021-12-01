@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Line:
     def __init__(self, p0, p1):
         self.p = np.array(p0)
@@ -9,6 +10,7 @@ class Line:
 
     def path(self, t):
         return self.p + t * self.dirn
+
 
 def distance(x, y):
     return np.linalg.norm(np.array(x) - np.array(y))
