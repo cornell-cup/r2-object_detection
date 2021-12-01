@@ -25,6 +25,7 @@ def joint_positions(theta_1, phi_1, theta_2, phi_2):
 
         return shoulder_coord, elbow_coord
 
+
 def show(theta_1, phi_1, theta_2, phi_2, x, y, z):
         shoulder_coord, elbow_coord = joint_positions(theta_1, phi_1, theta_2, phi_2)
 

@@ -1,33 +1,50 @@
-"""
+"""Implementation of a linear arm pathing algorithm that uses RRT to avoid obstacles.
+
+Generates a linear path from the current position of the arm to a desired position. If there is an obstacle in the way
+of this path, maneuvers around the obstacle with RRT. For details on the RRT algorithm, see pure_rrt_angles.py.
+
 Written by Simon Kapen, Fall 2021.
 """
 
 import math
 import numpy as np
 import pure_rrt_angles as rrt
+from pure_rrt_angles import random_angle_config
 from rrtgraph import Graph
 from rrtnode import RRTNode
 import line
-import random
 import collision_detection as cd
-from precision_arm import PrecisionArm
+import rrtplot
+import time
 
-arm = PrecisionArm()
 
+def compute_step_sizes(start_angles, end_angles, num_iter):
+    """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
 
-# TODO: calculate path based on correct way to go to avoid no-go zone, not shortest way to go.
-def compute_step_sizes(start_angles, end_angles, num_iter, arm):
-    """ Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
-        Strategy for bounding angles: split into two quadrants: (1) less than the first bound,
-                                                                (2) greater than the second bound.
-        If both are in the same quadrant, use the closest angle distance as usual.
-        If start_angles[i] in (1) and end_angles[i] in (2) and angle distance > 0, we must go the other way.
-        If start_angles[i] in (2) and end_angles[i] in (1) and angle distance < 0, we must go the other way."""
+    Depending on whether the anticipated path goes through the no-go zone, switches that path to go the other way
+    around.
 
+    Args:
+        start_angles: The initial angles of the arm.
+        end_angles: The desired angles of the arm.
+        num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
+        arm: An instance of precision_arm.PrecisionArm, containing the bounds of each arm angle.
+
+    Returns:
+        A array containing the step sizes of each angle of the arm.
+    """
+
+    # Strategy for bounding angles: split into two quadrants: (1) less than the first bound,
+    #                                                         (2) greater than the second bound.
+    # If both are in the same quadrant, use the closest angle distance as usual.
+    # If start_angles[i] in (1) and end_angles[i] in (2) and angle distance > 0, we must go the other way.
+    # If start_angles[i] in (2) and end_angles[i] in (1) and angle distance < 0, we must go the other way.
     step_sizes = []
     true_angle_distances = rrt.true_angle_distances_arm(start_angles, end_angles)
+
+    bounds = RRTNode(None).bounds
     for i in range(len(start_angles)):
-        if i >= len(arm.bounds) or arm.bounds[i] is None:
+        if i >= len(bounds) or bounds[i] is None:
             angle_distance = end_angles[i] - start_angles[i]
             step_size = angle_distance / num_iter
             if angle_distance > math.pi:
@@ -37,8 +54,8 @@ def compute_step_sizes(start_angles, end_angles, num_iter, arm):
                 new_angle_dist = (2 * math.pi - start_angles[i] + end_angles[i])
                 step_size = new_angle_dist / num_iter
         else:
-            bound_1 = arm.bounds[i][0]
-            bound_2 = arm.bounds[i][1]
+            bound_1 = bounds[i][0]
+            bound_2 = bounds[i][1]
             th_1 = start_angles[i]
             th_2 = end_angles[i]
             angle_dist = true_angle_distances[i]
@@ -51,20 +68,24 @@ def compute_step_sizes(start_angles, end_angles, num_iter, arm):
                 if true_angle_distances[i] < 0:
                     angle_dist = 2 * math.pi + true_angle_distances[i]
 
-            # print("start: {a1}, end: {a2}, b1: {b1}, b2: {b2}, orig_dist: {d1}, dist: {dist}"
-            #       .format(a1=start_angles[i], a2=end_angles[i], b1=bound_1, b2=bound_2,
-            #               d1=true_angle_distances[i], dist=angle_dist))
-
             step_size = angle_dist / num_iter
 
         step_sizes.append(step_size)
-    # print("STEP SIZES: {}".format(step_sizes))
     return step_sizes
 
 
 def generate_linear_path(start_angles, end_angles, num_iter):
-    """ Return a path of nodes from start_pos to end_pos, with [num_iter] iterations of equal length. """
-    step_sizes = compute_step_sizes(start_angles, end_angles, num_iter, arm)
+    """Generates a linear path of arm configurations that moves an arm configuration from start_angles to end_angles.
+
+    Args:
+        start_angles: The initial angles of the arm.
+        end_angles: The desired angles of the arm.
+        num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
+    Returns:
+        a path of nodes from start_pos to end_pos, with [num_iter] iterations of equal length.
+    """
+
+    step_sizes = compute_step_sizes(start_angles, end_angles, num_iter)
 
     g = Graph(start_angles, end_angles)
 
@@ -77,9 +98,7 @@ def generate_linear_path(start_angles, end_angles, num_iter):
         #    return g, False
         new_angles = np.add(current_angles, step_sizes)
         new_angles = np.mod(new_angles, math.pi * 2)
-        # if not arm.angles_within_bounds(new_angles[0:3]):
-        #     print("not within bounds: {}".format(new_angles[0:3]))
-        #     return g, False
+
         new_node = RRTNode(new_angles)
 
         new_idx = g.add_vex(new_node)
@@ -93,31 +112,48 @@ def generate_linear_path(start_angles, end_angles, num_iter):
         current_node = new_node
 
         if i == num_iter - 1:
-            # print("LAST ANGLES: {}".format(current_angles))
-            # print("TARGET END ANGLES: {}".format(end_angles))
-
             rounded_current = np.around(current_angles, decimals=4)
             rounded_end = np.around(end_angles, decimals=4)
 
+
             if not np.array_equal(rounded_current, rounded_end):
                 return g, False
-
     return g, True
 
 
 def valid_path_configuration(pose, obstacles):
-    nlinkarm = pose.to_nlinkarm()
-    for obstacle in obstacles:
-        if cd.arm_is_colliding(nlinkarm, obstacle):
+    """Determines whether a the input node is a valid arm configuration.
+
+    Args:
+        pose: An RRTNode instance.
+        obstacles: An array of float arrays representing cube bounding box obstacles.
+
+    Returns:
+         True if pose does not collide with any of the obstacles and is a valid arm configuration. False otherwise.
+    """
+
+    for obs in obstacles:
+        if cd.arm_is_colliding(pose, obs):
             return False
 
-    return rrt.valid_configuration(pose.angles)
+    # fix valid configuration method, then check that before returning true
+    # if not rrt.valid_configuration(pose.angles):
+    #     print("not valid")
+    return True
 
 
 def rrt_hd_tl(path, obstacles):
-    # TODO: determine whether multiple RRTs is worthwhile for some cases
-    """ Returns the longest start and end segments without a collision.
-        Precondition: the start and end nodes are valid poses that do not collide with any obstacles. """
+    """Determines the head and tail of a path of arm configurations that passes through an obstacle(s).
+
+    Precondition: The start and end nodes are valid poses that do not collide with any obstacles.
+
+    Args:
+        path: An array of RRTNode instances representing the generated linear path.
+        obstacles: An array of float arrays representing cube obstacles.
+
+    Returns:
+         Two arrays of RRTNode instances representing the longest start and end segments without a collision.
+    """
     new_path_hd = [path[0]]
     new_path_tl = [path[-1]]
 
@@ -130,6 +166,7 @@ def rrt_hd_tl(path, obstacles):
     # Find last node that collides
     i = len(path) - 2
     while i >= 1 and valid_path_configuration(path[i], obstacles):
+
         new_path_tl.insert(0, path[i])
         i -= 1
 
@@ -137,20 +174,29 @@ def rrt_hd_tl(path, obstacles):
 
 
 def replace_with_rrt(path_hd, path_tl, obstacles):
-    """ Fills in the gap between two lists of arm segments with an RRT path. """
-    n_iter = 10000
-    radius = 0.01
-    stepSize = .4
-    threshold = 4
+    """Fills in the gap between two lists of arm segments with an RRT path.
+
+    Args:
+        path_hd: An array of RRTNode instances representing the head of a linear path.
+        path_tl: An array of RRTNode instances representing the tail of a linear path.
+        obstacles: An array of float arrays representing cube obstacles.
+
+    Returns:
+        A complete path with no colliding arm configurations, or None if such a path is not found.
+    """
 
     rrt_start = path_hd[-1]
     rrt_end = path_tl[0]
 
-    g = rrt.rrt(rrt_start.angles, rrt_end.angles, obstacles, n_iter, radius, stepSize, threshold)
+    g = rrt.rrt(rrt_start.angles, rrt_end.angles, obstacles, n_iter=1000, radius=.02)
     if g.success:
         print("rrt success :)")
     else:
         print("rrt failed :(")
+        for node in path_hd + path_tl:
+            g.add_vex(node)
+        rrtplot.plot_3d(g, path_hd + path_tl, obstacles)
+        return None
     path_mid = rrt.dijkstra(g)
     if g is not None:
         return path_hd + path_mid + path_tl
@@ -160,92 +206,144 @@ def replace_with_rrt(path_hd, path_tl, obstacles):
 
 
 def path_is_colliding(path, obstacles):
-    """ Returns True if there is a node in [path] that collides with any obstacle in [obstacles]. """
+    """Determines whether there is at least one node in a path of nodes that collides with an obstacle.
+
+    Args:
+        path: An array of RRTNode instances representing a path from a start node to an end node.
+        obstacles: An array of float arrays representing cube obstacles.
+
+    Returns:
+        True if one or more of the nodes in path collides with an obstacle.
+    """
+
     for obstacle in obstacles:
         for node in path:
-            if cd.arm_is_colliding(node.to_nlinkarm(), obstacle):
+            if cd.arm_is_colliding(node, obstacle):
                 return True
 
     return False
 
 
 def linear_rrt(start_angles, end_angles, num_iter, obstacles):
-    """ Generates a linear path, and maneuvers around obstacles with RRT if necessary. """
+    """Generates a linear path, and maneuvers around obstacles with RRT if necessary.
+
+    Args:
+        start_angles: The initial angles of the arm.
+        end_angles: The desired angles of the arm.
+        num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
+        obstacles: An array of float arrays representing cube obstacles.
+    """
+
     g = generate_linear_path(start_angles, end_angles, num_iter)
     linear_path = g[0].nodes
 
-    new_path_hd, new_path_tl = rrt_hd_tl(linear_path, obstacles)
-    # print("HEAD: {}".format(new_path_hd))
-    # print("ORIGINAL PATH: {}".format(linear_path))
     if path_is_colliding(linear_path, obstacles):
+        new_path_hd, new_path_tl = rrt_hd_tl(linear_path, obstacles)
         linear_path = replace_with_rrt(new_path_hd, new_path_tl, obstacles)
 
-    return linear_path
+    if linear_path is None:
+        return linear_path, False
+    return linear_path, True
 
 
-def random_angle_config():
-    """ Returns a set of random angles within a range of the goal state angles. """
-    rand_angles = [0, 0, 0, 0, 0, 0]
+def linearity_test(num_trials, iter_per_path=50):
+    """Runs num_trials of a pure linear arm pathing approach with random start and end configuration.
 
-    while True:
-        for a in range(0, 6):
-            # Random number from -2pi to 2pi
-            rand_angles[a] = random.random() * 2 * math.pi
+    Success is defined as converging to the desired end position.
 
-        if rrt.valid_configuration(rand_angles):
-            return rand_angles
+    Returns:
+        A float representing the percentage of successful trials.
+    """
 
-    return rand_angles
-
-
-def linearity_test(num_trials):
     s_count = 0
     for i in range(num_trials):
-        startpos = random_angle_config()
+        start_pos = random_angle_config()
+        end_pos = random_angle_config()
 
-        endpos = random_angle_config()
-        while not arm.angles_within_bounds(startpos) or not arm.angles_within_bounds(endpos):
-            startpos = random_angle_config()
-            endpos = random_angle_config()
-        print("startpos: ", format(startpos))
-        iterations = 10
-        _, success = generate_linear_path(startpos, endpos, iterations)
+        while not arm.angles_within_bounds(start_pos) or not arm.angles_within_bounds(end_pos):
+            start_pos = random_angle_config()
+            end_pos = random_angle_config()
+
+        _, success = generate_linear_path(start_pos, end_pos, iter_per_path)
 
         if success:
             s_count = s_count + 1
-
     return (s_count / num_trials) * 100
 
 
-def plot_random_path(iterations, obstacles, arm):
-    startpos = random_angle_config()
-    endpos = random_angle_config()
+def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
+    """Runs num_trials of a linear rrt pathing approach.
 
-    while not (arm.angles_within_bounds(startpos) and arm.angles_within_bounds(endpos)):
-        startpos = random_angle_config()
-        endpos = random_angle_config()
+    Success is defined as converging to the desired end position, and any intermediate RRT converging to the desired end
+    position.
+    """
 
-    path = linear_rrt(startpos, endpos, iterations, obstacles)
+    start_time = time.time()
+    s_count = 0
+    for i in range(num_trials):
+        start_node = RRTNode(configuration=None)
+        end_node = RRTNode(configuration=None)
 
-    g = Graph(startpos, endpos)
+        while not valid_path_configuration(start_node, obstacles):
+            start_node = RRTNode(None)
 
-    for node in path:
-        g.add_vex(node)
-        print(node.angles)
+        while not valid_path_configuration(end_node, obstacles):
+            end_node = RRTNode(None)
 
-    rrt.plot_3d(g, path, obstacles)
+        if rrt.arm_is_colliding(end_node, obstacles):
+            raise Exception("Approved a colliding node")
+
+        _, success = linear_rrt(start_node.angles, end_node.angles, iter_per_path, obstacles)
+
+        if success:
+            s_count = s_count + 1
+        else:
+            print("start_pos =", format(start_node.angles))
+            print("end_pos =", format(end_node.angles))
+
+    print("success rate in {t} trials: {r}".format(t=num_trials, r=(s_count / num_trials) * 100))
+    print("average time per trial: {}".format((time.time() - start_time) / num_trials))
 
 
+def plot_random_path(iterations, obstacles):
+    """Plots a random path between random start and end configurations.
+
+    Args:
+        iterations: Integer representing the number of intermediate poses between the start and end configurations.
+        obstacles: Array of int arrays representing cube obstacles.
+        arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
+    """
+
+    start_node = RRTNode(None)
+    end_node = RRTNode(None)
+
+    while not valid_path_configuration(start_node, obstacles):
+        start_node = RRTNode(None)
+    while not valid_path_configuration(end_node, obstacles):
+        end_node = RRTNode(None)
+
+    path, _ = linear_rrt(start_node.angles, end_node.angles, iterations, obstacles)
+
+    g = Graph(start_node.angles, end_node.angles)
+
+    if path is not None:
+        for node in path:
+            g.add_vex(node)
+        rrtplot.plot_3d(g, path, obstacles)
+
+
+# Constants for quick testing of certain cases
 RRT_TEST_SEED = 1
 CLEAR_PATH_TEST_SEED = 20
 INCORRECT_END_SEED = 420
 
 if __name__ == '__main__':
-    #random.seed(a=INCORRECT_END_SEED)
-
-    trials = 1000
+    # random.seed(a=INCORRECT_END_SEED)
+    np.set_printoptions(precision=20)
+    trials = 100
     iterations = 10
-    obstacles = [[0.1, -0.3, 0.15, 0.2]]
+    obstacles = [[-0.1, 0.1, 0.15, 0.2]]
+    # obstacles = []
     # print("success rate in {t} trials: {r}".format(t=trials, r=linearity_test(trials)))
-
-    plot_random_path(iterations, obstacles, arm)
+    # linear_rrt_test(100, obstacles)
+    plot_random_path(iterations, obstacles)
