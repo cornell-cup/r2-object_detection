@@ -1,7 +1,10 @@
-import pyrealsense2 as rs
+
 import numpy as np
 import cv2
+import sys
 
+sys.path.append("/home/cornellcup-cs-jetson/Desktop/pyrealsense2_build/librealsense/wrappers/python/pyrealsense2")
+import pyrealsense2 as rs
 class Camera:
   """
   Instance Variables:
