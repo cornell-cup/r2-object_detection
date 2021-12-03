@@ -232,6 +232,9 @@ def linear_rrt(start_angles, end_angles, num_iter, obstacles):
         end_angles: The desired angles of the arm.
         num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
         obstacles: An array of float arrays representing cube obstacles.
+
+    Returns:
+        An array of RRTNode instances representing a valid path between the start and end configurations.
     """
 
     g = generate_linear_path(start_angles, end_angles, num_iter)
@@ -314,13 +317,13 @@ def plot_random_path(iterations, obstacles):
         arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
     """
 
-    start_node = RRTNode(None)
-    end_node = RRTNode(None)
+    start_node = RRTNode([0, 0, 0, 0, 0])
+    end_node = RRTNode([-1.0237, 0.6567117, 0.362883, 1.02, 1.022806])
 
-    while not valid_path_configuration(start_node, obstacles):
-        start_node = RRTNode(None)
-    while not valid_path_configuration(end_node, obstacles):
-        end_node = RRTNode(None)
+    # while not valid_path_configuration(start_node, obstacles):
+    #     start_node = RRTNode(None)
+    # while not valid_path_configuration(end_node, obstacles):
+    #     end_node = RRTNode(None)
 
     path, _ = linear_rrt(start_node.angles, end_node.angles, iterations, obstacles)
 
@@ -342,8 +345,8 @@ if __name__ == '__main__':
     np.set_printoptions(precision=20)
     trials = 100
     iterations = 10
-    obstacles = [[-0.1, 0.1, 0.15, 0.2]]
-    # obstacles = []
+    # obstacles = [[-0.1, 0.1, 0.15, 0.2]]
+    obstacles = []
     # print("success rate in {t} trials: {r}".format(t=trials, r=linearity_test(trials)))
     # linear_rrt_test(100, obstacles)
     plot_random_path(iterations, obstacles)
