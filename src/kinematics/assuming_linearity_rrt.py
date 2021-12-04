@@ -359,7 +359,7 @@ if __name__ == '__main__':
     np.set_printoptions(precision=20)
     trials = 100
     iterations = 10
-    obstacles = [[-0.1, 0.1, 0.15, 0.2]]
+    obstacles = [[-0.1, 0.1, 0.15, 0.2, .2, .2]]
     # obstacles = []
     # print("success rate in {t} trials: {r}".format(t=trials, r=linearity_test(trials)))
     # linear_rrt_test(100, obstacles)
