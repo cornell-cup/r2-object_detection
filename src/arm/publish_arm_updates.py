@@ -2,12 +2,69 @@ import R2Protocol as r2
 from networking.Client import *
 import numpy as np
 
+import serial
+import sys
+import codecs
+
 # Dedicate a /dev port for specifically the precise arm
 ser = serial.Serial(
 	port = '/dev/ttyTHS1',
 	baudrate = 9600,
 )
 
+
+'''
+Arduino to Jetson Communication with R2 Protocol
+'''
+
+ser = None
+ 
+def init_serial(port,baud):
+	'''
+	Initializes the serial port, usually set baud to 9600
+	'''
+	global ser, startseq, endseq
+	ser =serial.Serial(port,baud)
+	
+def close_serial():
+	'''
+	Closes the serial port.
+	'''
+	global ser
+	ser.close()
+	
+def read_encoder_values():
+	'''
+	Returns 6 encoder values i(n decimal) as an array.
+	If the value is 1452, then the encoder is not powered or there is 
+	a wiring issue. 
+	'''
+	# initialize the array 
+	encoderAngle = [0,0,0,0,0,0]
+	try:
+		while True:
+			 # length of message plus 16
+			good_data = False
+			while (not good_data):
+				ser_msg = ser.read(28)
+				msgtype, msg, status = r2p.decode(ser_msg)
+				# print(msg.hex())
+				print(status)
+				print(ser_msg)
+				if (status):
+					good_data = True
+				else:
+					ser.reset_input_buffer()
+			for i in range(0, 12, 2):
+				encoderAngle[i//2] = (msg[i]<<8) | msg[i+1]
+			print(encoderAngle)
+		
+	except KeyboardInterrupt:
+        ser.close()
+    return encounterAngle
+
+
+    
 def writeToSerial(writeArray):
 	'''
 	This functions writes a byte array from the Jetson to the Precise
@@ -44,19 +101,14 @@ def publish_updates(updates, timeout):
                      the arm is allotted to move to the desired position. 
     '''
     for index, update_array in enumerate(updates): 
+        assert len(update_array) == 6
+        for index in range(len(update_array)):
+            update_array[index] = int(update_array[index])
         writeToSerial(update_array)
         print("array {} sent: {}".format(index, update_array))
         time.sleep(timeout)
 
-
-def read_startpos():
-    ''' This function will read from R2Protocol to get the current angle 
-        configuration of the precise arm.
-
-        Returns: 
-            encoder_readings: List of 6 integer angles (degrees) that 
-                              represents the current angle position of 
-                              the arm. 
-    ''' 
-    encoder_readings = None
-    return encoder_readings
+	
+if __name__ =='__main__':
+	init_serial('/dev/ttyTHS1', 38400)
+	read_encoder_values()
