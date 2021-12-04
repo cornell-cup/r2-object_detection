@@ -224,7 +224,7 @@ def path_is_colliding(path, obstacles):
     return False
 
 
-def linear_rrt(start_angles, end_angles, num_iter, obstacles):
+def linear_rrt(start_angles, end_angles, num_iter, obstacles, degrees=False):
     """Generates a linear path, and maneuvers around obstacles with RRT if necessary.
 
     Args:
@@ -232,10 +232,15 @@ def linear_rrt(start_angles, end_angles, num_iter, obstacles):
         end_angles: The desired angles of the arm.
         num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
         obstacles: An array of float arrays representing cube obstacles.
+        degrees: Whether to convert to and from degrees for motor output.
 
     Returns:
-        An array of RRTNode instances representing a valid path between the start and end configurations.
+        An array of RRTNode instances or float arrays representing a valid path between the start and end configurations
     """
+
+    if degrees:
+        start_angles = degrees_to_radians(start_angles)
+        end_angles = degrees_to_radians(end_angles)
 
     g = generate_linear_path(start_angles, end_angles, num_iter)
     linear_path = g[0].nodes
@@ -246,6 +251,9 @@ def linear_rrt(start_angles, end_angles, num_iter, obstacles):
 
     if linear_path is None:
         return linear_path, False
+
+    if degrees:
+        linear_path = path_angles_to_degrees(linear_path)
     return linear_path, True
 
 
@@ -274,14 +282,28 @@ def linearity_test(num_trials, iter_per_path=50):
     return (s_count / num_trials) * 100
 
 
-""" Converts node angles (in radians) to their degree equivalent 
-    @return - an array consisting of 6 degree measurements representing
-    the node """
-def convert_to_degrees(rrtnode):
+def degrees_to_radians(angles: list[float]) -> list[float]:
+    """Converts an input array in degrees into an output array in radians."""
+    radians = [0 for a in range(6)]
+    for ind, val in enumerate(angles):
+        radians[ind] = (val * math.pi) / 180
+    return radians
+
+
+def radians_to_degrees(rrtnode) -> list[float]:
+    """Converts an RRTNode instance into a degree array to be used in arm encoder movements.
+
+       Returns: An array consisting of 6 degree measurements representing the node. """
+
     degrees = [0 for a in range(6)]
     for ind, val in enumerate(rrtnode.angles):
         degrees[ind] = (val * 180) / math.pi
     return degrees
+
+
+def path_angles_to_degrees(path: list[RRTNode]) -> list[float]:
+    """Converts a path of RRTNode instances into a path of degree arrays to be used in arm encoder movements."""
+    return list(map(radians_to_degrees, path))
 
 
 def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
@@ -327,13 +349,23 @@ def plot_random_path(iterations, obstacles):
         arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
     """
 
-    start_node = RRTNode([0, 0, 0, 0, 0])
-    end_node = RRTNode([-1.0237, 0.6567117, 0.362883, 1.02, 1.022806])
+    start_node = RRTNode(None)
+    end_node = RRTNode(None)
 
-    # while not valid_path_configuration(start_node, obstacles):
-    #     start_node = RRTNode(None)
-    # while not valid_path_configuration(end_node, obstacles):
-    #     end_node = RRTNode(None)
+    while not valid_path_configuration(start_node, obstacles):
+        start_node = RRTNode(None)
+    while not valid_path_configuration(end_node, obstacles):
+        end_node = RRTNode(None)
+
+    plot_path(start_node.angles, end_node.angles, iterations, obstacles)
+
+
+def plot_path(start_angles, end_angles, iterations, obstacles):
+    start_node = RRTNode(start_angles)
+    end_node = RRTNode(end_angles)
+
+    if (not valid_path_configuration(start_node, obstacles)) or (not valid_path_configuration(end_node, obstacles)):
+        raise Exception("Invalid configuration")
 
     path, _ = linear_rrt(start_node.angles, end_node.angles, iterations, obstacles)
 
@@ -355,8 +387,9 @@ if __name__ == '__main__':
     np.set_printoptions(precision=20)
     trials = 100
     iterations = 10
-    # obstacles = [[-0.1, 0.1, 0.15, 0.2]]
-    obstacles = []
+    obstacles = [[-0.1, 0.1, 0.15, 0.2]]
+    # obstacles = []
     # print("success rate in {t} trials: {r}".format(t=trials, r=linearity_test(trials)))
     # linear_rrt_test(100, obstacles)
+    # plot_path([0, 0, 0, 0, 0], [-1.0237, 0.6567117, 0.362883, 1.02, 1.022806], iterations, obstacles)
     plot_random_path(iterations, obstacles)
