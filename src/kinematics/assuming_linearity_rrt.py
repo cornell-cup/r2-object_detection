@@ -274,6 +274,16 @@ def linearity_test(num_trials, iter_per_path=50):
     return (s_count / num_trials) * 100
 
 
+""" Converts node angles (in radians) to their degree equivalent 
+    @return - an array consisting of 6 degree measurements representing
+    the node """
+def convert_to_degrees(rrtnode):
+    degrees = [0 for a in range(6)]
+    for ind, val in enumerate(rrtnode.angles):
+        degrees[ind] = (val * 180) / math.pi
+    return degrees
+
+
 def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
     """Runs num_trials of a linear rrt pathing approach.
 
