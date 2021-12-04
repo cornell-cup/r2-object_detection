@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import serial
+# import serial
 import sys
 import numpy as np
 #from matplotlib import pylab
@@ -38,7 +38,7 @@ def FK(angles,alpha,D,R):
 
 
     # Find the homogenous transform from point 0 to unknown point
-    H= (np.array([[ct[n],-st[n]*ca[n],st[n]*sa[n],r[n]*ct[n]],[st[n],ct[n]*ca[n],-ct[n]*sa[n],r[n]*st[n]],[0,sa[n],ca[n],d[n]],[0,0,0,1]]))  
+    H= (np.array([[ct[n],-st[n]*ca[n],st[n]*sa[n],r[n]*ct[n]],[st[n],ct[n]*ca[n],-ct[n]*sa[n],r[n]*st[n]],[0,sa[n],ca[n],d[n]],[0,0,0,1]]))
     for i in range(n-1,-1,-1):
         Hi = (np.array([[ct[i],-st[i]*ca[i],st[i]*sa[i],r[i]*ct[i]],[st[i],ct[i]*ca[i],- ct[i]*sa[i],r[i]*st[i]],[0,sa[i],ca[i],d[i]],[0,0,0,1]]))
         H = np.matmul(Hi,H)
@@ -58,7 +58,7 @@ def Jacobian(angles,alpha,d,r):
     #Number of joints
     n=np.prod(angles)
 
-    # Assign variables to theta 
+    # Assign variables to theta
     t1 = angles[0]
     t2 = angles[1]
     t3 = angles[2]
@@ -89,7 +89,7 @@ def Jacobian(angles,alpha,d,r):
     J = np.concatenate((r1,r2,r3),axis = 0)
     J = np.reshape(J,(3,5))
     return J
-    
+
 ## Find distance to a point
 def Dist(point1,point2):
 
@@ -131,11 +131,11 @@ def IK(angles,e,g,b,alpha,d,r):
 
     return angles,point
 
-def kinematics(xg,yg,zg):
 
+def kinematics(xg,yg,zg):
     # No scientific notations
     np.set_printoptions(suppress=True)
-    
+
     # Given desired location (x,y,g)
     giv_point=np.array([[xg],[yg],[zg]])
     pi = np.pi
@@ -157,7 +157,7 @@ def kinematics(xg,yg,zg):
 
 
     #Decrease the tolerance to increase accuracy
-    tolerance=0.001
+    tolerance=0.4
 
     # Find current position based on the current joint angles
     point = FK(angles,alpha,d,r)
@@ -170,30 +170,28 @@ def kinematics(xg,yg,zg):
 
         angles,point=IK(angles,point,giv_point,b,alpha,d,r)
         error=Dist(point,giv_point)
-    
+
     angles[3] = angles[3] - pi/2
-    
-    print('Desired Loceation')
-    print(giv_point)
-    print('Calculated position')
-    print(point)
-    print('Accuracy')
-    print(tolerance)
-    print('Angles')
-    print(np.rad2deg(angles))
+
+    print('Desired Loceation: {}'.format(giv_point))
+    print('Calculated position: {}'.format(point))
+    print('Accuracy: {}'.format(tolerance))
+    print('Angles: {}'.format(np.rad2deg(angles)))
+
     # Correction for convention
     angles[1] = angles[1] + 5*pi/6
     angles[2] = -1*angles[2] + pi/4
     print(np.rad2deg(angles))
 
     angles_actual = str().join(','.join('%0.3f' %y for y in np.rad2deg(angles)))
-    ser = serial.Serial('/dev/ttyTHS1', 9600)
-    ser.write(bytearray(angles_actual, 'utf8'))
-    ser.close()
+    return np.rad2deg(angles)
+    # ser = serial.Serial('/dev/ttyTHS1', 9600)
+    # ser.write(bytearray(angles_actual, 'utf8'))
+    # ser.close()
 # Time taken
-startTime = datetime.now()
+# startTime = datetime.now()
 
-# Call the kinematics function   
-kinematics(0,0,0.438)      #Claw points straight up (0,0,4)
-print('TIME TAKEN:')
-print(datetime.now() - startTime)
+# Call the kinematics function
+# kinematics(0,0,0.438)      #Claw points straight up (0,0,4)
+# print('TIME TAKEN:')
+# print(datetime.now() - startTime)

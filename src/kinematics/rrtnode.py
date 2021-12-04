@@ -3,9 +3,12 @@ Written by Simon Kapen, Spring 2021.
 """
 
 import numpy as np
-from kinematics import FK
-import visualization
-import collision_detection
+import kinpy as kp
+import math
+import random
+
+# Global arm configuration
+chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 
 
 class RRTNode(object):
@@ -13,44 +16,72 @@ class RRTNode(object):
     A node generated in a RRT graph.
     Args:
         configuration: list of joint angles in radians. Corresponds to the 6 degrees of freedom on the arm.
+            a0-- the pan angle of the base
             a1-- the lift angle of the base
-            a2-- the pan angle of the base
-            a3-- the lift angle of the elbow
-            a4-- the pan angle of the elbow
-            a5-- the pan angle of the wrist
-            a6-- how big to open the end effector
-    Instance Attributes:
-        end_effector_pos [np array] : [x, y, z] of the end effector.
-        angles           [np array] : list of joint angles in radians. [a1 ... a6].
-        fail_count        [int]      : amount of times extension heuristic has failed from this node.
+            a2-- the lift angle of the elbow
+            a3-- the pan angle of the elbow
+            a4-- the pan angle of the wrist
+            (a5-- how big to open the end effector -- not programmed)
+    Attributes:
+        bounds: An array of float arrays listing the
+        end_effector_pos: A np array of the [x, y, z] of the end effector.
+        angles: A np array listing the joint angles in radians.
+        fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
 
-    def __init__(self, configuration):
-        self.angles = configuration
-        self.joint_positions = self.generate_joint_positions()
-        self.end_effector_pos = self.joint_positions[1]
+    def __init__(self, configuration: list[float]):
+        th1_bounds = (math.pi / 2, 3 * math.pi / 2)
+        th2_bounds = (math.pi / 2, 3 * math.pi / 2)
+        th3_bounds = (math.pi / 2, 3 * math.pi / 2)
+        th4_bounds = (math.pi / 2, 3 * math.pi / 2)
+        th5_bounds = (math.pi / 2, 3 * math.pi / 2)
+
+        self.bounds = [th1_bounds, th2_bounds, th3_bounds, th4_bounds, th5_bounds]
+
+        if configuration is None:
+            self.angles = self.random_angle_config()
+        else:
+            self.angles = configuration
+
+        self.joint_positions = self.forward_kinematics()
+        self.end_effector_pos = self.joint_positions[-1]
         self.fail_count = 0
 
-    def forward_kinematics(self, link_lengths):
-        """ Returns the [x, y, z] corresponding the node's angle configuration. """
+    def forward_kinematics(self):
+        """Computes forward kinematics of the arm given the joint angles.
 
-        angles = np.array([[0], [self.angles[1]], [0], [self.angles[0]], [0]])
-        alpha = np.array([[self.angles[3]], [0], [0], [self.angles[2]], [0]])
-        r = np.array([[0], [link_lengths[1]], [link_lengths[2]], [0], [0]])
-        d = np.array([[link_lengths[0]], [0], [0], [0], [link_lengths[3]]])
-        return FK(angles, alpha, r, d)
+        Returns:
+            An array of the [x, y, z] of each joint of the arm based on the node's angle configuration.
+        """
+        th = {'Rev2': self.angles[0], 'Rev3': self.angles[1], 'Rev4': self.angles[2], 'Rev5': self.angles[3],
+              'Rev6': self.angles[4]}
+        ret = chain.forward_kinematics(th)
+        return [ret['link2_1'].pos, ret['link3_1'].pos, ret['link4_1'].pos, ret['link5_1'].pos, ret['hand_1'].pos]
 
-    def generate_joint_positions(self):
-        """ Returns the [x, y, z] of the two joints based on the node's angle configuration. """
-        return visualization.joint_positions(*self.angles[0:4])
-
-    def to_nlinkarm(self):
-        """ Creates an instance of NLinkArm using the angle configuration. Used for collision detection. """
-        arm = collision_detection.NLinkArm(2, [.222, .3])
-        arm.update_pitch([self.angles[0], self.angles[2]])
-        arm.update_yaw([self.angles[1], self.angles[3]])
-
-        return arm
+    def get_link_lengths(self):
+        """ Computes the link lengths of each link in the arm. """
+        lengths = []
+        for i in range(0, len(self.joint_positions)-1):
+            lengths.append(np.linalg.norm(self.joint_positions[i+1] - self.joint_positions[i]))
+        return lengths
 
     def inc_fail_count(self):
         self.fail_count = self.fail_count + 1
+
+    def angle_within_bounds(self, angle, joint):
+        return 0 < angle < self.bounds[joint][0] or self.bounds[joint][1] < angle < 2 * math.pi
+
+    def angles_within_bounds(self, angles):
+        for i, angle in enumerate(angles):
+            if not self.angle_within_bounds(angle, i):
+                return False
+        return True
+
+    def random_angle_config(self):
+        rand_angles = [0, 0, 0, 0, 0]
+
+        for a in range(0, 5):
+            # Random number from -2pi to 2pi
+            rand_angles[a] = random.uniform(self.bounds[a][0], self.bounds[a][1])
+
+        return rand_angles

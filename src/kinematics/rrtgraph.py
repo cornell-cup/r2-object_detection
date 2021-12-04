@@ -2,12 +2,11 @@ from rrtnode import RRTNode
 import line
 
 class Graph:
-    """
-    An RRT graph.
+    """An RRT graph.
     Args:
         start_angles: The initial angles of the arm.
         end_angles: The desired angles of the arm.
-    Instance Attributes:
+    Attributes:
         start_node: Node containing cartesian coordinates and arm angles of the start position.
         end_node: Node containing cartesian coordinates and arm angles of the end position.
         nodes: List of all nodes in the graph.

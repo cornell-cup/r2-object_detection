@@ -135,10 +135,8 @@ if __name__ == '__main__':
 
 	        # send grasp coordinates to external server for processing
             # request should return an arm configuration
-            
-            startpos = arm.read_startpos()
-            data_packet = [startpos, gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
-
+            '''
+            data_packet = [gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
             robot.send_data(data_packet)
 
             # TODO: add in a check to make sure we actually receive an arm config
@@ -146,7 +144,10 @@ if __name__ == '__main__':
             print(arm_config)
 
             # send arm_config to the arm to move
-            arm.publish_arm_updates(arm_config)
+            '''
             if key & 0xFF == ord('q') or key == 27:
                 cv2.destroyAllWindows()
                 break
+            if key & 0xFF == ord('r'):
+                cv2.destroyAllWindows()
+
