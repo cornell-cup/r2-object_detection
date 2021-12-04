@@ -5,4 +5,4 @@ startpos = arm.read_encoder_values()
 endpos = []
 iterations = 10
 obstacles = []
-alr.linear_rrt(startpos, endpos, iterations, obstacles, True)
+alr.linear_rrt(startpos, endpos, obstacles, iterations, True)
