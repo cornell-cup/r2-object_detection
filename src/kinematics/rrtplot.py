@@ -39,15 +39,15 @@ def plot_3d(G, path, obstacles):
 
     # obstacles
     for obs in obstacles:
-        collision_detection.plot_linear_cube(ax, obs)
+        collision_detection.plot_linear_prism(ax, obs)
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
 
-    ax.set_xlim3d(-.3, .35)
-    ax.set_ylim3d(-.3, .3)
-    ax.set_zlim3d(-.3, .4)
+    ax.set_xlim3d(-.4, .4)
+    ax.set_ylim3d(-.4, .4)
+    ax.set_zlim3d(-.4, .4)
 
     plt.show()
 

@@ -1,4 +1,9 @@
 """
+Representation of a node in an RRT graph, which represents a single arm configuration.
+
+Represents a single configuration of the precision arm using the five joint angles. Specifications of the arm itself are
+held in the arm's URDF file.
+
 Written by Simon Kapen, Spring 2021.
 """
 
@@ -23,20 +28,20 @@ class RRTNode(object):
             a4-- the pan angle of the wrist
             (a5-- how big to open the end effector -- not programmed)
     Attributes:
-        bounds: An array of float arrays listing the
+        bounds: An array of float arrays listing the lower and upper bounds of each arm angle.
         end_effector_pos: A np array of the [x, y, z] of the end effector.
         angles: A np array listing the joint angles in radians.
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
 
     def __init__(self, configuration: list[float]):
-        th1_bounds = (math.pi / 2, 3 * math.pi / 2)
-        th2_bounds = (math.pi / 2, 3 * math.pi / 2)
-        th3_bounds = (math.pi / 2, 3 * math.pi / 2)
-        th4_bounds = (math.pi / 2, 3 * math.pi / 2)
-        th5_bounds = (math.pi / 2, 3 * math.pi / 2)
+        a0_bounds = (math.pi / 2, 3 * math.pi / 2)
+        a1_bounds = (math.pi / 2, 3 * math.pi / 2)
+        a2_bounds = (math.pi / 2, 3 * math.pi / 2)
+        a3_bounds = (math.pi / 2, 3 * math.pi / 2)
+        a4_bounds = (math.pi / 2, 3 * math.pi / 2)
 
-        self.bounds = [th1_bounds, th2_bounds, th3_bounds, th4_bounds, th5_bounds]
+        self.bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
         if configuration is None:
             self.angles = self.random_angle_config()
@@ -78,10 +83,10 @@ class RRTNode(object):
         return True
 
     def random_angle_config(self):
+        """ Returns a set of random angles within the bounds of the arm. """
         rand_angles = [0, 0, 0, 0, 0]
 
         for a in range(0, 5):
-            # Random number from -2pi to 2pi
             rand_angles[a] = random.uniform(self.bounds[a][0], self.bounds[a][1])
 
         return rand_angles
