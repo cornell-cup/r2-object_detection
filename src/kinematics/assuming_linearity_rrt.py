@@ -219,7 +219,7 @@ def path_is_colliding(path, obstacles):
     return False
 
 
-def linear_rrt(start_angles, end_angles, num_iter, obstacles, degrees=False):
+def linear_rrt(start_angles, end_angles, obstacles, num_iter=15, degrees=False):
     """Generates a linear path, and maneuvers around obstacles with RRT if necessary.
 
     Args:
@@ -298,7 +298,7 @@ def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
         if rrt.arm_is_colliding(end_node, obstacles):
             raise Exception("Approved a colliding node")
 
-        _, success = linear_rrt(start_node.angles, end_node.angles, iter_per_path, obstacles)
+        _, success = linear_rrt(start_node.angles, end_node.angles, obstacles, iter_per_path)
 
         if success:
             s_count = s_count + 1
@@ -339,7 +339,7 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
     if (not valid_path_configuration(start_node, obstacles)) or (not valid_path_configuration(end_node, obstacles)):
         raise Exception("Invalid configuration")
 
-    path, _ = linear_rrt(start_node.angles, end_node.angles, iterations, obstacles)
+    path, _ = linear_rrt(start_node.angles, end_node.angles, obstacles, iterations)
 
     g = Graph(start_node.angles, end_node.angles)
 
