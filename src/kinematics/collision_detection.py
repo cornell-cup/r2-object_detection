@@ -17,7 +17,7 @@ TODO: Implement path-planning algo | Integrate with camera's point cloud output
 chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 
 
-def plot_linear_cube(ax, cube):
+def plot_linear_cube(ax, prism):
     """
     Plot a cube on an instance of matplotlib.axes.
 
@@ -25,17 +25,52 @@ def plot_linear_cube(ax, cube):
     ax   [matplotlib.axes] : figure with 3D axes.
     cube [list]            : specifications of the cube formatted as
                              [<x coord.>, <y coord.>, <z coord.>, <side length>].
+                             [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
+
     """
-    x, y, z, l = cube
+    #x, y, z, l = cube
+    x, y, z, l, w, h = prism
     xx = [x, x, x+l, x+l, x]
     yy = [y, y+l, y+l, y, y]
-    kwargs = {'alpha': 1, 'color': 'red'}
+
+    kwargs = {'alpha': 1, 'color': 'blue'}
     ax.plot3D(xx, yy, [z]*5, **kwargs)
-    ax.plot3D(xx, yy, [z+l]*5, **kwargs)
-    ax.plot3D([x, x], [y, y], [z, z+l], **kwargs)
-    ax.plot3D([x, x], [y+l, y+l], [z, z+l], **kwargs)
-    ax.plot3D([x+l, x+l], [y+l, y+l], [z, z+l], **kwargs)
-    ax.plot3D([x+l, x+l], [y, y], [z, z+l], **kwargs)
+    # ax.plot3D(xx, yy, [z+l]*5, **kwargs)
+    # ax.plot3D([x, x], [y, y], [z, z+l], **kwargs)
+    # ax.plot3D([x, x], [y+l, y+l], [z, z+l], **kwargs)
+    # ax.plot3D([x+l, x+l], [y+l, y+l], [z, z+l], **kwargs)
+    # ax.plot3D([x+l, x+l], [y, y], [z, z+l], **kwargs)
+
+
+def plot_linear_prism(ax, prism):
+        """
+        Plot a cube on an instance of matplotlib.axes.
+
+        INSTANCE ARGUMENTS:
+        ax   [matplotlib.axes] : figure with 3D axes.
+        cube [list]            : specifications of the cube formatted as
+                                 [<x coord.>, <y coord.>, <z coord.>, <side length>].
+                                 [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
+
+        """
+        # x, y, z, l = cube
+        x, y, z, l, w, h = prism
+        # Each item in the arrays "xx" and "yy" represent either an x or y coordinate
+        # For example: (x, y+l), (x, y), (x+w, y), ... etc
+        # The order of the coordinates determine which dot is plotted first, and the lines
+        # between each are drawn in the same order.
+        # Also, the l and w are used as the area of the base of the prism, with the length
+        # moving in the positive y direction, width in the positive x, and height is z obv.
+        xx = [x, x, x+w, x+w, x]
+        yy = [y+l, y, y, y+l, y+l]
+
+        kwargs = {'alpha': 1, 'color': 'blue'}
+        ax.plot3D(xx, yy, [z] * 5, **kwargs)
+        ax.plot3D(xx, yy, [z+h]*5, **kwargs)
+        ax.plot3D([x, x], [y, y], [z, z+h], **kwargs)
+        ax.plot3D([x, x], [y+l, y+l], [z, z+h], **kwargs)
+        ax.plot3D([x+w, x+w], [y+l, y+l], [z, z+h], **kwargs)
+        ax.plot3D([x+w, x+w], [y, y], [z, z+h], **kwargs)
 
 
 def plot_points(ax, xs, ys, zs):

@@ -286,7 +286,7 @@ def rrt_graph_list(num_trials, startpos, endpos, n_iter, radius, step_size, thre
     return graphs
 
 
-def avg_nodes_test(graphs):
+def avg_nodes_test(graphs: list[Graph]):
     """ The average amount of nodes generated until the end goal is reached. """
     total_nodes = 0
     for i in range(0, len(graphs)):
@@ -295,11 +295,8 @@ def avg_nodes_test(graphs):
     return total_nodes/len(graphs)
 
 
-def converge_test(graphs):
-    """
-    Returns the amount of times the RRT graph converges in num_trials with n_iter iterations, radius, and step size
-    step_size.
-    """
+def converge_test(graphs: list[Graph]):
+    """ Counts the amount of successes for a list of graphs. """
     num_success = 0
     for i in range(0, len(graphs)):
         if graphs[i].success:

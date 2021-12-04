@@ -8,19 +8,22 @@ import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 
-chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
+# chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
+chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1", "base_link")
 
-# Generate locations of each joint. Input angles here.
-th = {'Rev2': 0, 'Rev3': 0, 'Rev4': 0, 'Rev5': 0, 'Rev6': math.pi/2}
-ret = chain.forward_kinematics(th)
+angle_config = kp.ik.inverse_kinematics(chain, kp.Transform(pos=[0.2, 0.2, 0.2]))
+ret = chain.forward_kinematics(angle_config, end_only=False)
 
-
-print(chain.get_joint_parameter_names())
-print(chain)
-print(ret)
-print(ret['base_link'])
-
-
+# # Generate locations of each joint. Input angles here.
+# th = {'Rev2': 0, 'Rev3': 0, 'Rev4': 0, 'Rev5': 0, 'Rev6': math.pi/2}
+# ret = chain.forward_kinematics(th)
+#
+# print(chain.get_joint_parameter_names())
+# print(chain)
+# print(ret)
+# print(ret['base_link'])
+#
+#
 ax = plt.axes(projection='3d')
 
 
