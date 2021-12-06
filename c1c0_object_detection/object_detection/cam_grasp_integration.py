@@ -2,8 +2,9 @@ import cv2
 import numpy as np
 
 from .camera import Camera
-from .projections import (grasp_coords_rel_img, clamp_z, proj_pixel_to_point, 
-proj_grasp_cam_to_arm, calc_pred_rect)
+from .projections import proj_pixel_to_point, proj_grasp_cam_to_arm
+from .grasping_utility import (grasp_coords_rel_img, clamp_z, calc_pred_rect,
+    grabbable, plot_pred_rect)
 
 """Run grasp detection code with the intel realsense camera"""
 

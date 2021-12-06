@@ -64,7 +64,7 @@ class Camera:
     
     return color_frame, depth_frame
 
-  def get_imgs_from_frames(self, color_frame, depth_frame):
+  def get_imgs_from_frames(self, color_frame, depth_frame, display=False):
     # get_data * depth_scale to get actual distance?
     depth_image = np.asanyarray(depth_frame.get_data())
     color_image = np.asanyarray(color_frame.get_data())
@@ -88,7 +88,15 @@ class Camera:
         colorizer.colorize(depth_frame).get_data())
     dgr = cv2.merge((depth_colorized[:, :, 0], g, r))
 
+    if display:
+      self.display_images(color_image, depth_colorized)
+
     return color_image, depth_colorized, dgr
+
+  def display_images(color_img, depth_img):
+    # colorized depth image
+    cv2.imshow("original", cv2.cvtColor(color_img, cv2.COLOR_RGBA2BGR))
+    cv2.imshow("white to black depth", depth_img)
   
   def __enter__(self):
       return self
