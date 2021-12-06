@@ -132,9 +132,9 @@ if __name__ == '__main__':
             cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
 
-	        # send grasp coordinates to external server for processing
+	    # send grasp coordinates to external server for processing
             # request should return an arm configuration
-            '''
+            
             data_packet = [gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
             robot.send_data(data_packet)
 
@@ -142,8 +142,10 @@ if __name__ == '__main__':
             arm_config = robot.listen()
             print(arm_config)
 
+            arm_config["contents"]
+
             # send arm_config to the arm to move
-            '''
+        
             if key & 0xFF == ord('q') or key == 27:
                 cv2.destroyAllWindows()
                 break
