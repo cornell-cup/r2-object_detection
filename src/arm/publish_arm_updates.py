@@ -63,7 +63,6 @@ def read_encoder_values():
         ser.close()
     return encounterAngle
 
-
     
 def writeToSerial(writeArray):
 	'''
