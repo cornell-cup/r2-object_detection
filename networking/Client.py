@@ -13,7 +13,7 @@ def jprint(obj):
 class Client(Network):
     def __init__(self):
         super().__init__()
-        self.socket.bind((self.get_ip(), 4004))
+        self.socket.bind((self.get_ip(), 4008))
         #self.socket.settimeout(4)  # interferes with stopping
         self.receive_ID= 0
 
