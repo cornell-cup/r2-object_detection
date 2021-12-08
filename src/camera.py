@@ -1,6 +1,8 @@
-import pyrealsense2 as rs
 import numpy as np
 import cv2
+
+sys.path.append("/usr/local/lib/python3.6")
+import pyrealsense2 as rs
 
 class Camera:
   """
