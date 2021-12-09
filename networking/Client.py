@@ -39,7 +39,7 @@ class Client(Network):
 
         self.receive_ID= y['id']
         print(y, type(y['content']))
-        return "content: " + str(y['content'])
+        return y['content']
 
 # test to make sure that SensorState object is <= 4096 bytes
 if __name__ == "__main__":

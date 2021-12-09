@@ -30,7 +30,7 @@ import numpy as np
 from src.camera import Camera
 from src.projections import *
 from networking.Client import Client
-import arm.publish_arm_updates as arm 
+import publish_arm_updates as arm 
 
 #  this is a test comment
 net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
@@ -135,8 +135,15 @@ if __name__ == '__main__':
 
 	    # send grasp coordinates to external server for processing
             # request should return an arm configuration
+            if key & 0xFF == ord('q') or key == 27:
+                cv2.destroyAllWindows()
+                break
+            if key & 0xFF == ord('r'):
+                cv2.destroyAllWindows()
+
 
             # TODO: make sure that this startpos works
+            arm.init_serial('/dev/ttyTHS1', 9600)
             startpos = arm.read_encoder_values()
 
             data_packet = [startpos, gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
@@ -149,12 +156,7 @@ if __name__ == '__main__':
 
             # send arm_config to the arm to move
 
-            arm.writeToSerial(arm_config["contents"])
+            arm.publish_updates(arm_config, 1)
 
 
-            if key & 0xFF == ord('q') or key == 27:
-                cv2.destroyAllWindows()
-                break
-            if key & 0xFF == ord('r'):
-                cv2.destroyAllWindows()
-
+            
