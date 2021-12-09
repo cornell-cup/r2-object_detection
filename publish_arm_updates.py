@@ -38,7 +38,7 @@ def close_serial():
     
 def read_encoder_values():
     '''
-    Returns 6 encoder values i(n decimal) as an array.
+    Returns 6 encoder values (in decimal) as an array.
     If the value is 1452, then the encoder is not powered or there is 
     a wiring issue. 
     '''
@@ -82,11 +82,11 @@ def writeToSerial(writeArray):
     So, change the indices you want to change, and keep the previous
     angles for the joints you don't want to move.
     '''
-    print("IS serial port open?", ser.isOpen())
+    print("Is serial port open?", ser.isOpen())
     if not ser.isOpen():
         ser.open()
-    print("IS serial port open 2?", ser.isOpen())
-    # PARM = Precise Arm
+    print("Is serial port open 2?", ser.isOpen())
+    # PRM = Precise Arm
     # cast writeArray from int to byte, encode the array using the R2Protocol
     print(writeArray)
     print("SERIAL PORT", ser)
@@ -111,7 +111,11 @@ def publish_updates(updates, timeout):
     for index, update_array in enumerate(updates): 
         assert len(update_array) == 6
         for index in range(len(update_array)):
-            update_array[index] = int(update_array[index])
+            update_array[index] = int(update_array[index]/360*255)
+        #new_update = [0]*12
+        #for index in range(len(update_array)):
+        #    update_array[2*index] = min(255, int(update_array[index]))
+        #    update_array[2*index+1] = max(0, int(update_array[index])-255)
         writeToSerial(update_array)
         ser.reset_input_buffer()
         print("array {} sent: {}".format(index, update_array))
