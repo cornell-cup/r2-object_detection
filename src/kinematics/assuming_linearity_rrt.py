@@ -3,7 +3,7 @@
 Generates a linear path from the current position of the arm to a desired position. If there is an obstacle in the way
 of this path, maneuvers around the obstacle with RRT. For details on the RRT algorithm, see pure_rrt_angles.py.
 
-Written by Simon Kapen, Fall 2021.
+Written by Simon Kapen and Raj Sinha, Fall 2021.
 """
 
 import math
@@ -15,7 +15,7 @@ import line
 import collision_detection as cd
 import rrtplot
 import time
-
+import random
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
@@ -183,14 +183,14 @@ def replace_with_rrt(path_hd, path_tl, obstacles):
     rrt_start = path_hd[-1]
     rrt_end = path_tl[0]
 
-    g = rrt.rrt(rrt_start.angles, rrt_end.angles, obstacles, n_iter=1000, radius=.02)
+    g = rrt.rrt(rrt_start.angles, rrt_end.angles, obstacles, n_iter=600, radius=.025)
     if g.success:
         print("rrt success :)")
     else:
         print("rrt failed :(")
-        # for node in path_hd + path_tl:
-        #     g.add_vex(node)
-        # rrtplot.plot_3d(g, path_hd + path_tl, obstacles)
+        for node in path_hd + path_tl:
+            g.add_vex(node)
+        rrtplot.plot_3d(g, path_hd + path_tl, obstacles)
         return None
     path_mid = rrt.dijkstra(g)
     if g is not None:
@@ -219,6 +219,8 @@ def path_is_colliding(path, obstacles):
     return False
 
 
+# TODO: First thing next semester, remove the degrees field and instead call angle conversions directly from integration
+# Bad programming practice to have two different return types (list[RRTNode] vs list[list[float]])
 def linear_rrt(start_angles, end_angles, obstacles, num_iter=15, degrees=False):
     """Generates a linear path, and maneuvers around obstacles with RRT if necessary.
 
@@ -248,11 +250,11 @@ def linear_rrt(start_angles, end_angles, obstacles, num_iter=15, degrees=False):
         return linear_path, False
 
     if degrees:
-        linear_path = path_angles_to_degrees(linear_path)
+        linear_path = path_radians_to_degrees(linear_path)
     return linear_path, True
 
 
-def degrees_to_radians(angles: list[float]) -> list[float]:
+def degrees_to_radians(angles: list[float]):
     """Converts an input array in degrees into an output array in radians."""
     radians = [0 for a in range(6)]
     for ind, val in enumerate(angles):
@@ -260,7 +262,7 @@ def degrees_to_radians(angles: list[float]) -> list[float]:
     return radians
 
 
-def radians_to_degrees(rrtnode) -> list[float]:
+def radians_to_degrees(rrtnode):
     """Converts an RRTNode instance into a degree array to be used in arm encoder movements.
 
        Returns: An array consisting of 6 degree measurements representing the node. """
@@ -271,7 +273,7 @@ def radians_to_degrees(rrtnode) -> list[float]:
     return degrees
 
 
-def path_angles_to_degrees(path: list[RRTNode]) -> list[float]:
+def path_radians_to_degrees(path: list[RRTNode]):
     """Converts a path of RRTNode instances into a path of degree arrays to be used in arm encoder movements."""
     return list(map(radians_to_degrees, path))
 
@@ -350,17 +352,18 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
 
 
 # Constants for quick testing of certain cases
-RRT_TEST_SEED = 1
+RRT_JUMP_SEED = 6869
+RRT_TEST_SEED = 120938914
 CLEAR_PATH_TEST_SEED = 20
 INCORRECT_END_SEED = 420
 
 if __name__ == '__main__':
-    # random.seed(a=INCORRECT_END_SEED)
+    random.seed(a=RRT_JUMP_SEED)
     np.set_printoptions(precision=20)
     trials = 100
     iterations = 10
     obstacles = [[-0.1, 0.1, 0.15, 0.2, .2, .2]]
     # obstacles = []
     # print("success rate in {t} trials: {r}".format(t=trials, r=linearity_test(trials)))
-    # linear_rrt_test(100, obstacles)
+    # linear_rrt_test(500, obstacles)
     plot_random_path(iterations, obstacles)

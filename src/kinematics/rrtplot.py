@@ -40,6 +40,7 @@ def plot_3d(G, path, obstacles):
     # obstacles
     for obs in obstacles:
         collision_detection.plot_linear_prism(ax, obs)
+        # collision_detection.plot_linear_cube(ax, obs)
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')

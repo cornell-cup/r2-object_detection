@@ -17,7 +17,7 @@ TODO: Implement path-planning algo | Integrate with camera's point cloud output
 chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 
 
-def plot_linear_cube(ax, prism):
+def plot_linear_cube(ax, cube):
     """
     Plot a cube on an instance of matplotlib.axes.
 
@@ -28,18 +28,18 @@ def plot_linear_cube(ax, prism):
                              [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
 
     """
-    #x, y, z, l = cube
-    x, y, z, l, w, h = prism
+    x, y, z, l = cube
+    # x, y, z, l, w, h = prism
     xx = [x, x, x+l, x+l, x]
     yy = [y, y+l, y+l, y, y]
 
     kwargs = {'alpha': 1, 'color': 'blue'}
     ax.plot3D(xx, yy, [z]*5, **kwargs)
-    # ax.plot3D(xx, yy, [z+l]*5, **kwargs)
-    # ax.plot3D([x, x], [y, y], [z, z+l], **kwargs)
-    # ax.plot3D([x, x], [y+l, y+l], [z, z+l], **kwargs)
-    # ax.plot3D([x+l, x+l], [y+l, y+l], [z, z+l], **kwargs)
-    # ax.plot3D([x+l, x+l], [y, y], [z, z+l], **kwargs)
+    ax.plot3D(xx, yy, [z+l]*5, **kwargs)
+    ax.plot3D([x, x], [y, y], [z, z+l], **kwargs)
+    ax.plot3D([x, x], [y+l, y+l], [z, z+l], **kwargs)
+    ax.plot3D([x+l, x+l], [y+l, y+l], [z, z+l], **kwargs)
+    ax.plot3D([x+l, x+l], [y, y], [z, z+l], **kwargs)
 
 
 def plot_linear_prism(ax, prism):
