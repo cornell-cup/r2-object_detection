@@ -12,7 +12,6 @@ ser = serial.Serial(
 	baudrate = 9600,
 )
 
-
 '''
 Arduino to Jetson Communication with R2 Protocol
 '''
