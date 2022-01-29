@@ -8,7 +8,7 @@ import codecs
 
 # Dedicate a /dev port for specifically the precise arm
 ser = serial.Serial(
-	port = '/dev/ttyTHS1',
+    port = '/dev/ttyTHS1',
 	baudrate = 9600,
 )
 
@@ -81,8 +81,19 @@ def writeToSerial(writeArray):
 	angles for the joints you don't want to move.
 	'''
 	# PARM = Precise Arm
+
+	# convert writeArray from a list of 6 degrees to a list of 12 degrees, where
+	# the list takes the following form that represents an angle as a pair that 
+	# sum up to the original angle: [angle_1', angle_1'', ..., angle_6', angle_6'']
+	split_write_array = []
+	for angle in writeArray: 
+		first_half = min(angle, 255)
+		second_half = max(angle-255, 0)
+		split_write_array.append(first_half)
+		split_write_array.append(second_half)
+	
 	# cast writeArray from int to byte, encode the array using the R2Protocol
-	write_byte = r2.encode(bytes('PARM','utf-8'), bytearray(writeArray))
+	write_byte = r2.encode(bytes('PARM','utf-8'), bytearray(split_write_array))
 	# send the encoded array across the Jetson Serial lines
 	ser.write(write_byte)
 
@@ -102,8 +113,10 @@ def publish_updates(updates, timeout):
     '''
     for index, update_array in enumerate(updates): 
         assert len(update_array) == 6
-        for index in range(len(update_array)):
-            update_array[index] = int(update_array[index])
+		# convert updates to ints
+		update_array = [int(i) for i in update_array]
+        # for index in range(len(update_array)):
+        #     update_array[index] = int(update_array[index])
         writeToSerial(update_array)
         print("array {} sent: {}".format(index, update_array))
         time.sleep(timeout)
