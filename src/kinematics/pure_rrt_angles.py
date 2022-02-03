@@ -25,9 +25,6 @@ from rrtgraph import Graph
 from rrtplot import plot_3d
 import kinpy as kp
 
-# Global arm configuration
-chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
-
 
 def arm_is_colliding(node: RRTNode, obstacles):
     """Checks if an arm configuration is colliding with any obstacle in the c-space.
@@ -128,15 +125,14 @@ def valid_configuration(angles):
     #  for a given a1, an a2 is always valid. However, the a3 is not necessarily valid:
     #  use spherical coordinates for validity
     if link_lengths[0] * math.cos(angles[1]) < 0:
-        # print("not valid, first condition: {}".format(angles))
         return False
 
     if link_lengths[1] * math.cos(angles[2]) + link_lengths[0] * math.cos(angles[1]) < 0:
-        # print("not valid, second condition: {}".format(angles))
         return False
-    return True, [(angles[0] + math.pi*2) % math.pi*2, (angles[1] + math.pi*2) % math.pi*2, \
-           (angles[2] + math.pi*2) % math.pi*2, (angles[3] + math.pi*2) % math.pi*2, \
-           (angles[4] + math.pi*2) % math.pi*2]
+
+    return True, [(angles[0] + math.pi) % math.pi, (angles[1] + math.pi) % math.pi, \
+           (angles[2] + math.pi) % math.pi, (angles[3] + math.pi) % math.pi, \
+           (angles[4] + math.pi) % math.pi]
 
 
 def random_angle_config():
@@ -145,8 +141,10 @@ def random_angle_config():
 
     while True:
         for a in range(0, 5):
-            # Random number from -2pi to 2pi
-            rand_angles[a] = (random.random() * 2 - 1) * 2 * np.pi
+            # Random number from 0 to 2pi
+            # rand_angles[a] = (random.random() * 2 - 1) * 2 * np.pi
+            rand_angles[a] = random.random() * 2 * np.pi
+            # print(rand_angles[a])
 
         if valid_configuration(rand_angles):
             return rand_angles
@@ -178,7 +176,7 @@ def true_angle_distances_arm(angles_1, angles_2):
     return new_angles
 
 
-def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.02, stepSize=.4, threshold=10):
+def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.03, stepSize=.2, threshold=10):
     """Uses the RRT algorithm to determine a collision-free path from start_angles to end_angles.
 
     Args:
@@ -227,7 +225,6 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.02, stepSize=.4
                 continue
 
         end_eff_dist_to_goal = line.distance(new_node.end_effector_pos, G.end_node.end_effector_pos)
-
         if end_eff_dist_to_goal < 2 * radius and not G.success:
             if arm_is_colliding(G.end_node, obstacles):
                 raise Exception("Adding a colliding node")
@@ -306,24 +303,20 @@ def converge_test(graphs: list[Graph]):
 
 
 if __name__ == '__main__':
-
-    startpos = (0., 0., 0., 0., 0., 0.)
+    random.seed()
+    startpos = (0., 0., 0., 0., 0.)
 
     x, y, z = (.2, -.2, -.2)
 
     angles = [round(x[0], 5) for x in kinematics(x, y, z).tolist()]
 
-    endpos = (math.radians(angles[1]), math.radians(angles[0]), math.radians(angles[3]), math.radians(angles[2]), 0, 0)
+    endpos = (1.8756746293234707, 0.24887138496377703, 0.33744701903541446, 0.15153332538250205, 0)
+
+    print(valid_configuration(endpos))
 
     print("endpos: {}".format(endpos))
-    # print("angle 1: ", math.radians(angles[1]))
-    # print("angle 2: ", math.radians(angles[0]))
-    # print("angle 3: ", math.radians(angles[3]))
-    # print("angle 4: ", math.radians(angles[2]))
-    # endpos = (1, 1, 0, 1, 0, 0)
 
-    obstacles = [[-0.3, 0.0, 0.15, 0.2]]
-    # obstacles = []
+    obstacles = [[-0.3, 0.0, 0.15, 0.2, 0.2, 0.2]]
     n_iter = 800
     radius = 0.02
     stepSize = .5

@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import sys
-import kinpy as kp
 from rrtnode import RRTNode
 
 """****************************************************************************
@@ -12,9 +11,6 @@ Run the script with argument "rand" to see a random configuration and test
 the collision detection (result of collision is printed through command line).
 TODO: Implement path-planning algo | Integrate with camera's point cloud output
 ****************************************************************************"""
-
-# Global arm configuration
-chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 
 
 def plot_linear_cube(ax, cube):
@@ -173,7 +169,6 @@ def arm_is_colliding(node, cube):
 
 
 if __name__ == "__main__":
-    print("no work anymore :)")
     # Broken, uses deprecated class NLinkArm
     # fig = plt.figure()
     # ax = plt.axes(projection="3d")

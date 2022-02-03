@@ -131,9 +131,8 @@ def valid_path_configuration(pose, obstacles):
         if cd.arm_is_colliding(pose, obs):
             return False
 
-    # fix valid configuration method, then check that before returning true
-    # if not rrt.valid_configuration(pose.angles):
-    #     print("not valid")
+    # TODO: fix valid configuration method, then check that before returning true
+
     return True
 
 
@@ -183,7 +182,7 @@ def replace_with_rrt(path_hd, path_tl, obstacles):
     rrt_start = path_hd[-1]
     rrt_end = path_tl[0]
 
-    g = rrt.rrt(rrt_start.angles, rrt_end.angles, obstacles, n_iter=600, radius=.025)
+    g = rrt.rrt(rrt_start.angles, rrt_end.angles, obstacles, n_iter=1000, radius=.05)
     if g.success:
         print("rrt success :)")
     else:
@@ -363,7 +362,6 @@ if __name__ == '__main__':
     trials = 100
     iterations = 10
     obstacles = [[-0.1, 0.1, 0.15, 0.2, .2, .2]]
-    # obstacles = []
-    # print("success rate in {t} trials: {r}".format(t=trials, r=linearity_test(trials)))
+
     # linear_rrt_test(500, obstacles)
     plot_random_path(iterations, obstacles)
