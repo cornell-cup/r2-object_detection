@@ -1,13 +1,13 @@
-from sklearn.cluster import KMeans
+
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-import get_depth_frame as df
 import time
 import cv2
 from sklearn import preprocessing
 import os
 from datetime import datetime
+from matplotlib import image
 
 def process_features(X, norm_matrix):
     """
@@ -85,14 +85,44 @@ def cv_kmeans(input_matrix):
     result_image = res.reshape((img.shape))
     return result_image
 
+def get_depth_images(dir):
+    path = os.path.join(os.getcwd(), "kmeans_test_imgs", dir)
+    org_img = image.imread(path+"/Orignal.jpg")
+    depth_img = cv2.imread(path+"/Depth Frame.jpg",0)
+    b, g, r = cv2.split(org_img)
+    depth_img = depth_img.astype('float32')
+    r, g, b = r.astype('float32'), g.astype('float32'), b.astype('float32')
+    rgbd = cv2.merge([r, g, b, depth_img])
+    
+    return org_img, depth_img, rgbd
+
+
+def get_bounding_boxes(rgbd):
+    gray = cv2.cvtColor(rgbd, cv2.COLOR_BGR2GRAY)
+    # get contours
+    result = rgbd.copy()
+    thresh = cv2.threshold(gray,128,255,cv2.THRESH_BINARY)[1]
+    contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = contours[0] if len(contours) == 2 else contours[1]
+    for cntr in contours:
+        x,y,w,h = cv2.boundingRect(cntr)
+        cv2.rectangle(result, (x, y), (x+w, y+h), (0, 0, 255), 2)
+        print("x,y,w,h:",x,y,w,h)
+    
+
+    # show thresh and result    
+    cv2.imshow("bounding_box", result)
+    cv2.waitKey(0)
+
 
 def main():
-    org_image, depth_img, rgbd = df.get_depth_frame()
-    print (org_image.shape)
+    org_image, depth_img, rgbd = get_depth_images("04-12-13:10:36")
     result_img = cv_kmeans(rgbd)
-    viz_image([org_image, result_img, depth_img], ["Original", "Result", "Depth Frame"])
+    get_bounding_boxes(result_img)
+    viz_image([org_image, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
 
 
 
 if __name__ == "__main__":
     main()
+
