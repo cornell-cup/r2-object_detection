@@ -142,8 +142,8 @@ def random_angle_config():
     while True:
         for a in range(0, 5):
             # Random number from 0 to 2pi
-            # rand_angles[a] = (random.random() * 2 - 1) * 2 * np.pi
-            rand_angles[a] = random.random() * 2 * np.pi
+            rand_angles[a] = (random.random() * 2 - 1) * 2 * np.pi
+            # rand_angles[a] = random.random() * 2 * np.pi
             # print(rand_angles[a])
 
         if valid_configuration(rand_angles):
@@ -176,7 +176,7 @@ def true_angle_distances_arm(angles_1, angles_2):
     return new_angles
 
 
-def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.03, stepSize=.2, threshold=10):
+def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=1, angle_threshold=2, stepSize=.2, heuristic_threshold=3):
     """Uses the RRT algorithm to determine a collision-free path from start_angles to end_angles.
 
     Args:
@@ -184,9 +184,10 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.03, stepSize=.2
         end_angles: An array of length 5 representing the desired angle configuration.
         obstacles: An array of float arrays representing cube obstacles.
         n_iter: Maximum number of iterations to find a path.
-        radius: Maximum distance between the end_angles and the second-to-last node in a path.
+        radius: Maximum distance between the final end effector position and the second-to-last position in a path.
+        angle_threshold: Maximum distance between the final angles and the second-to-last angles in a path.
         stepSize: Distance between nodes in the graph.
-        threshold: Maximum number of times a new node can fail to expand from any given node in the graph.
+        heuristic_threshold: Maximum number of times a new node can fail to expand from any given node in the graph.
 
     Returns:
         An instance of rrtgraph.Graph containing a list of instances of RRTNode, and a path of RRTNode instances between
@@ -200,7 +201,7 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.03, stepSize=.2
         if arm_is_colliding(rand_node, obstacles):
             continue
 
-        if i % 2 == 0 or G.ranking == []:
+        if not G.ranking:
             nearest_node, nearest_node_index = nearest(G, rand_node.end_effector_pos)
             if nearest_node is None:
                 continue
@@ -220,14 +221,18 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.03, stepSize=.2
             G.add_edge(newidx, nearest_to_new_idx, dist)
 
         else:
-            new_node, newidx = extend_heuristic(G, rand_node, stepSize, threshold, obstacles)
+            new_node, newidx = extend_heuristic(G, rand_node, stepSize, heuristic_threshold, obstacles)
             if arm_is_colliding(new_node, obstacles):
                 continue
 
         end_eff_dist_to_goal = line.distance(new_node.end_effector_pos, G.end_node.end_effector_pos)
-        if end_eff_dist_to_goal < 2 * radius and not G.success:
+        angle_dist_to_goal = np.linalg.norm(true_angle_distances_arm(new_node.angles, G.end_node.angles))
+
+        if end_eff_dist_to_goal < radius and not G.success:
             if arm_is_colliding(G.end_node, obstacles):
                 raise Exception("Adding a colliding node")
+
+            print("Angle to goal", np.linalg.norm(true_angle_distances_arm(new_node.angles, G.end_node.angles)))
             endidx = G.add_vex(G.end_node)
             G.add_edge(newidx, endidx, end_eff_dist_to_goal)
             G.success = True
@@ -317,9 +322,9 @@ if __name__ == '__main__':
     print("endpos: {}".format(endpos))
 
     obstacles = [[-0.3, 0.0, 0.15, 0.2, 0.2, 0.2]]
-    n_iter = 800
-    radius = 0.02
-    stepSize = .5
+    n_iter = 3000
+    radius = .03
+    stepSize = .2
     threshold = 2
     start_time = time.time()
     print("RRT started")
