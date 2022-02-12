@@ -6,9 +6,6 @@ import assuming_linearity_rrt as lrrt
 import pure_rrt_angles as rrt
 import math
 import numpy as np
-from precision_arm import PrecisionArm
-
-arm = PrecisionArm()
 
 
 test_count = 0
@@ -30,7 +27,7 @@ def test_answer():
     path = lrrt.linear_rrt(start_angles, end_angles, obstacles)
     test_array(path[-1].angles, end_angles, "linear rrt converges")
  
-    step_sizes = lrrt.compute_step_sizes([0, 1, 1, 2, 5, 2], [1, 0, 2, 1, 2, 5], 100, arm)
+    step_sizes = lrrt.compute_step_sizes([0, 1, 1, 2, 5, 2], [1, 0, 2, 1, 2, 5], 100)
     test_array(step_sizes, [0.01, -0.01, -0.05283185307179586, 0.05283185307179586, -0.03, 0.03],
                "step size calculation observes bounds")
 
