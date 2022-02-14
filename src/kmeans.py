@@ -60,7 +60,7 @@ def viz_image(images, names):
     if key & 0xFF == ord('r'):
         cv2.destroyAllWindows()
 
-def cv_kmeans(input_matrix):
+def cv_kmeans(input_matrix, k):
     """ Performs kmeans clustering on the input matrix. Expect the input_matrix to have dimension (k, d, c) where k
 	and d are the image dimension and c is the number of channels in the image
     """
@@ -74,9 +74,8 @@ def cv_kmeans(input_matrix):
     
     twoDimg = img.reshape((-1,c))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    K=5
     attempts = 10
-    ret, label, center = cv2.kmeans(twoDimg, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
+    ret, label, center = cv2.kmeans(twoDimg, k, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
     print ("running kmeans")
     center = np.uint8(center)
     
@@ -89,7 +88,7 @@ def cv_kmeans(input_matrix):
 def main():
     org_image, depth_img, rgbd = df.get_depth_frame()
     print (org_image.shape)
-    result_img = cv_kmeans(rgbd)
+    result_img = cv_kmeans(rgbd, 5)
     viz_image([org_image, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
 
 
