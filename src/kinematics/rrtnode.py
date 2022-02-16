@@ -97,6 +97,5 @@ class RRTNode(object):
         """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
         angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
                                                 initial_state=start_config)
-        print(angle_config)
 
         return RRTNode(angle_config)
