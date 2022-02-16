@@ -50,17 +50,10 @@ def nearest(g: Graph, node: RRTNode):
     nearest_node_index = None
     min_dist = float("inf")
 
-    # old code 
-    # 
     neighbors = enumerate(g.nodes)
-    if len(g.nodes) > 100:
-        neighbors = g.spatial_hash.closest_neighbors(node)
-    #neighbors = enumerate(g.nodes)
-    # lister = neighbors
-
-    # if not neighbors: 
-    #     lister = enumerate(g.nodes)
-    # for idx, v in lister:
+    # if len(g.nodes) > 100:
+    #     neighbors = g.spatial_hash.closest_neighbors(node)
+    
     for idx, v in neighbors:
         #print(v)
         dist = line.distance(v.end_effector_pos, node)
