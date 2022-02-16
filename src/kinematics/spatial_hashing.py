@@ -31,7 +31,6 @@ class SpatialHash:
         neighbors = self.contents[cell]
         level = 1
         while not neighbors:
-            if level >= 2: 
             # checking on the two x planes
             for x in [cell_x-level, cell_x+level]:
                 for y in range (cell_y-level-1, cell_y+level):
