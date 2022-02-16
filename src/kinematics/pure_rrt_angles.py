@@ -51,7 +51,19 @@ def nearest(g: Graph, node: RRTNode):
     nearest_node_index = None
     min_dist = float("inf")
 
-    for idx, v in enumerate(g.nodes):
+    # old code 
+    # 
+    neighbors = enumerate(g.nodes)
+    if len(g.nodes) > 100:
+        neighbors = g.spatial_hash.closest_neighbors(node)
+    #neighbors = enumerate(g.nodes)
+    # lister = neighbors
+
+    # if not neighbors: 
+    #     lister = enumerate(g.nodes)
+    # for idx, v in lister:
+    for idx, v in neighbors:
+        #print(v)
         dist = line.distance(v.end_effector_pos, node)
         if dist < min_dist:
             min_dist = dist
@@ -317,7 +329,7 @@ if __name__ == '__main__':
     print("endpos: {}".format(endpos))
 
     obstacles = [[-0.3, 0.0, 0.15, 0.2, 0.2, 0.2]]
-    n_iter = 800
+    n_iter = 3000
     radius = 0.02
     stepSize = .5
     threshold = 2

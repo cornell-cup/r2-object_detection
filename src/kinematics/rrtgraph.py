@@ -1,4 +1,5 @@
 from rrtnode import RRTNode
+from spatial_hashing import SpatialHash
 import line
 
 class Graph:
@@ -22,7 +23,8 @@ class Graph:
         self.start_node = RRTNode(start_angles)
         self.end_node = RRTNode(end_angles)
 
-        self.nodes = [self.start_node]
+        #self.nodes = [self.start_node]
+
         self.edges = []
         self.success = False
 
@@ -30,6 +32,10 @@ class Graph:
         self.neighbors = {0: []}
         self.distances = {0: 0.}
         self.ranking = []
+        self.nodes = [self.start_node]
+
+        self.spatial_hash = SpatialHash(0.2, 0.2, 0.2)
+        self.spatial_hash.insert_node(self.start_node.end_effector_pos, self.start_node, 0)
 
     def add_vex(self, node):
         try:
@@ -41,6 +47,8 @@ class Graph:
             self.neighbors[idx] = []
             self.ranking.append(node)
             self.ranking.sort(key=lambda n: self.dist_to_end(n))
+
+            self.spatial_hash.insert_node(node.end_effector_pos, node, idx)
         return idx
 
     def add_edge(self, idx1, idx2, cost):
