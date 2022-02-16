@@ -16,6 +16,9 @@ import collision_detection as cd
 import rrtplot
 import time
 import random
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import art3d
+
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
@@ -136,69 +139,6 @@ def valid_path_configuration(pose, obstacles):
     return True
 
 
-def rrt_hd_tl(path, obstacles):
-    """Determines the head and tail of a path of arm configurations that passes through an obstacle(s).
-
-    Precondition: The start and end nodes are valid poses that do not collide with any obstacles.
-
-    Args:
-        path: An array of RRTNode instances representing the generated linear path.
-        obstacles: An array of float arrays representing cube obstacles.
-
-    Returns:
-         Two arrays of RRTNode instances representing the longest start and end segments without a collision.
-    """
-    new_path_hd = [path[0]]
-    new_path_tl = [path[-1]]
-
-    # Find first node that collides
-    i = 1
-    while i < len(path) - 1 and valid_path_configuration(path[i], obstacles):
-        new_path_hd.append(path[i])
-        i += 1
-
-    # Find last node that collides
-    i = len(path) - 2
-    while i >= 1 and valid_path_configuration(path[i], obstacles):
-
-        new_path_tl.insert(0, path[i])
-        i -= 1
-
-    return new_path_hd, new_path_tl
-
-
-def replace_with_rrt(path_hd, path_tl, obstacles):
-    """Fills in the gap between two lists of arm segments with an RRT path.
-
-    Args:
-        path_hd: An array of RRTNode instances representing the head of a linear path.
-        path_tl: An array of RRTNode instances representing the tail of a linear path.
-        obstacles: An array of float arrays representing cube obstacles.
-
-    Returns:
-        A complete path with no colliding arm configurations, or None if such a path is not found.
-    """
-
-    rrt_start = path_hd[-1]
-    rrt_end = path_tl[0]
-
-    g = rrt.rrt(rrt_start.angles, rrt_end.angles, obstacles, n_iter=1000, radius=.05)
-    if g.success:
-        print("rrt success :)")
-    else:
-        print("rrt failed :(")
-        for node in path_hd + path_tl:
-            g.add_vex(node)
-        rrtplot.plot_3d(g, path_hd + path_tl, obstacles)
-        return None
-    path_mid = rrt.dijkstra(g)
-    if g is not None:
-        return path_hd + path_mid + path_tl
-
-    else:
-        return None
-
-
 def path_is_colliding(path, obstacles):
     """Determines whether there is at least one node in a path of nodes that collides with an obstacle.
 
@@ -218,9 +158,7 @@ def path_is_colliding(path, obstacles):
     return False
 
 
-# TODO: First thing next semester, remove the degrees field and instead call angle conversions directly from integration
-# Bad programming practice to have two different return types (list[RRTNode] vs list[list[float]])
-def linear_rrt(start_angles, end_angles, obstacles, num_iter=15, degrees=False):
+def linear_rrt(start_angles, end_angles, obstacles, num_iter=15):
     """Generates a linear path, and maneuvers around obstacles with RRT if necessary.
 
     Args:
@@ -234,23 +172,41 @@ def linear_rrt(start_angles, end_angles, obstacles, num_iter=15, degrees=False):
         An array of RRTNode instances or float arrays representing a valid path between the start and end configurations
     """
 
-    if degrees:
-        start_angles = degrees_to_radians(start_angles)
-        end_angles = degrees_to_radians(end_angles)
-
     g = generate_linear_path(start_angles, end_angles, num_iter)
     linear_path = g[0].nodes
 
     if path_is_colliding(linear_path, obstacles):
-        new_path_hd, new_path_tl = rrt_hd_tl(linear_path, obstacles)
-        linear_path = replace_with_rrt(new_path_hd, new_path_tl, obstacles)
+        # new_path_hd, new_path_tl = rrt_hd_tl(linear_path, obstacles)
+        # linear_path = replace_with_rrt(new_path_hd, new_path_tl, obstacles)
+        g = rrt.rrt(start_angles, end_angles, obstacles, n_iter=500, radius=.07, stepSize=.3)
+        if g.success:
+            linear_path = rrt.dijkstra(g)
+        else:
+            # path = [RRTNode(start_angles), RRTNode(end_angles)]
+            # rrtplot.plot_3d(g, path, obstacles)
+            linear_path = None
 
     if linear_path is None:
         return linear_path, False
 
-    if degrees:
-        linear_path = path_radians_to_degrees(linear_path)
     return linear_path, True
+
+
+def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=15):
+    """Generates a linear path to a desired end effector position, and maneuvers around obstacles with RRT if necessary.
+
+    Args:
+        start_angles: The initial angles of the arm.
+        end_x, end_y, end_z: The desired end effector position of the arm.
+        num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
+        obstacles: An array of float arrays representing cube obstacles.
+        degrees: Whether to convert to and from degrees for motor output.
+
+    Returns:
+        An array of RRTNode instances or float arrays representing a valid path between the start and end configurations
+    """
+    end_angles = RRTNode.from_point(end_x, end_y, end_z)
+    return linear_rrt(start_angles, end_angles, obstacles, num_iter)
 
 
 def degrees_to_radians(angles: list[float]):
@@ -287,6 +243,7 @@ def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
     start_time = time.time()
     s_count = 0
     for i in range(num_trials):
+        print("Trial", i)
         start_node = RRTNode(configuration=None)
         end_node = RRTNode(configuration=None)
 
@@ -333,7 +290,6 @@ def plot_random_path(iterations, obstacles):
 
 def plot_path(start_angles, end_angles, iterations, obstacles):
     """Plots a path between two given angle configurations."""
-
     start_node = RRTNode(start_angles)
     end_node = RRTNode(end_angles)
 
@@ -343,11 +299,11 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
     path, _ = linear_rrt(start_node.angles, end_node.angles, obstacles, iterations)
 
     g = Graph(start_node.angles, end_node.angles)
-
     if path is not None:
         for node in path:
             g.add_vex(node)
         rrtplot.plot_3d(g, path, obstacles)
+
 
 
 # Constants for quick testing of certain cases
@@ -363,5 +319,8 @@ if __name__ == '__main__':
     iterations = 10
     obstacles = [[-0.1, 0.1, 0.15, 0.2, .2, .2]]
 
-    # linear_rrt_test(500, obstacles)
+    # linear_rrt_test(50, obstacles)
     plot_random_path(iterations, obstacles)
+    # plot_path([4.6916344287189435, 4.090985392727952, 2.3692680894666482, 2.0596249149355357, 4.325243067547699],
+    #           [2.998393231026213, 2.257996400624798, 3.5617493855518596, 2.0009026772223946, 4.473243223507486],
+    #           iterations, obstacles)

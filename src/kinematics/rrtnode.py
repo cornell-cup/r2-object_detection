@@ -14,6 +14,7 @@ import random
 
 # Global arm configuration
 chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
+serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1", "base_link")
 
 
 class RRTNode(object):
@@ -90,3 +91,11 @@ class RRTNode(object):
             rand_angles[a] = random.uniform(self.bounds[a][0], self.bounds[a][1])
 
         return rand_angles
+
+    @classmethod
+    def from_point(cls, point, start_config=[0, 0, 0, 0, 0]):
+        """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
+        angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
+                                                initial_state=start_config)
+
+        return RRTNode(angle_config)
