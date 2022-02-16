@@ -12,7 +12,7 @@ DEFAULT_Ks = [5]
 
 
 def find_ks(org_image: numpy.ndarray, rgbd: numpy.ndarray, pool: Pool = None,
-            ks: Iterable[int] = None, workers: int = 4, viz : bool = False):
+            ks: Iterable[int] = None, workers: int = 4, viz: bool = False):
     """
     Visualizes optimal k by running `kmeans.py` on all values of `k` in
     iterable `ks`.
