@@ -7,4 +7,5 @@ except ImportError:
         import edgedetection
     except ImportError as e:
         print('Warning: failed to import a dependency. See the below error')
-        print(e)
+        import traceback
+        traceback.print_exc()

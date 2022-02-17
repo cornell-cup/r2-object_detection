@@ -2,8 +2,15 @@ import unittest
 import cv2
 import time
 
-from src.kmeans_async import find_ks
-from src.kmeans import cv_kmeans
+
+from .context import r2_object_detection
+
+
+find_ks = r2_object_detection.kmeans_async.find_ks
+cv_kmeans = r2_object_detection.kmeans.cv_kmeans
+
+# from r2_object_detection.kmeans_async import find_ks
+# from r2_object_detection.kmeans import cv_kmeans
 
 
 class KmeansAsyncTests(unittest.TestCase):
