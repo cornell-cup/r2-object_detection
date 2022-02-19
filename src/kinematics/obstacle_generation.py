@@ -24,9 +24,9 @@ def generate_random_obstacles(num: int, axes_limits: list[float], max_side_lengt
             random.uniform(0, max_side_length)
         ]
         obs = [
-            random.uniform(-axes_limits[0], axes_limits[0] - sides[0]),
-            random.uniform(-axes_limits[1], axes_limits[1] - sides[1]),
-            random.uniform(-axes_limits[2], axes_limits[2] - sides[2]),
+            random.uniform(-axes_limits[0], axes_limits[0]),
+            random.uniform(-axes_limits[1], axes_limits[1]),
+            random.uniform(-axes_limits[2], axes_limits[2]),
             sides[0],
             sides[1],
             sides[2]
@@ -39,7 +39,7 @@ def generate_random_obstacles(num: int, axes_limits: list[float], max_side_lengt
 
 if __name__ == "__main__":
     ax = plt.axes(projection='3d')
-    obs_array = generate_random_obstacles(10, [.4, .4, .4])
+    obs_array = generate_random_obstacles(5, [.4, .4, .4])
     ax.set_xlim3d(-.4, .4)
     ax.set_ylim3d(-.4, .4)
     ax.set_zlim3d(-.4, .4)

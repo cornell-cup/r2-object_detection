@@ -6,15 +6,16 @@ held in the arm's URDF file.
 
 Written by Simon Kapen, Spring 2021.
 """
-
+from error_handling import nostderr
 import numpy as np
-import kinpy as kp
 import math
 import random
+import kinpy as kp
 
 # Global arm configuration
-chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
-serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1", "base_link")
+with nostderr():
+    chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
+    serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")
 
 
 class RRTNode(object):
@@ -99,3 +100,5 @@ class RRTNode(object):
                                                 initial_state=start_config)
 
         return RRTNode(angle_config)
+
+
