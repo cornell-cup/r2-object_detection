@@ -61,21 +61,21 @@ def viz_image(images, names):
         cv2.destroyAllWindows()
 
 def cv_kmeans(input_matrix):
-    """ Performs kmeans clustering on the input matrix. Expect the input_matrix to have dimension (k, d, c) where k
+    """ Performs kmeans clustering on the input matrix. 
+    Expect the input_matrix to have dimension (k, d, c) where k
 	and d are the image dimension and c is the number of channels in the image
     """
     
     img = input_matrix
     #img = sel_features(img)
     img = process_features(img, [1,1,1,1.5])
-    print ("image shape: ", img.shape,"image: ", img)
     c = img.shape[-1]
 
     
     twoDimg = img.reshape((-1,c))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     K=5
-    attempts = 10
+    attempts = 5
     ret, label, center = cv2.kmeans(twoDimg, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
     print ("running kmeans")
     center = np.uint8(center)
@@ -97,28 +97,89 @@ def get_depth_images(dir):
     return org_img, depth_img, rgbd
 
 
-def get_bounding_boxes(rgbd):
-    gray = cv2.cvtColor(rgbd, cv2.COLOR_BGR2GRAY)
-    # get contours
-    result = rgbd.copy()
-    thresh = cv2.threshold(gray,128,255,cv2.THRESH_BINARY)[1]
-    contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contours = contours[0] if len(contours) == 2 else contours[1]
-    for cntr in contours:
-        x,y,w,h = cv2.boundingRect(cntr)
-        cv2.rectangle(result, (x, y), (x+w, y+h), (0, 0, 255), 2)
-        print("x,y,w,h:",x,y,w,h)
+def get_bound (img):
+    print (img)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    vals = np.unique(gray)
+    print (vals)
+    for v in vals:
+        
+        tmp = gray.copy()
+        #create a mask where all values equal to v are 1 and everything else is 0
+        mask = (tmp == v).astype(int) 
+        
+        tmp[mask==0] = 0
+        tmp[mask==1] = 150
+        
+        # erosion takes the min and dilation takes the max
+        # since we want to keep white pixels we erode then dilate
+        kernel = np.ones((5,5), np.uint8)
+        img_erosion = cv2.erode(tmp, kernel, iterations=2)
+        img_dilation = cv2.dilate(img_erosion, kernel, iterations=2)
+
+        # Re update the mask using the dilated image where all 
+        # desired pixels (white) are set to 1
+        mask = (img_dilation == 150).astype(int)
+        active_px = np.argwhere(mask!=0)
+        active_px = active_px[:,[1,0]]
+        x,y,w,h = cv2.boundingRect(active_px)
+        
+        cv2.imshow("eroded", img_erosion)
+        cv2.imshow("dilated", img_dilation)
+        cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),1)
+        cv2.imshow("org", img)
+        cv2.imshow("tmp", tmp)
+        
+        cv2.waitKey()
     
+    cv2.imshow("gray", gray)
 
-    # show thresh and result    
-    cv2.imshow("bounding_box", result)
-    cv2.waitKey(0)
+"""
+tmp = gray.copy()
+        #create a mask where all values equal to v are 1 and everything else is 0
+        mask = (tmp == v).astype(int) 
+        
+        tmp[mask==0] = 0
+        tmp[mask==1] = 150
+        active_px = np.argwhere(mask!=0)
+        active_px = active_px[:,[1,0]]
+        x,y,w,h = cv2.boundingRect(active_px)
+        # erosion takes the min and dilation takes the max
+        # since we want to keep white pixels we erode then dilate
+        kernel = np.ones((5,5), np.uint8)
+        img_erosion = cv2.erode(tmp, kernel, iterations=2)
+        img_dilation = cv2.dilate(tmp, kernel, iterations=2)
+        
+        cv2.imshow("eroded", img_erosion)
+        cv2.imshow("dilated", img_dilation)
+        cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),1)
+        cv2.imshow("org", img)
+        cv2.imshow("tmp", tmp)
+"""
+"""
+kernel = np.ones((5,5), np.uint8)
+        img_dilation = cv2.dilate(gray, kernel, iterations=4)
+        img_erosion = cv2.erode(img_dilation, kernel, iterations=1)
+        cv2.imshow("eroded", img_erosion)
+        cv2.imshow("dilated", img_dilation)
 
+        tmp = img_erosion.copy()
+        mask = (tmp == v).astype(int)
+        tmp[mask==0] = 100
+        active_px = np.argwhere(mask!=0)
+        active_px = active_px[:,[1,0]]
+        x,y,w,h = cv2.boundingRect(active_px)
+        cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),1)
+"""
 
 def main():
     org_image, depth_img, rgbd = get_depth_images("04-12-13:10:36")
     result_img = cv_kmeans(rgbd)
-    get_bounding_boxes(result_img)
+    #get_bounding_boxes(result_img)
+    # cv2.imshow("Result image", result_img)
+    #get_box(result_img)
+    get_bound(result_img)
+    
     viz_image([org_image, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
 
 
