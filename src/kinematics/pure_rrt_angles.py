@@ -14,19 +14,15 @@ import math
 import numpy as np
 from random import random
 from collections import deque
-from kinematics import FK, kinematics
 import time
 import random
-import visualization
 import collision_detection
 import line
 from rrtnode import RRTNode
 from rrtgraph import Graph
 from rrtplot import plot_3d
 import kinpy as kp
-
-# Global arm configuration
-chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
+import obstacle_generation
 
 
 def arm_is_colliding(node: RRTNode, obstacles):
@@ -49,12 +45,16 @@ def nearest(g: Graph, node: RRTNode):
      Returns:
          An instance of the nearest node to the input node, as well as its index in the hashtable of the input graph.
      """
-
     nearest_node = None
     nearest_node_index = None
     min_dist = float("inf")
 
-    for idx, v in enumerate(g.nodes):
+    neighbors = enumerate(g.nodes)
+    # if len(g.nodes) > 100:
+    #     neighbors = g.spatial_hash.closest_neighbors(node)
+    
+    for idx, v in neighbors:
+        #print(v)
         dist = line.distance(v.end_effector_pos, node)
         if dist < min_dist:
             min_dist = dist
@@ -124,19 +124,18 @@ def extend_heuristic(g: Graph, rand_node: RRTNode, step_size: float, threshold: 
 def valid_configuration(angles):
     """ Returns true if the given angle configuration is a valid one. """
 
-    link_lengths = [visualization.r_1, visualization.r_2]
+    link_lengths = [.222, .3]
     #  for a given a1, an a2 is always valid. However, the a3 is not necessarily valid:
     #  use spherical coordinates for validity
     if link_lengths[0] * math.cos(angles[1]) < 0:
-        # print("not valid, first condition: {}".format(angles))
         return False
 
     if link_lengths[1] * math.cos(angles[2]) + link_lengths[0] * math.cos(angles[1]) < 0:
-        # print("not valid, second condition: {}".format(angles))
         return False
-    return True, [(angles[0] + math.pi*2) % math.pi*2, (angles[1] + math.pi*2) % math.pi*2, \
-           (angles[2] + math.pi*2) % math.pi*2, (angles[3] + math.pi*2) % math.pi*2, \
-           (angles[4] + math.pi*2) % math.pi*2]
+
+    return True, [(angles[0] + math.pi) % math.pi, (angles[1] + math.pi) % math.pi, \
+           (angles[2] + math.pi) % math.pi, (angles[3] + math.pi) % math.pi, \
+           (angles[4] + math.pi) % math.pi]
 
 
 def random_angle_config():
@@ -178,7 +177,7 @@ def true_angle_distances_arm(angles_1, angles_2):
     return new_angles
 
 
-def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.02, stepSize=.4, threshold=10):
+def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_threshold=2, stepSize=.05, heuristic_threshold=10):
     """Uses the RRT algorithm to determine a collision-free path from start_angles to end_angles.
 
     Args:
@@ -186,15 +185,17 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.02, stepSize=.4
         end_angles: An array of length 5 representing the desired angle configuration.
         obstacles: An array of float arrays representing cube obstacles.
         n_iter: Maximum number of iterations to find a path.
-        radius: Maximum distance between the end_angles and the second-to-last node in a path.
+        radius: Maximum distance between the final end effector position and the second-to-last position in a path.
+        angle_threshold: Maximum distance between the final angles and the second-to-last angles in a path.
         stepSize: Distance between nodes in the graph.
-        threshold: Maximum number of times a new node can fail to expand from any given node in the graph.
+        heuristic_threshold: Maximum number of times a new node can fail to expand from any given node in the graph.
 
     Returns:
         An instance of rrtgraph.Graph containing a list of instances of RRTNode, and a path of RRTNode instances between
         the start and end nodes, if successful.
         A boolean indicator representing whether a path was found.
     """
+
     G = Graph(start_angles, end_angles)
 
     for i in range(n_iter):
@@ -202,7 +203,7 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.02, stepSize=.4
         if arm_is_colliding(rand_node, obstacles):
             continue
 
-        if i % 2 == 0 or G.ranking == []:
+        if i % 2 == 0 or not G.ranking:
             nearest_node, nearest_node_index = nearest(G, rand_node.end_effector_pos)
             if nearest_node is None:
                 continue
@@ -222,21 +223,25 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=.02, stepSize=.4
             G.add_edge(newidx, nearest_to_new_idx, dist)
 
         else:
-            new_node, newidx = extend_heuristic(G, rand_node, stepSize, threshold, obstacles)
+            new_node, newidx = extend_heuristic(G, rand_node, stepSize, heuristic_threshold, obstacles)
             if arm_is_colliding(new_node, obstacles):
                 continue
 
         end_eff_dist_to_goal = line.distance(new_node.end_effector_pos, G.end_node.end_effector_pos)
+        angle_dist_to_goal = np.linalg.norm(true_angle_distances_arm(new_node.angles, G.end_node.angles))
 
-        if end_eff_dist_to_goal < 2 * radius and not G.success:
+        if end_eff_dist_to_goal < radius and not G.success:
             if arm_is_colliding(G.end_node, obstacles):
                 raise Exception("Adding a colliding node")
+
+            if angle_dist_to_goal > angle_threshold:
+                # create new end configuration with inverse kinematics
+                G.end_node = RRTNode.from_point(G.end_node.end_effector_pos, start_config=new_node.angles)
+
             endidx = G.add_vex(G.end_node)
             G.add_edge(newidx, endidx, end_eff_dist_to_goal)
             G.success = True
-            print("")
             break
-
     return G
 
 
@@ -272,15 +277,43 @@ def dijkstra(G):
         path.appendleft(G.nodes[curNode])
         curNode = prev[curNode]
     path.appendleft(G.nodes[curNode])
+
     return list(path)
 
 
-def rrt_graph_list(num_trials, startpos, endpos, n_iter, radius, step_size, threshold):
+def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, num_obstacles=3, bounds=[.4, .4, .4]):
     """ Generates a list of RRT graphs. """
+    print("RUNNING {t} TRIALS OF RRT WITH {o} OBSTACLES\n".format(t=num_trials, o=num_obstacles))
     graphs = []
     for i in range(0, num_trials):
-        print("Trial: ", i)
-        G = rrt(startpos, endpos, [], n_iter, radius, step_size, threshold)
+        trial_start_time = time.time()
+        obstacles = obstacle_generation.generate_random_obstacles(num_obstacles, bounds)
+        print("Trial: ", i + 1)
+        start_node = RRTNode(configuration=None)
+        end_node = RRTNode.from_point([random.uniform(-.4, .4),
+                                      random.uniform(-.4, .4),
+                                      random.uniform(-.4, .4)],
+                                      start_node.angles)
+
+        while arm_is_colliding(start_node, obstacles):
+            obstacles = obstacle_generation.generate_random_obstacles(num_obstacles, bounds)
+
+        while arm_is_colliding(end_node, obstacles):
+            end_node = RRTNode(None)
+
+        if arm_is_colliding(end_node, obstacles):
+            raise Exception("Approved a colliding node")
+
+        G = rrt(start_node.angles, end_node.angles, obstacles, n_iter=n_iter, radius=radius, stepSize=step_size,
+                heuristic_threshold=threshold)
+
+        if G.success:
+            print("SUCCESS")
+        else:
+            print("FAIL")
+
+        print("Trial time:", time.time() - trial_start_time)
+        print("")
         graphs.append(G)
 
     return graphs
@@ -306,46 +339,38 @@ def converge_test(graphs: list[Graph]):
 
 
 if __name__ == '__main__':
-
-    startpos = (0., 0., 0., 0., 0., 0.)
+    random.seed()
+    startpos = (0., 0., 0., 0., 0.)
 
     x, y, z = (.2, -.2, -.2)
 
-    angles = [round(x[0], 5) for x in kinematics(x, y, z).tolist()]
+    endpos = (1.8756746293234707, 0.24887138496377703, 0.33744701903541446, 0.15153332538250205, 0)
 
-    endpos = (math.radians(angles[1]), math.radians(angles[0]), math.radians(angles[3]), math.radians(angles[2]), 0, 0)
-
-    print("endpos: {}".format(endpos))
-    # print("angle 1: ", math.radians(angles[1]))
-    # print("angle 2: ", math.radians(angles[0]))
-    # print("angle 3: ", math.radians(angles[3]))
-    # print("angle 4: ", math.radians(angles[2]))
-    # endpos = (1, 1, 0, 1, 0, 0)
-
-    obstacles = [[-0.3, 0.0, 0.15, 0.2]]
-    # obstacles = []
-    n_iter = 800
-    radius = 0.02
-    stepSize = .5
+    # obstacles = [[-0.3, 0.0, 0.15, 0.2, 0.2, 0.2]]
+    obstacles = obstacle_generation.generate_random_obstacles(3, [.4, .4, .4])
+    n_iter = 1000
+    radius = .07
+    stepSize = .35
     threshold = 2
     start_time = time.time()
     print("RRT started")
-    G = rrt(startpos, endpos, obstacles, n_iter, radius, stepSize, threshold)
-
-    if G.success:
-        path = dijkstra(G)
-        print("\nTime taken: ", (time.time() - start_time))
-        plot_3d(G, path, obstacles)
-    else:
-        print("\nTime taken: ", (time.time() - start_time))
-        print("Path not found. :(")
-        plot_3d(G, [], obstacles)
-
-    # trials = 50
-    # graphs = rrt_graph_list(trials, startpos, endpos, n_iter, radius, stepSize, threshold)
+    # G = rrt(startpos, endpos, obstacles, n_iter, radius, stepSize=stepSize)
     #
-    # print("Average nodes generated: ", avg_nodes_test(graphs))
-    # print("Num. successes: ", converge_test(graphs))
-    # total_time = time.time() - start_time
-    # print("Time taken: ", total_time)
-    # print("Average time per graph: ", total_time / trials)
+    # if G.success:
+    #     path = dijkstra(G)
+    #     print("\nTime taken: ", (time.time() - start_time))
+    #     plot_3d(G, path, obstacles)
+    # else:
+    #     print("\nTime taken: ", (time.time() - start_time))
+    #     print("Path not found. :(")
+    #     plot_3d(G, [], obstacles)
+
+    trials = 50
+    graphs = rrt_graph_list(trials, n_iter, radius, stepSize, threshold)
+    num_successes = converge_test(graphs)
+    print("Average nodes generated: ", avg_nodes_test(graphs))
+    print("Num. successes: ", num_successes)
+    print("Convergence rate: ", num_successes / trials)
+    total_time = time.time() - start_time
+    print("Time taken: ", total_time)
+    print("Average time per graph: ", total_time / trials)
