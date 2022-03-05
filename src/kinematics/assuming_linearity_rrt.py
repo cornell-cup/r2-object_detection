@@ -16,6 +16,7 @@ import collision_detection as cd
 import rrtplot
 import time
 import random
+import collision_detection
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 
@@ -311,6 +312,31 @@ RRT_JUMP_SEED = 6869
 RRT_TEST_SEED = 120938914
 CLEAR_PATH_TEST_SEED = 20
 INCORRECT_END_SEED = 420
+
+def path_optimizer(path,prism):
+    """
+
+    Args:
+        path: refers to the output of dijkstra method from pure_rrt_angles,
+              a list of rrtnodes
+        prism: the object to be avoided, given in the form
+               [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
+
+    Returns:
+        A new list with some rrtnodes removed where linear paths can be created.
+        list length <= path length
+
+    """
+    optimizedList = path.copy()
+    # To save time we will only check every other node
+    for i in range(0, len(path)-2, 2):
+        p1 = path[i].end_effector_pos
+        p2 = path[i+2].end_effector_pos
+        line_seg = ([p1[0],p1[1],p1[2],p2[0],p2[1],p2[2]])
+        if collision_detection.newLineCollider(line_seg, prism) == False:
+            optimizedList.remove(path[i+1])
+    return optimizedList
+
 
 if __name__ == '__main__':
     random.seed(a=RRT_JUMP_SEED)
