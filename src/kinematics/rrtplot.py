@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 import collision_detection
+from rrtnode import RRTNode
+
 """
 Written by Simon Kapen, Spring 2021.
 Handles all visualizations of multiple arm poses. 
@@ -105,3 +107,20 @@ def plot_arm_configs(ax, path, obstacles):
         ax.plot(v4[0], v4[1], zs=v4[2], color=color)
 
     #ax.text(-0.3, -0.3, 0.4, "plot text test")
+
+
+if __name__ == "__main__":
+    path = []
+    for i in range(500):
+        node = RRTNode(None)
+        path.append(node)
+
+    ax = plt.axes(projection='3d')
+    plot_arm_configs(ax, path, [])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_xlim3d(-.4, .4)
+    ax.set_ylim3d(-.4, .4)
+    ax.set_zlim3d(-.4, .4)
+    plt.show()
