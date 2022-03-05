@@ -35,6 +35,45 @@ def sel_features(input_matrix):
     return coord_list
 
 
+def preprocess_im(depth_image, color_matrix):
+    """ Apply a mask on the depth map. Basically you look at the pixels
+    that have a high depth value then color those parts super white"""
+    
+    max_depth = np.min(depth_image) #get max depth value of scene
+    pct_depth = 0.9
+    thresh = 110 # min(max_depth * (1+pct_depth)+10, 50) #set thresh, check if min or max
+
+    mask = (depth_image > thresh).astype(int) # mask is 0 if depth val > thresh
+    #color_matrix[mask==0] = [255, 255, 255]
+    # gray = cv2.cvtColor(color_matrix, cv2.COLOR_BGR2GRAY)
+    # thresh = cv2.threshold(gray, 11, 255, cv2.THRESH_BINARY)[1]
+    # cv2.imshow("gray", gray)
+    # cv2.imshow("depth",depth_image)
+    # cv2.imshow("color",color_matrix)
+
+    return color_matrix
+    
+def unique_count_app(a):
+    colors, count = np.unique(a.reshape(-1,a.shape[-1]), axis=0, return_counts=True)
+    return colors[count.argmax()]
+
+def postprocess_im(depth_image, segmentation):
+    """Identify points that violate the depth image and identify the 
+    labels of the pixels """
+    max_depth = np.min(depth_image) #get max depth value of scene
+    pct_depth = 0.9
+    thresh = 110 # min(max_depth * (1+pct_depth)+10, 50) #set thresh, check if min or max
+
+    mask = (depth_image > thresh).astype(int) # mask is 0 if depth val > thresh
+    # get mode of labels
+    violated_pixels = segmentation[mask==0]
+    common_label = unique_count_app(violated_pixels)
+    print(common_label)
+    print(segmentation)
+    print(segmentation[segmentation==common_label][0])
+    #cv2.imshow('seg', segmentation)
+    #cv2.waitKey()
+    sys.exit()
 
 
 def viz_image(images, names):
@@ -67,7 +106,7 @@ def cv_kmeans(input_matrix):
     img = input_matrix
     #img = sel_features(img)
 
-    img = process_features(img, [1,1,1,1.2])
+    img = process_features(img, [1,1,1,1.5])
     print ("image shape: ", img.shape,"image: ", img)
     c = img.shape[-1]
     twoDimg = img.reshape((-1,c))
@@ -75,7 +114,7 @@ def cv_kmeans(input_matrix):
     print ("running kmeans")
     distortions = []
     labels=[]
-    K_max=5
+    K_max=6
     for k in range(1,K_max):
         attempts = 10
         ret, label, center = cv2.kmeans(twoDimg, k, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
@@ -95,7 +134,7 @@ def cv_kmeans(input_matrix):
             idx = i
             break
     print("k: ", idx+1)
-    res = center[labels[idx].flatten()]
+    res = center[labels[4].flatten()]
     result_image = res.reshape((img.shape))
     cv2.imshow("res",result_image)
     cv2.waitKey()
@@ -105,21 +144,27 @@ def cv_kmeans(input_matrix):
 def get_depth_images(dir):
     path = os.path.join(os.getcwd(), "kmeans_test_imgs", dir)
     org_img = image.imread(path+"/Orignal.jpg")
-
+    RGB_img = cv2.cvtColor(org_img, cv2.COLOR_BGR2RGB)
     depth_img = cv2.imread(path+"/Depth Frame.jpg",0)
-    b, g, r = cv2.split(org_img)
-    depth_img = depth_img.astype('float32')
-    r, g, b = r.astype('float32'), g.astype('float32'), b.astype('float32')
-    rgbd = cv2.merge([r, g, b, depth_img])
     
-    return org_img, depth_img, rgbd
+    
+    return RGB_img, depth_img
 
+def create_rgbd(rgb_img, depth_img):
+    b, g, r = cv2.split(rgb_img)
+    d = depth_img.copy().astype('float32')
+    r, g, b = r.astype('float32'), g.astype('float32'), b.astype('float32')
+    rgbd = cv2.merge([r, g, b, d])
+    
+    return rgbd
 
 def get_bound (img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     vals = np.unique(gray)
+    print (vals)
     for v in vals:
-        
+        if v == 255:
+            continue
         tmp = gray.copy()
         #create a mask where all values equal to v are 1 and everything else is 0
         mask = (tmp == v).astype(int) 
@@ -152,13 +197,21 @@ def get_bound (img):
 
 
 
+
 def main():
-    org_image, depth_img, rgbd = get_depth_images("04-12-15:49:55")
-    cv2.imshow("org_im", org_image)
+    print ("Hello")
+    org_img, depth_img = get_depth_images("04-12-13:10:36")
+    rgb_img = preprocess_im(depth_img, org_img)
+    rgbd = create_rgbd(rgb_img, depth_img)
+    
+
+
     result_img = cv_kmeans(rgbd)
+    postprocess_im(depth_img, result_img)
+
     get_bound(result_img)
     
-    viz_image([org_image, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
+    viz_image([org_img, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
 
 
 
