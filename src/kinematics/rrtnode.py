@@ -6,14 +6,16 @@ held in the arm's URDF file.
 
 Written by Simon Kapen, Spring 2021.
 """
-
+from error_handling import nostderr
 import numpy as np
-import kinpy as kp
 import math
 import random
+import kinpy as kp
 
 # Global arm configuration
-chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
+with nostderr():
+    chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
+    serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")
 
 
 class RRTNode(object):
@@ -33,16 +35,15 @@ class RRTNode(object):
         angles: A np array listing the joint angles in radians.
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
+    a0_bounds = (3 * math.pi / 2, 4.9 * math.pi / 2)
+    a1_bounds = (-math.pi / 2, math.pi / 2)
+    a2_bounds = (0, 2 * math.pi)
+    a3_bounds = (0, 2 * math.pi)
+    a4_bounds = (0, 2 * math.pi)
+
+    bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
     def __init__(self, configuration: list[float]):
-        a0_bounds = (math.pi / 2, 3 * math.pi / 2)
-        a1_bounds = (math.pi / 2, 3 * math.pi / 2)
-        a2_bounds = (math.pi / 2, 3 * math.pi / 2)
-        a3_bounds = (math.pi / 2, 3 * math.pi / 2)
-        a4_bounds = (math.pi / 2, 3 * math.pi / 2)
-
-        self.bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
-
         if configuration is None:
             self.angles = self.random_angle_config()
         else:
@@ -90,3 +91,28 @@ class RRTNode(object):
             rand_angles[a] = random.uniform(self.bounds[a][0], self.bounds[a][1])
 
         return rand_angles
+
+    def valid_configuration(self):
+        """Determines if the current arm configuration of the node is a valid one.
+
+         Returns True if none of the joints cross into the negative Y-axis.
+         TODO: also return true if the bounds are correct.
+         """
+
+        for i in range(0, len(self.joint_positions)):
+            if self.joint_positions[i][1] < self.joint_positions[0][1]:
+                return False
+
+        if not self.angles_within_bounds(self.angles):
+            False
+        return True
+
+    @classmethod
+    def from_point(cls, point, start_config=[0, 0, 0, 0, 0]):
+        """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
+        angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
+                                                initial_state=start_config)
+
+        return RRTNode(angle_config)
+
+
