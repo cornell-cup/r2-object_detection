@@ -39,12 +39,12 @@ def preprocess_im(depth_image, color_matrix):
     """ Apply a mask on the depth map. Basically you look at the pixels
     that have a high depth value then color those parts super white"""
     
-    max_depth = np.min(depth_image) #get max depth value of scene
-    pct_depth = 0.9
-    thresh = 110 # min(max_depth * (1+pct_depth)+10, 50) #set thresh, check if min or max
+    # max_depth = np.min(depth_image) #get max depth value of scene
+    # pct_depth = 0.9
+    # thresh = 110 # min(max_depth * (1+pct_depth)+10, 50) #set thresh, check if min or max
 
-    mask = (depth_image > thresh).astype(int) # mask is 0 if depth val > thresh
-    #color_matrix[mask==0] = [255, 255, 255]
+    # mask = (depth_image > thresh).astype(int) # mask is 0 if depth val > thresh
+    # color_matrix[mask==0] = [255, 255, 255]
     # gray = cv2.cvtColor(color_matrix, cv2.COLOR_BGR2GRAY)
     # thresh = cv2.threshold(gray, 11, 255, cv2.THRESH_BINARY)[1]
     # cv2.imshow("gray", gray)
@@ -57,23 +57,35 @@ def unique_count_app(a):
     colors, count = np.unique(a.reshape(-1,a.shape[-1]), axis=0, return_counts=True)
     return colors[count.argmax()]
 
-def postprocess_im(depth_image, segmentation):
+def postprocess_im(depth_img, segmentation, labelled_img):
     """Identify points that violate the depth image and identify the 
-    labels of the pixels """
-    max_depth = np.min(depth_image) #get max depth value of scene
-    pct_depth = 0.9
-    thresh = 110 # min(max_depth * (1+pct_depth)+10, 50) #set thresh, check if min or max
+    labels of the pixels. If >50% of pixels of that label violate the depth 
+    threshold then remove it from the image """
 
-    mask = (depth_image > thresh).astype(int) # mask is 0 if depth val > thresh
-    # get mode of labels
-    violated_pixels = segmentation[mask==0]
-    common_label = unique_count_app(violated_pixels)
-    print(common_label)
-    print(segmentation)
-    print(segmentation[segmentation==common_label][0])
+
+    """
+    for each label:
+        get all pixels associated with label. Call this set P
+        for each pixel p in P, check if p's depth value is smaller than the threshold
+        if the number of violating pixels in P is greater than 50% of |P|, white out the segmentation
+     """
+
+    thresh = 50
+    labels = np.unique(labelled_img)
+    labelled_img = labelled_img.reshape(depth_img.shape)
+    for label in labels:
+        coords = np.where(labelled_img == label)
+        violated_px = labelled_img[(labelled_img==label) & (depth_img < thresh)]
+        if len(violated_px) > 0.5 * len(labelled_img):
+            print ("label ", label,"violated")
+            segmentation[labelled_img==label] = [255,255,255,255]
+
+    cv2.imshow('new segmentation', segmentation)
+    cv2.waitKey()
+    # print(segmentation)
+    # print(segmentation[segmentation==common_label][0])
     #cv2.imshow('seg', segmentation)
     #cv2.waitKey()
-    sys.exit()
 
 
 def viz_image(images, names):
@@ -107,7 +119,6 @@ def cv_kmeans(input_matrix):
     #img = sel_features(img)
 
     img = process_features(img, [1,1,1,1.5])
-    print ("image shape: ", img.shape,"image: ", img)
     c = img.shape[-1]
     twoDimg = img.reshape((-1,c))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
@@ -134,11 +145,10 @@ def cv_kmeans(input_matrix):
             idx = i
             break
     print("k: ", idx+1)
-    res = center[labels[4].flatten()]
+    # why is it 4?
+    res = center[labels[idx].flatten()]
     result_image = res.reshape((img.shape))
-    cv2.imshow("res",result_image)
-    cv2.waitKey()
-    return result_image
+    return result_image, labels[idx]
 
 
 def get_depth_images(dir):
@@ -199,15 +209,15 @@ def get_bound (img):
 
 
 def main():
-    print ("Hello")
-    org_img, depth_img = get_depth_images("04-12-13:10:36")
+    org_img, depth_img = get_depth_images("04-12-14:49:33")
     rgb_img = preprocess_im(depth_img, org_img)
     rgbd = create_rgbd(rgb_img, depth_img)
     
 
 
-    result_img = cv_kmeans(rgbd)
-    postprocess_im(depth_img, result_img)
+    result_img, labels = cv_kmeans(rgbd)
+    postprocess_im(depth_img, result_img, labels)
+    
 
     get_bound(result_img)
     
