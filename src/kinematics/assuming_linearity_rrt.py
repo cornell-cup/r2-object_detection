@@ -16,7 +16,6 @@ import collision_detection as cd
 import rrtplot
 import time
 import random
-import collision_detection
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 
