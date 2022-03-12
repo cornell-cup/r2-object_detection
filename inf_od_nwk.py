@@ -30,7 +30,7 @@ import numpy as np
 from src.camera import Camera
 from src.projections import *
 from networking.Client import Client
-import arm.publish_arm_updates as arm 
+import src.arm.publish_arm_updates as arm 
 import kinematics.assuming_linearity_rrt as alr 
 
 #  this is a test comment
@@ -44,7 +44,6 @@ HEIGHT = 480
 
 if __name__ == '__main__':
     detections = []
-    robot = Client()
     with Camera(WIDTH, HEIGHT) as cam:
         for i in range(5): 
             try:
@@ -143,8 +142,7 @@ if __name__ == '__main__':
             avg_target = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
                           for i in range(length(gripper_pt1_arm))]
             endpos = RRTNode.from_point(avg_target, startpos)
-            arm_config = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000):
-            
+            arm_config = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
             # send arm_config to the arm to move
             arm.writeToSerial(arm_config)
 
