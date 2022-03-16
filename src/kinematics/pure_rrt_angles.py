@@ -23,6 +23,7 @@ from rrtgraph import Graph
 from rrtplot import plot_3d
 import kinpy as kp
 import obstacle_generation
+from typing import List
 
 
 def arm_is_colliding(node: RRTNode, obstacles):
@@ -348,7 +349,7 @@ def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num
     return graphs
 
 
-def avg_nodes_test(graphs: list[Graph]):
+def avg_nodes_test(graphs: List[Graph]):
     """ The average amount of nodes generated until the end goal is reached. """
     total_nodes = 0
     for i in range(0, len(graphs)):
@@ -357,7 +358,7 @@ def avg_nodes_test(graphs: list[Graph]):
     return total_nodes/len(graphs)
 
 
-def converge_test(graphs: list[Graph]):
+def converge_test(graphs: List[Graph]):
     """ Counts the amount of successes for a list of graphs. """
     num_success = 0
     for i in range(0, len(graphs)):

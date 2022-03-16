@@ -26,12 +26,17 @@ import jetson.utils
 import math
 import cv2
 import numpy as np
+import sys
+
+sys.path.insert(1, '/usr/local/lib/python3.6')
+sys.path.insert(2, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics')
+sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src')
 
 from src.camera import Camera
 from src.projections import *
 from networking.Client import Client
 import src.arm.publish_arm_updates as arm 
-import kinematics.assuming_linearity_rrt as alr 
+import src.kinematics.assuming_linearity_rrt as alr 
 
 #  this is a test comment
 net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)

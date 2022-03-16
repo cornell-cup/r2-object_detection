@@ -11,11 +11,14 @@ import numpy as np
 import math
 import random
 import kinpy as kp
+from typing import List
+
+URDF_FILE="/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics/models/SimpleArmModelforURDF.urdf"
 
 # Global arm configuration
 with nostderr():
-    chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
-    serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")
+    chain = kp.build_chain_from_urdf(open(URDF_FILE).read())
+    serial_chain = kp.build_serial_chain_from_urdf(open(URDF_FILE).read(), "hand_1",  "base_link")
 
 
 class RRTNode(object):
@@ -43,7 +46,7 @@ class RRTNode(object):
 
     bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
-    def __init__(self, configuration: list[float]):
+    def __init__(self, configuration: List[float]):
         if configuration is None:
             self.angles = self.random_angle_config()
         else:

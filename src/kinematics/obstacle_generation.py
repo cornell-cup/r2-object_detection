@@ -1,9 +1,10 @@
 import random
 import matplotlib.pyplot as plt
 import collision_detection
+from typing import List
 
 
-def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side_length=.2):
+def generate_random_obstacles(num: int, axes_limits: List[List[float]], max_side_length=.2):
     """Randomly generates cuboid obstacles for an environment.
 
     Args:

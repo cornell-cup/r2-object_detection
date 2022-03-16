@@ -18,6 +18,7 @@ import time
 import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
+from typing import List
 
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
@@ -209,7 +210,7 @@ def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=1
     return linear_rrt(start_angles, end_angles, obstacles, num_iter)
 
 
-def degrees_to_radians(angles: list[float]):
+def degrees_to_radians(angles: List[float]):
     """Converts an input array in degrees into an output array in radians."""
     radians = [0 for a in range(6)]
     for ind, val in enumerate(angles):
@@ -228,7 +229,7 @@ def radians_to_degrees(rrtnode):
     return degrees
 
 
-def path_radians_to_degrees(path: list[RRTNode]):
+def path_radians_to_degrees(path: List[RRTNode]):
     """Converts a path of RRTNode instances into a path of degree arrays to be used in arm encoder movements."""
     return list(map(radians_to_degrees, path))
 
