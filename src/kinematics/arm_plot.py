@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 import collision_detection
-from rrtnode import RRTNode
+from arm_node import Node
 
 """
 Written by Simon Kapen, Spring 2021.
@@ -112,7 +112,7 @@ def plot_arm_configs(ax, path, obstacles):
 if __name__ == "__main__":
     path = []
     for i in range(50):
-        node = RRTNode(None)
+        node = Node(None)
         path.append(node)
 
     ax = plt.axes(projection='3d')

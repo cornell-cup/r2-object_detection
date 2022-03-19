@@ -6,7 +6,7 @@ held in the arm's URDF file.
 
 Written by Simon Kapen, Spring 2021.
 """
-from error_handling import nostderr
+from util.error_handling import nostderr
 import numpy as np
 import math
 import random
@@ -18,7 +18,7 @@ with nostderr():
     serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")
 
 
-class RRTNode(object):
+class Node(object):
     """
     A node generated in a RRT graph.
     Args:
@@ -40,9 +40,6 @@ class RRTNode(object):
     a2_bounds = (0, 2 * math.pi)
     a3_bounds = (0, 2 * math.pi)
     a4_bounds = (0, 2 * math.pi)
-    # a2_bounds = (2 * math.pi, 0)
-    # a3_bounds = (2 * math.pi, 0)
-    # a4_bounds = (2 * math.pi, 0)
 
     bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
@@ -78,8 +75,6 @@ class RRTNode(object):
         self.fail_count = self.fail_count + 1
 
     def angle_within_bounds(self, angle, joint):
-        # if not (0 < angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi):
-        #     print("{a} not in bounds with {b1}, {b2}".format(a=angle, b1=self.bounds[joint][0], b2=self.bounds[joint][1]))
         return (0 < angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi)
 
     def angles_within_bounds(self, angles):
@@ -118,7 +113,7 @@ class RRTNode(object):
         angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
                                                 initial_state=start_config)
 
-        return RRTNode(angle_config)
+        return Node(angle_config)
 
 
 def random_angle(left_bound, right_bound):

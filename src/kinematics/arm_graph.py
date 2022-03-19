@@ -1,6 +1,6 @@
-from rrtnode import RRTNode
+from arm_node import Node
 from spatial_hashing import SpatialHash
-import line
+from util import line
 
 class Graph:
     """An RRT graph.
@@ -20,8 +20,8 @@ class Graph:
         sx, sy, sz: The distance between the start and end nodes.
     """
     def __init__(self, start_angles, end_angles):
-        self.start_node = RRTNode(start_angles)
-        self.end_node = RRTNode(end_angles)
+        self.start_node = Node(start_angles)
+        self.end_node = Node(end_angles)
 
         #self.nodes = [self.start_node]
 

@@ -7,7 +7,7 @@ end configuration. This is done by growing a tree pseudo-randomly, and returning
 passed to the ECE subteam.
 
 Written by Simon Kapen and Alison Duan, Spring 2021.
-Dijkstra algorithm and RRTGraph structure adapted from Fanjin Zeng on github, 2019.
+Dijkstra algorithm and Graph structure adapted from Fanjin Zeng on github, 2019.
 """
 
 import math
@@ -17,19 +17,18 @@ from collections import deque
 import time
 import random
 import collision_detection
-import line
-from rrtnode import RRTNode
-from rrtgraph import Graph
-from rrtplot import plot_3d
-import kinpy as kp
+from util import line
+from arm_node import Node
+from arm_graph import Graph
 import obstacle_generation
+from util.angles import true_angle_distances_arm
 
 
-def arm_is_colliding(node: RRTNode, obstacles):
+def arm_is_colliding(node: Node, obstacles):
     """Checks if an arm configuration is colliding with any obstacle in the c-space.
 
     Args:
-        node: An instance of rrtnode.RRTNode.
+        node: An instance of arm_node.Node.
         obstacles: An array of float arrays representing obstacles.
     """
 
@@ -39,7 +38,7 @@ def arm_is_colliding(node: RRTNode, obstacles):
     return False
 
 
-def nearest(g: Graph, node: RRTNode):
+def nearest(g: Graph, node: Node):
     """ Finds the nearest node to the input node in cartesian space, by end effector position.
 
      Returns:
@@ -73,7 +72,7 @@ def steer(rand_angles, near_angles, step_size):
         step_size: The distance from the nearest node for the new node to be generated.
 
     Returns:
-        An instance of RRTNode representing the new node of the tree.
+        An instance of Node representing the new node of the tree.
     """
 
     dirn = true_angle_distances_arm(np.array(near_angles), np.array(rand_angles))
@@ -82,17 +81,17 @@ def steer(rand_angles, near_angles, step_size):
 
     new_angles = (near_angles[0] + dirn[0], near_angles[1] + dirn[1], near_angles[2] + dirn[2],
                   near_angles[3] + dirn[3], near_angles[4] + dirn[4])
-    return RRTNode(new_angles)
+    return Node(new_angles)
 
 
-def extend_heuristic(g: Graph, rand_node: RRTNode, step_size: float, threshold: int, obstacles):
+def extend_heuristic(g: Graph, rand_node: Node, step_size: float, threshold: int, obstacles):
     """Extends RRT T from the node closest to the end node, in the direction of rand_node. If the node
     being extended from has failed too many times (generates an colliding configuration or does not get closer
     to the end node), it is removed from the ranking.
 
     Arguments:
         g: A rrtgraph.Graph instance.
-        rand_node: An RRTNode instance representing the randomly generated node.
+        rand_node: An Node instance representing the randomly generated node.
         step_size: The distance from the nearest node for the new node to be generated.
         threshold: The maximum amount of extension failures per node.
         obstacles: An array of float arrays representing obstacles.
@@ -142,38 +141,6 @@ def valid_configuration(angles):
                   (angles[4] + math.pi) % math.pi]
 
 
-def random_angle_config(arm_angle_bounds):
-    """ Returns a set of random angles within a range of the goal state angles. """
-    rand_angles = [0, 0, 0, 0, 0]
-
-    for a in range(5):
-        rand_angles[a] = random.uniform(arm_angle_bounds[a][0], arm_angle_bounds[a][1])
-
-    return rand_angles
-
-
-def true_angle_distance(angle_1, angle_2):
-    """ Returns [angle_2] - [angle_1], accounting for angle wrap.
-            Example: true_angle_distance(PI/6, 11PI/6) is PI/3, not 5PI/3. """
-
-    difference = angle_2 - angle_1
-    if difference > math.pi:
-        difference = -(2 * math.pi - angle_2 + angle_1)
-    elif difference < -math.pi:
-        difference = 2 * math.pi - angle_1 + angle_2
-
-    return difference
-
-
-def true_angle_distances_arm(angles_1, angles_2):
-    """ Returns [angles_2] - [angles_1], accounting for angle wrap. Calculates each angle in an arm configuration.
-        Example: true_angle_distance(PI/6, 11PI/6) is PI/3, not 5PI/3. """
-    new_angles = []
-
-    for angle1, angle2 in zip(angles_1, angles_2):
-        new_angles.append(true_angle_distance(angle1, angle2))
-
-    return new_angles
 
 
 def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_threshold=1, stepSize=.05,
@@ -191,14 +158,14 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
         heuristic_threshold: Maximum number of times a new node can fail to expand from any given node in the graph.
 
     Returns:
-        An instance of rrtgraph.Graph containing a list of instances of RRTNode, and a path of RRTNode instances between
+        An instance of rrtgraph.Graph containing a list of instances of Node, and a path of Node instances between
         the start and end nodes, if successful.
         A boolean indicator representing whether a path was found.
     """
     G = Graph(start_angles, end_angles)
 
     for i in range(n_iter):
-        rand_node = RRTNode(None)
+        rand_node = Node(None)
         if arm_is_colliding(rand_node, obstacles):
             continue
 
@@ -232,7 +199,7 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
             desired_position = G.end_node.end_effector_pos
             if angle_dist_to_goal > angle_threshold:
                 # tries to get a closer arm configuration to the second-to-last arm configration with inverse kinematics
-                G.end_node = RRTNode.from_point(desired_position, start_config=new_node.angles)
+                G.end_node = Node.from_point(desired_position, start_config=new_node.angles)
 
             endidx = G.add_vex(G.end_node)
             G.add_edge(newidx, endidx, end_eff_dist_to_goal)
@@ -282,13 +249,13 @@ def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
     """Generates a start environment for a run of RRT.
 
      Returns:
-         An RRTNode representing a valid start configuration.
-         An RRTNode representing a valid end configuration.
+         An Node representing a valid start configuration.
+         An Node representing a valid end configuration.
          A set of [num_obstacles] obstacles that do not collide with the start or end configurations.
     """
 
-    random_start_node = RRTNode(configuration=None)
-    random_end_node = RRTNode.from_point([random.uniform(bounds[0][0], bounds[0][1]),
+    random_start_node = Node(configuration=None)
+    random_end_node = Node.from_point([random.uniform(bounds[0][0], bounds[0][1]),
                                           random.uniform(bounds[1][0], bounds[1][1]),
                                           random.uniform(bounds[2][0], bounds[2][1])],
                                          random_start_node.angles)
@@ -296,7 +263,7 @@ def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
     max_tries = 10
     tries = 1
     while not random_end_node.valid_configuration():
-        random_end_node = RRTNode.from_point([random.uniform(bounds[0][0], bounds[0][1]),
+        random_end_node = Node.from_point([random.uniform(bounds[0][0], bounds[0][1]),
                                               random.uniform(bounds[1][0], bounds[1][1]),
                                               random.uniform(bounds[2][0], bounds[2][1])], random_start_node.angles)
         tries += 1
@@ -310,7 +277,7 @@ def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
                                                                           max_side_length=obstacle_size)
 
     while arm_is_colliding(random_start_node, current_obstacles) or not random_start_node.valid_configuration():
-        random_start_node = RRTNode(None)
+        random_start_node = Node(None)
 
     print("start angles:", random_start_node.angles)
     print("end angles:", random_end_node.angles)

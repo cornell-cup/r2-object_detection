@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import random
-from rrtnode import RRTNode
+from arm_node import Node
 
 """******************************************************************** ********
 A script to configure a robot arm and collisions (represented as cubes).
@@ -109,7 +109,7 @@ def plot_arm(ax, node, line_label):
 
     INSTANCE ARGUMENTS:
     ax         [matplotlib.axes] : figure with 3D axes.
-    node        [RRTNode]        : robot arm configuration.
+    node        [Node]        : robot arm configuration.
     line_label [str]             : label for the arm plot.
     """
     points = node.joint_positions
@@ -192,7 +192,7 @@ def arm_is_colliding(node, cube):
     Return True if the arm is colliding with the cube, else False.
 
     INSTANCE ARGUMENTS:
-    node  [RRTNode] : Instance of RRTNode representing a robot arm configuration.
+    node  [Node] : Instance of Node representing a robot arm configuration.
     cube [list]     : specifications of the cube formatted as
                       [<x coord.>, <y coord.>, <z coord.>, <side length>].
     """
@@ -209,7 +209,7 @@ def arm_is_colliding_prism(node, prism):
     Return True if the arm is colliding with the cube, else False.
 
     INSTANCE ARGUMENTS:
-    node  [RRTNode] : Instance of RRTNode representing a robot arm configuration.
+    node  [Node] : Instance of Node representing a robot arm configuration.
     cube [list]     : specifications of the cube formatted as
                       [<x coord.>, <y coord.>, <z coord.>, <side length>].
     """
@@ -443,7 +443,7 @@ def main():
         plot_lines(ax, xs, ys, zs, None)
     """
     # Create a random arm
-    arm = RRTNode(None)
+    arm = Node(None)
     plot_arm(ax,arm,None)
     class Index:
         def draw(self, event):
