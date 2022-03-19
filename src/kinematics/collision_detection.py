@@ -2,11 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import random
-from mpl_toolkits.mplot3d import axes3d
-import sys
 from rrtnode import RRTNode
 
-"""****************************************************************************
+"""******************************************************************** ********
 A script to configure a robot arm and collisions (represented as cubes).
 Run the script to see an example visualization of the arm and an obstruction.
 Run the script with argument "rand" to see a random configuration and test
@@ -50,7 +48,7 @@ def plot_linear_prism(ax, prism, color):
 
         INSTANCE ARGUMENTS:
         ax   [matplotlib.axes]  : figure with 3D axes.
-        prism [list]            : specifications of the cube formatted as
+        prism [list]            : specifications of the prism formatted as
                                   [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
         color                   : A color for the prism ('red', 'blue', 'green')
         """
@@ -378,6 +376,27 @@ def checkCollision(prism, rrtNode):
     return False
 
 
+def checkCollisionMultiplePrisms(prism_list, rrtNode_list):
+    # This method checks if the passed list of rrtnodes collides at any point
+    # with any prism identified in the prism list.
+    # Returns TRUE if a collision is detected, otherwise FALSE.
+    for i in prism_list:
+        for j in rrtNode_list:
+            if(checkCollision(prism_list[i],rrtNode_list[j])):
+                return True
+    return False
+
+
+def singleNodeCollisionCheck(prism_list, rrtNode):
+    # This method checks if the rrt node passed collides with
+    # any of the prisms in prism_list.
+    # Returns TRUE if a collision is detected, otherwise FALSE.
+    for i in prism_list:
+        if(checkCollision(prism_list[i],rrtNode)):
+            return True
+    return False
+
+
 def main():
     """
     Places a prism randomly in 3D space, and draws a larger prism around it that represents it's
@@ -397,7 +416,7 @@ def main():
     # create the prism to be avoided (hard coded)
     lim = .3
     location = random.uniform(-lim,lim)
-    prism = ([location, location, location, .2, .3, .4])
+    prism = ([.3, .3, .3, .2, .3, .4])
     exoPrism = ([prism[0]-.05,prism[1]-.05,prism[2]-.05,prism[3]+.1,prism[4]+.1,prism[5]+.1])
     plot_linear_prism(ax, prism, 'blue')
     plot_linear_prism(ax, exoPrism, 'red')
@@ -447,7 +466,7 @@ if __name__ == "__main__":
     # Broken, uses deprecated class NLinkArm
     # fig = plt.figure()
     # ax = plt.axes(projection="3d")
-    cube = [-0.1, 0.1, 0.15, 0.15]
+    # cube = [-0.1, 0.1, 0.15, 0.15]
     # plot_linear_cube(ax, cube)
     # arm = NLinkArm(2, np.array([0.222, 0.3]))
     # print("points, ", len(arm.get_points()))
