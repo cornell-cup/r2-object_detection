@@ -268,7 +268,7 @@ def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
     print("average time per trial: {}".format((time.time() - start_time) / num_trials))
 
 
-def plot_random_path(iterations, obstacles):
+def plot_random_path(iterations, num_obstacles):
     """Plots a random path between random start and end configurations.
 
     Args:
@@ -277,13 +277,7 @@ def plot_random_path(iterations, obstacles):
         arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
     """
 
-    start_node = RRTNode(None)
-    end_node = RRTNode(None)
-
-    while not valid_path_configuration(start_node, obstacles):
-        start_node = RRTNode(None)
-    while not valid_path_configuration(end_node, obstacles):
-        end_node = RRTNode(None)
+    start_node, end_node, obstacles = rrt.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
 
     plot_path(start_node.angles, end_node.angles, iterations, obstacles)
 
@@ -313,14 +307,14 @@ CLEAR_PATH_TEST_SEED = 20
 INCORRECT_END_SEED = 420
 
 if __name__ == '__main__':
-    random.seed(a=RRT_JUMP_SEED)
+    # random.seed(a=RRT_JUMP_SEED)
     np.set_printoptions(precision=20)
     trials = 100
     iterations = 10
-    obstacles = [[-0.1, 0.1, 0.15, 0.2, .2, .2]]
+    num_obstacles = 5
 
     # linear_rrt_test(50, obstacles)
-    plot_random_path(iterations, obstacles)
+    plot_random_path(iterations, num_obstacles)
     # plot_path([4.6916344287189435, 4.090985392727952, 2.3692680894666482, 2.0596249149355357, 4.325243067547699],
     #           [2.998393231026213, 2.257996400624798, 3.5617493855518596, 2.0009026772223946, 4.473243223507486],
     #           iterations, obstacles)

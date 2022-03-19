@@ -41,7 +41,7 @@ def plot_3d(G, path, obstacles):
 
     # obstacles
     for obs in obstacles:
-        collision_detection.plot_linear_prism(ax, obs)
+        collision_detection.plot_linear_prism(ax, obs, 'blue')
         # collision_detection.plot_linear_cube(ax, obs)
 
     ax.set_xlabel('X')
@@ -111,7 +111,7 @@ def plot_arm_configs(ax, path, obstacles):
 
 if __name__ == "__main__":
     path = []
-    for i in range(500):
+    for i in range(50):
         node = RRTNode(None)
         path.append(node)
 

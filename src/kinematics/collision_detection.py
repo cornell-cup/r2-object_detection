@@ -220,7 +220,7 @@ def arm_is_colliding_prism(node, prism):
     print(points)
     for i in range(len(node.angles) - 1):
         line = [points[i], points[i + 1]]
-        if line_is_colliding(line, prism):
+        if newLineCollider(line, prism):
             return True
     return False
 

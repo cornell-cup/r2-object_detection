@@ -35,11 +35,14 @@ class RRTNode(object):
         angles: A np array listing the joint angles in radians.
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
-    a0_bounds = (3 * math.pi / 2, 4.9 * math.pi / 2)
-    a1_bounds = (-math.pi / 2, math.pi / 2)
+    a0_bounds = (3 * math.pi / 2, .9 * math.pi / 2)
+    a1_bounds = (3.4 * math.pi / 2, math.pi / 2)
     a2_bounds = (0, 2 * math.pi)
     a3_bounds = (0, 2 * math.pi)
     a4_bounds = (0, 2 * math.pi)
+    # a2_bounds = (2 * math.pi, 0)
+    # a3_bounds = (2 * math.pi, 0)
+    # a4_bounds = (2 * math.pi, 0)
 
     bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
@@ -75,7 +78,9 @@ class RRTNode(object):
         self.fail_count = self.fail_count + 1
 
     def angle_within_bounds(self, angle, joint):
-        return 0 < angle < self.bounds[joint][0] or self.bounds[joint][1] < angle < 2 * math.pi
+        # if not (0 < angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi):
+        #     print("{a} not in bounds with {b1}, {b2}".format(a=angle, b1=self.bounds[joint][0], b2=self.bounds[joint][1]))
+        return (0 < angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi)
 
     def angles_within_bounds(self, angles):
         for i, angle in enumerate(angles):
@@ -84,11 +89,11 @@ class RRTNode(object):
         return True
 
     def random_angle_config(self):
-        """ Returns a set of random angles within the bounds of the arm. """
+        """ Returns a set of random angles within the bounds of the arm."""
         rand_angles = [0, 0, 0, 0, 0]
 
         for a in range(0, 5):
-            rand_angles[a] = random.uniform(self.bounds[a][0], self.bounds[a][1])
+            rand_angles[a] = random_angle(self.bounds[a][0], self.bounds[a][1])
 
         return rand_angles
 
@@ -98,9 +103,9 @@ class RRTNode(object):
          Returns True if none of the joints cross into the negative Y-axis.
          TODO: also return true if the bounds are correct.
          """
-
         for i in range(0, len(self.joint_positions)):
             if self.joint_positions[i][1] < self.joint_positions[0][1]:
+                # print("joint positions not in bounds")
                 return False
 
         if not self.angles_within_bounds(self.angles):
@@ -116,3 +121,12 @@ class RRTNode(object):
         return RRTNode(angle_config)
 
 
+def random_angle(left_bound, right_bound):
+    """ Generates a random angle from (left_bound, 2pi) and (0, right_bound). """
+
+    delta_a = math.pi * 2 - left_bound
+    delta_b = right_bound
+    if (delta_a == 0 and delta_b == 0) or (np.random.rand() < delta_a / (delta_a + delta_b)):
+        return random.uniform(left_bound, math.pi * 2)
+    else:
+        return random.uniform(0, right_bound)
