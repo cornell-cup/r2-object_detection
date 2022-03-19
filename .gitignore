@@ -138,3 +138,6 @@ dmypy.json
 cython_debug/
 
 *_pb2.py
+
+# PyCharm
+.idea/
