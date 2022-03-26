@@ -18,7 +18,7 @@ def arr_to_int(arr):
     return new_array
 
 
-def plot_3d(G, path, obstacles):
+def plot_3d(G, path, obstacles, path2=None):
     ax = plt.axes(projection='3d')
 
     end_effector_positions = []
@@ -35,6 +35,9 @@ def plot_3d(G, path, obstacles):
     if path is not None:
         plot_path(ax, path)
         plot_arm_configs(ax, path, obstacles)
+    if path2 is not None:
+        plot_path(ax,path2,'blue')
+        plot_arm_configs(ax,path2,obstacles)
 
     ax.scatter3D(G.start_node.end_effector_pos[0], G.start_node.end_effector_pos[1], G.start_node.end_effector_pos[2], c='red')
     ax.scatter3D(G.end_node.end_effector_pos[0], G.end_node.end_effector_pos[1], G.end_node.end_effector_pos[2], c='purple')
@@ -74,13 +77,16 @@ def plot_edges(ax, G, float_vertices):
     ax.add_collection(lc)
 
 
-def plot_path(ax, path):
+def plot_path(ax, path,color='green'):
     path_vertices = []
     for i in range(0, len(path)):
         path_vertices.append(path[i].end_effector_pos)
     path_vertices = list(map(arr_to_int, path_vertices))
     paths = [(path_vertices[i], path_vertices[i + 1]) for i in range(len(path_vertices) - 1)]
-    lc2 = art3d.Line3DCollection(paths, colors='green', linewidths=3)
+    if color is not 'green':
+        lc2 = art3d.Line3DCollection(paths,color=color,linewidths=3)
+    else:
+        lc2 = art3d.Line3DCollection(paths, colors=color, linewidths=3)
     ax.add_collection(lc2)
 
 
