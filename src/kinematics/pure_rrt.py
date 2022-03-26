@@ -22,7 +22,7 @@ from arm_node import Node
 from arm_graph import Graph
 import obstacle_generation
 from util.angles import true_angle_distances_arm
-
+import sys
 
 def arm_is_colliding(node: Node, obstacles):
     """Checks if an arm configuration is colliding with any obstacle in the c-space.
@@ -39,29 +39,18 @@ def arm_is_colliding(node: Node, obstacles):
     return False
 
 
-def nearest(g: Graph, node: Node):
-    """ Finds the nearest node to the input node in cartesian space, by end effector position.
+def nearest(g: Graph, node: RRTNode):
+    """ Finds the nearest node to the input node in Cartesian space, 
+        by end effector position.
 
      Returns:
-         An instance of the nearest node to the input node, as well as its index in the hashtable of the input graph.
-     """
-    nearest_node = None
-    nearest_node_index = None
-    min_dist = float("inf")
+        An instance of the nearest node to the input node, as well as 
+        its index in the hashtable of the input graph.
+    """
+    # print(g.end_effectors)
+    nearest_node_index = np.argmin(np.sum(np.square(g.end_effectors - node), axis=1))
 
-    neighbors = enumerate(g.nodes)
-    # if len(g.nodes) > 100:
-    #     neighbors = g.spatial_hash.closest_neighbors(node)
-
-    for idx, v in neighbors:
-        # print(v)
-        dist = line.distance(v.end_effector_pos, node)
-        if dist < min_dist:
-            min_dist = dist
-            nearest_node_index = idx
-            nearest_node = v
-
-    return nearest_node, nearest_node_index
+    return g.nodes[nearest_node_index], nearest_node_index
 
 
 def steer(rand_angles, near_angles, step_size):

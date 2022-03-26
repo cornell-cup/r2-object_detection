@@ -1,5 +1,6 @@
 from builtins import int, range
 from collections import defaultdict
+import math
 
 class SpatialHash:
     def __init__(self, x, y, z):
@@ -11,9 +12,9 @@ class SpatialHash:
         self.contents = defaultdict(list)
 
     def hash(self, point):
-        x = int(point[0]/self.x_cell_length) 
-        y = int(point[1]/self.y_cell_length)
-        z = int(point[2]/self.z_cell_length)
+        x = math.floor(point[0]/self.x_cell_length) 
+        y = math.floor(point[1]/self.y_cell_length)
+        z = math.floor(point[2]/self.z_cell_length)
         return x, y, z
 
     def insert_node(self, point, node, index):
@@ -23,33 +24,17 @@ class SpatialHash:
         """ Finds the closest neighboring cells of a point in the spatial hash.
 
         Returns: 
-            List of nodes that are in the same cell as the point or in a 
+            List of nodes that are in the same cell as point or in a 
             neighboring cell. 
         """
         cell = self.hash(point)
         cell_x, cell_y, cell_z = cell[0], cell[1], cell[2]
-        neighbors = self.contents[cell]
+        neighbors = self.contents[cell][:]
         level = 1
-        while not neighbors:
-            # checking on the two x planes
-            for x in [cell_x-level, cell_x+level]:
-                for y in range (cell_y-level-1, cell_y+level):
-                    for z in range (cell_z-level-1, cell_z+level):
-                        neighbors += self.contents[(x, y, z)]
-        
-            # checking on the two y planes
-            for x in range (cell_x-level-1, cell_x+level):
-                for y in [cell_y-level, cell_y+level]:
-                    for z in range (cell_z-level-1, cell_z+level):
-                        neighbors += self.contents[(x, y, z)]
-
-            # checking on the two z planes
-            for x in range (cell_x-level-1, cell_x+level):
-                for y in range (cell_y-level-1, cell_y+level):
-                    for z in [cell_z-level-1, cell_z+level]:
-                        neighbors += self.contents[(x, y, z)]
-            level += 1
-        #print("found")
+        for x in [cell_x-2, cell_x+3]:
+            for y in range (cell_y-2, cell_y+3):
+                for z in range (cell_z-2, cell_z+3):
+                    neighbors += self.contents[(x, y, z)]
         return neighbors
     # def insert_object_for_box(self, box, object):
     #     # hash the minimum and maximum points

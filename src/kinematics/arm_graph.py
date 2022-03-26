@@ -1,6 +1,7 @@
 from arm_node import Node
 from spatial_hashing import SpatialHash
 from util import line
+import numpy as np
 
 class Graph:
     """An graph representing groups of arm configurations.
@@ -31,9 +32,7 @@ class Graph:
         self.distances = {0: 0.}
         self.ranking = []
         self.nodes = [self.start_node]
-
-        self.spatial_hash = SpatialHash(0.2, 0.2, 0.2)
-        self.spatial_hash.insert_node(self.start_node.end_effector_pos, self.start_node, 0)
+        self.end_effectors = np.array([self.start_node.end_effector_pos])
 
     def add_vex(self, node, parent):
         try:
@@ -53,8 +52,7 @@ class Graph:
             self.node_to_index[node] = idx
             self.ranking.append(node)
             self.ranking.sort(key=lambda n: dist + Node.distance(n, self.end_node))
-
-            self.spatial_hash.insert_node(node.end_effector_pos, node, idx)
+            self.end_effectors = np.vstack([self.end_effectors, node.end_effector_pos])
         return idx
 
     def add_edge(self, idx1, idx2, cost):
