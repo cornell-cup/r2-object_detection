@@ -39,7 +39,7 @@ def arm_is_colliding(node: Node, obstacles):
     return False
 
 
-def nearest(g: Graph, node: RRTNode):
+def nearest(g: Graph, node: Node):
     """ Finds the nearest node to the input node in Cartesian space, 
         by end effector position.
 
