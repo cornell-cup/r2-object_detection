@@ -20,6 +20,7 @@ import collision_detection
 from util import line
 from arm_node import Node
 from arm_graph import Graph
+from arm_plot import plot_3d
 import obstacle_generation
 from util.angles import true_angle_distances_arm
 import sys
@@ -341,45 +342,142 @@ def print_failed_cases(graphs: list[Graph], failed_obstacles):
             print("obstacles =", failed_obstacles[i])
             print()
 
+def path_optimizer_four(path, prism):
+    """
+    Args:
+        path: refers to the output of dijkstra method from pure_rrt_angles,
+              a list of rrtnodes
+        prism: the object to be avoided, given in the form
+               [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
+    Returns:
+        A new list with some rrtnodes removed where linear paths can be created.
+        list length <= path length
+    """
+    optimizedList = path.copy()
+    # To save time we will only check every other node
+    for i in range(0, len(path)-4, 4):
+        p1 = path[i].end_effector_pos
+        p2 = path[i+4].end_effector_pos
+        #print('p1',p1)
+        line_seg = ([p1[0],p1[1],p1[2],p2[0],p2[1],p2[2]])
+        #print(collision_detection.newLineCollider(line_seg, prism))
+        if collision_detection.newLineCollider(line_seg, prism) == None:
+            optimizedList.remove(path[i+1])
+            optimizedList.remove(path[i+2])
+            optimizedList.remove(path[i+3])
+            #print("non-colliison found")
+    return optimizedList
+
+
+def path_optimizer_two(path,prism):
+    """
+    Args:
+        path: refers to the output of dijkstra method from pure_rrt_angles,
+              a list of rrtnodes
+        prism: the object to be avoided, given in the form
+               [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
+    Returns:
+        A new list with some rrtnodes removed where linear paths can be created.
+        list length <= path length
+    """
+    optimizedList = path.copy()
+    # first check if this motion can be made exactly one linear motion:
+    # testList = ([optimizedList[0], optimizedList[len(optimizedList)-1]])
+    # if(checkPath(testList,prism)):
+    #     print('path can be made linear!')
+    #     return testList
+
+    # To save time we will only check every other node
+    for i in range(0, len(path)-2, 2):
+        p1 = path[i].end_effector_pos
+        p2 = path[i+2].end_effector_pos
+        #print('p1',p1)
+        line_seg = ([p1[0],p1[1],p1[2],p2[0],p2[1],p2[2]])
+        #print(collision_detection.newLineCollider(line_seg, prism))
+        if collision_detection.newLineCollider(line_seg, prism) == None:
+            optimizedList.remove(path[i+1])
+            #print("non-colliison found")
+    return optimizedList
+
+
+def checkPath(path, prism):
+    #This method checks if the passed path collides with the prism
+    #between arm motions. Essentially it draws lines to corresponding nodes
+    #on the subsequent node.
+    for i in range(len(path)-1):
+        for j in range(len(path[i].joint_positions)):
+            x1 = path[i].joint_positions[j][0]
+            y1 = path[i].joint_positions[j][1]
+            z1 = path[i].joint_positions[j][2]
+            x2 = path[i + 1].joint_positions[j][0]
+            y2 = path[i + 1].joint_positions[j][1]
+            z2 = path[i + 1].joint_positions[j][2]
+            line_seg = ([x1,y1,z1,x2,y2,z2])
+            if(collision_detection.newLineCollider(line_seg,prism)):
+                return False
+    return True
+
+
 
 if __name__ == '__main__':
-    random.seed()
-
-    # obstacles = []
     n_iter = 1000
     radius = .07
     stepSize = .35
     threshold = 2
-    num_obstacles = 3
-    obstacle_bounds = [[-.4, .4], [-.2, .4], [-.4, .4]]
-    start_node, end_node, obstacles = random_start_environment(num_obstacles, obstacle_bounds, obstacle_size=.25)
-    # obstacles = []
+    num_obstacles = 1
+    bounds = [[-.4, .4], [0, .4], [-.4, .4]]
+    # start_node = RRTNode([7.4883959080999105, -0.9802836168249124, 2.7119532197892307, 2.690692578970348, 1.4327288698060625])
+    # end_node = RRTNode([0.80873032,  0.58529255 , 1.57082885 , 2.15507481 ,-0.80873048])
+    start_node, end_node, obstacles = random_start_environment(num_obstacles, bounds)
+    location = random.uniform(.1, .1)
+    prism = [location, location, location, .2, .2, .2]
+    obstacles = [prism]
     start_time = time.time()
     print("RRT started")
 
-    # G = rrt(start_node.angles,
-    #         end_node.angles,
-    #         obstacles,
-    #         n_iter, radius, stepSize=stepSize)
-    #
-    # if G.success:
-    #     path = dijkstra(G)
-    #     print("\nTime taken: ", (time.time() - start_time))
-    #     plot_3d(Graph(start_node.angles, end_node.angles), path, obstacles)
-    # else:
-    #     print("\nTime taken: ", (time.time() - start_time))
-    #     print("Path not found. :(")
-    #     plot_3d(G, [start_node, end_node], obstacles)
+    G = rrt(start_node.angles,
+            end_node.angles,
+            obstacles,
+            n_iter, radius, stepSize=stepSize)
+    size1 = 0
+    if G.success:
+        path = dijkstra(G)
+        size1 = len(path)
+        runTime = time.time() - start_time
+        optimize_start_time2 = time.time()
+        path2 = path_optimizer_two(path, prism)
+        size2 = len(path2)
+        if (path2 == path):
+            print('No optimizations could be made')
+        if checkPath(path2, prism):
+            optimizeTime2 = time.time() - optimize_start_time2
+            print('Optimization Time for 2 step', optimizeTime2)
+            print('Generation Runtime', runTime)
+            print("New Path is valid, Size", size2)
+            print('Original Path size:', size1)
+            plot_3d(G, path, obstacles, path2)
+            plot_3d(G, None, obstacles, path2)
+        else:
+            print("Optimized path encounters collisions, and was discarded.")
+            plot_3d(G, path, obstacles, path2)
 
-    goal_end_effector_bounds = [[-.4, .4], [.05, .4], [-.4, .4]]
-    trials = 30
-    graphs, failing_obstacles = rrt_graph_list(trials, n_iter, radius, stepSize, threshold,
-                                               goal_end_effector_bounds, num_obstacles)
-    num_successes = converge_test(graphs)
-    print_failed_cases(graphs, failing_obstacles)
-    print("Average nodes generated: ", avg_nodes_test(graphs))
-    print("Num. successes: ", num_successes)
-    print("Convergence rate: ", num_successes / trials)
-    total_time = time.time() - start_time
-    print("Time taken: ", total_time)
-    print("Average time per graph: ", total_time / trials)
+        optimize_start_time4 = time.time()
+        path4 = path_optimizer_four(path, prism)
+        size4 = len(path4)
+        if path4 == path:
+            print("bruh they are the same")
+        if checkPath(path4, prism):
+            optimizeTime4 = time.time() - optimize_start_time4
+            print('Optimization Time for 4 step', optimizeTime4)
+            print('Generation Runtime', runTime)
+            print("New Path is valid, Size", size4)
+            print('Original Path size:', size1)
+            plot_3d(G, path, obstacles, path4)
+            plot_3d(G, None, obstacles, path4)
+        else:
+            print("Optimized path encounters collisions, and was discarded.")
+            plot_3d(G, path, obstacles, path4)
+
+    else:
+        print("Path not found. :(")
+        plot_3d(G, [start_node, end_node], obstacles, None)
