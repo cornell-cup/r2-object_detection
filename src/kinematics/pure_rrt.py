@@ -31,8 +31,6 @@ def arm_is_colliding(node: Node, obstacles):
         node: An instance of arm_node.Node.
         obstacles: An array of float arrays representing obstacles.
     """
-    print(node.joint_positions)
-    print(obstacles)
     for obs in obstacles:
         if collision_detection.arm_is_colliding_prism(node, obs):
             return True

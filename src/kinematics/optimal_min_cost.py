@@ -48,18 +48,19 @@ def expand(node, directions, step_size, g):
             g.add_vex(node_neg, node)
 
 
-def find_path(end_node, start_angles, obs, n_iter=200, step_size=.1):
+def find_path(end_node, start_angles, obs, n_iter=150, step_size=.1):
     g = Graph(start_angles, end_node.angles)
     g.ranking.append(g.start_node)
 
     for i in range(n_iter):
+        print(i)
         best_node = g.ranking.pop(0)
 
         if arm_is_colliding(best_node, obs):
             continue
 
         dist_to_goal = line.distance(best_node.end_effector_pos, end_node.end_effector_pos)
-        print(dist_to_goal)
+        # print(dist_to_goal)
         if dist_to_goal < 0.03:
             g.end_node = Node.from_point(end_node.end_effector_pos, start_config=best_node.angles)
             g.add_vex(g.end_node, best_node)
