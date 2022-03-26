@@ -31,9 +31,10 @@ def arm_is_colliding(node: Node, obstacles):
         node: An instance of arm_node.Node.
         obstacles: An array of float arrays representing obstacles.
     """
-
+    print(node.joint_positions)
+    print(obstacles)
     for obs in obstacles:
-        if collision_detection.arm_is_colliding(node, obs):
+        if collision_detection.arm_is_colliding_prism(node, obs):
             return True
     return False
 
@@ -105,9 +106,9 @@ def extend_heuristic(g: Graph, rand_node: Node, step_size: float, threshold: int
 
         if arm_is_colliding(new_node, obstacles):
             raise Exception("Adding a colliding node")
-        newidx = g.add_vex(new_node)
-        dist = line.distance(new_node.end_effector_pos, nearest_to_new.end_effector_pos)
-        g.add_edge(newidx, nearest_to_new_idx, dist)
+        g.add_vex(new_node, nearest_to_new)
+        # dist = line.distance(new_node.end_effector_pos, nearest_to_new.end_effector_pos)
+        # g.add_edge(newidx, nearest_to_new_idx, dist)
         return new_node, g.node_to_index[new_node]
 
     near_node.inc_fail_count()
@@ -179,11 +180,11 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
             if arm_is_colliding(new_node, obstacles) or not new_node.valid_configuration():
                 continue
 
-            nearest_to_new, nearest_to_new_idx = nearest(G, new_node.end_effector_pos)
+            nearest_to_new, _ = nearest(G, new_node.end_effector_pos)
 
-            newidx = G.add_vex(new_node)
-            dist = line.distance(new_node.end_effector_pos, nearest_to_new.end_effector_pos)
-            G.add_edge(newidx, nearest_to_new_idx, dist)
+            G.add_vex(new_node, nearest_to_new)
+            # dist = line.distance(new_node.end_effector_pos, nearest_to_new.end_effector_pos)
+            # G.add_edge(newidx, nearest_to_new_idx, dist)
 
         else:
             new_node, newidx = extend_heuristic(G, rand_node, stepSize, heuristic_threshold, obstacles)
@@ -201,8 +202,8 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
                 # tries to get a closer arm configuration to the second-to-last arm configration with inverse kinematics
                 G.end_node = Node.from_point(desired_position, start_config=new_node.angles)
 
-            endidx = G.add_vex(G.end_node)
-            G.add_edge(newidx, endidx, end_eff_dist_to_goal)
+            endidx = G.add_vex(G.end_node, new_node)
+            # G.add_edge(newidx, endidx, end_eff_dist_to_goal)
             G.success = True
             print("Iterations:", i)
             break
@@ -396,4 +397,3 @@ if __name__ == '__main__':
     total_time = time.time() - start_time
     print("Time taken: ", total_time)
     print("Average time per graph: ", total_time / trials)
-

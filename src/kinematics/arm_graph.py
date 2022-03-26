@@ -3,7 +3,7 @@ from spatial_hashing import SpatialHash
 from util import line
 
 class Graph:
-    """An RRT graph.
+    """An graph representing groups of arm configurations.
     Args:
         start_angles: The initial angles of the arm.
         end_angles: The desired angles of the arm.
@@ -23,8 +23,6 @@ class Graph:
         self.start_node = Node(start_angles)
         self.end_node = Node(end_angles)
 
-        #self.nodes = [self.start_node]
-
         self.edges = []
         self.success = False
 
@@ -37,16 +35,24 @@ class Graph:
         self.spatial_hash = SpatialHash(0.2, 0.2, 0.2)
         self.spatial_hash.insert_node(self.start_node.end_effector_pos, self.start_node, 0)
 
-    def add_vex(self, node):
+    def add_vex(self, node, parent):
         try:
             idx = self.node_to_index[node]
         except:
+            parent_idx = self.node_to_index[parent]
             idx = len(self.nodes)
+
+            dist = parent.optimistic_cost + Node.distance(parent, node)
+            node.optimistic_cost = dist
+
+            self.neighbors[idx] = []
+
+            self.add_edge(idx, parent_idx, Node.distance(parent, node))
+
             self.nodes.append(node)
             self.node_to_index[node] = idx
-            self.neighbors[idx] = []
             self.ranking.append(node)
-            self.ranking.sort(key=lambda n: self.dist_to_end(n))
+            self.ranking.sort(key=lambda n: dist + Node.distance(n, self.end_node))
 
             self.spatial_hash.insert_node(node.end_effector_pos, node, idx)
         return idx

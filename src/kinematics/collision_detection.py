@@ -217,7 +217,7 @@ def arm_is_colliding_prism(node, prism):
     print("points follow: ")
     print(points)
     for i in range(len(node.angles) - 1):
-        line = [points[i], points[i + 1]]
+        line = np.append(points[i], points[i + 1])
         if newLineCollider(line, prism):
             return True
     return False
@@ -242,6 +242,8 @@ def newLineCollider(line_seg, prism):
         t = (x-x1) / (x2-x1)
 
         """
+    print("prism:", prism)
+    print("line_seg:", line_seg)
     collision = False
     checkX = False
     checkY = False

@@ -84,11 +84,10 @@ def plot_path(ax, path):
     ax.add_collection(lc2)
 
 
-def plot_arm_configs(ax, path, obstacles):
+def plot_arm_configs(ax, path, obstacles, color='green'):
     for i in range(0, len(path)):
-        color = 'green'
         for obstacle in obstacles:
-            if collision_detection.arm_is_colliding(path[i], obstacle):
+            if collision_detection.arm_is_colliding_prism(path[i], obstacle):
                 print(path[i].angles)
                 color = 'red'
         v1 = []

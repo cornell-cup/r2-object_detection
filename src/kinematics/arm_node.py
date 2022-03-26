@@ -11,6 +11,7 @@ import numpy as np
 import math
 import random
 import kinpy as kp
+from util import line
 
 # Global arm configuration
 with nostderr():
@@ -33,6 +34,7 @@ class Node(object):
         bounds: An array of float arrays listing the lower and upper bounds of each arm angle.
         end_effector_pos: A np array of the [x, y, z] of the end effector.
         angles: A np array listing the joint angles in radians.
+        optimistic_cost: A float representing the optimal path cost traveling through this node.
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
     a0_bounds = (3 * math.pi / 2, .9 * math.pi / 2)
@@ -51,6 +53,7 @@ class Node(object):
 
         self.joint_positions = self.forward_kinematics()
         self.end_effector_pos = self.joint_positions[-1]
+        self.optimistic_cost = 0
         self.fail_count = 0
 
     def forward_kinematics(self):
@@ -114,6 +117,10 @@ class Node(object):
                                                 initial_state=start_config)
 
         return Node(angle_config)
+
+    @classmethod
+    def distance(cls, node1, node2):
+        return line.distance(node1.end_effector_pos, node2.end_effector_pos)
 
 
 def random_angle(left_bound, right_bound):

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import collision_detection
 
 
-def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side_length=.2):
+def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side_length=.2, min_side_length = .05):
     """Randomly generates cuboid obstacles for an environment.
 
     Args:
@@ -19,9 +19,9 @@ def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side
 
     for i in range(num):
         sides = [
-            random.uniform(0, max_side_length),
-            random.uniform(0, max_side_length),
-            random.uniform(0, max_side_length)
+            random.uniform(min_side_length, max_side_length),
+            random.uniform(min_side_length, max_side_length),
+            random.uniform(min_side_length, max_side_length)
         ]
         obs = [
             random.uniform(axes_limits[0][0], axes_limits[0][1]),
