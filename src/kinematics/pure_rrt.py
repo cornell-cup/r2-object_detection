@@ -289,7 +289,6 @@ def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num
         if not current_start_node.valid_configuration():
             raise Exception("Approved an invalid start node")
 
-
         if arm_is_colliding(current_end_node, random_obstacles):
             raise Exception("Approved a colliding node")
 
