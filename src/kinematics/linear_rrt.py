@@ -17,6 +17,9 @@ import arm_plot
 import time
 import collision_detection
 from util.angles import true_angle_distances_arm
+import random
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import art3d
 
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
