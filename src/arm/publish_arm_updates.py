@@ -7,23 +7,19 @@ import sys
 import codecs
 
 # Dedicate a /dev port for specifically the precise arm
-ser = serial.Serial(
-    port = '/dev/ttyTHS1',
-	baudrate = 9600,
-)
+ser = None
 
 '''
 Arduino to Jetson Communication with R2 Protocol
 '''
-
-ser = None
  
-def init_serial(port,baud):
+def init_serial():
 	'''
 	Initializes the serial port, usually set baud to 9600
 	'''
 	global ser, startseq, endseq
-	ser =serial.Serial(port,baud)
+	ser = serial.Serial( port = '/dev/ttyTHS1', baudrate = 9600)
+
 	
 def close_serial():
 	'''
@@ -59,7 +55,7 @@ def read_encoder_values():
 			print(encoderAngle)
 	except KeyboardInterrupt:
 		ser.close()
-	return encounterAngle
+	return encoderAngle
 
 
     
