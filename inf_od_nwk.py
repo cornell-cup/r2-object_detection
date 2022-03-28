@@ -140,7 +140,11 @@ if __name__ == '__main__':
             cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
             cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
-
+            if key & 0xFF == ord('q') or key == 27:
+                cv2.destroyAllWindows()
+                break
+            if key & 0xFF == ord('r'):
+                cv2.destroyAllWindows()
 	        # send grasp coordinates to external server for processing
             # request should return an arm configuration
             # TODO: make sure that this startpos works
@@ -151,17 +155,16 @@ if __name__ == '__main__':
             # inverse kinematics
             avg = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
                           for i in range(len(gripper_pt1_arm))]
-            print("target calculated")
+            print("target calculated", avg)
             # endpos = RRTNode.from_point(avg_target, startpos)
-            arm_config = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
-            print("arm config calculated")
+            arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
             # send arm_config to the arm to move
-            arm.writeToSerial(arm_config)
+            if success:
+                for config in arm_config:
+                    print("WRITING ARM CONFIG", config)
+                    arm.writeToSerial(config.angles)
+
             print("arm config serial written")
 
-            if key & 0xFF == ord('q') or key == 27:
-                cv2.destroyAllWindows()
-                break
-            if key & 0xFF == ord('r'):
-                cv2.destroyAllWindows()
+            
 

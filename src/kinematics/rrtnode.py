@@ -116,6 +116,6 @@ class RRTNode(object):
         angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
                                                 initial_state=start_config)
 
-        return RRTNode(angle_config)
+        return angle_config
 
 

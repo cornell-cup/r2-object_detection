@@ -170,7 +170,7 @@ def true_angle_distances_arm(angles_1, angles_2):
     """ Returns [angles_2] - [angles_1], accounting for angle wrap. Calculates each angle in an arm configuration.
         Example: true_angle_distance(PI/6, 11PI/6) is PI/3, not 5PI/3. """
     new_angles = []
-
+    print("ANGLES:", angles_1, angles_2)
     for angle1, angle2 in zip(angles_1, angles_2):
         new_angles.append(true_angle_distance(angle1, angle2))
 
