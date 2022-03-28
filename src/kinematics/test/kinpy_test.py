@@ -1,6 +1,6 @@
-"""
-Test that displays an arm configuration using kinpy.
-Made by Simon Kapen in Fall 2021.
+"""Test that displays an arm configuration using kinpy.
+
+Written by Simon Kapen '24 in Fall 2021.
 """
 
 import kinpy as kp

@@ -3,7 +3,7 @@
 Generates a linear path from the current position of the arm to a desired position. If there is an obstacle in the way
 of this path, maneuvers around the obstacle with RRT. For details on the RRT algorithm, see pure_rrt.py.
 
-Written by Simon Kapen and Raj Sinha, Fall 2021.
+Written by Simon Kapen '24 and Raj Sinha '25, Fall 2021.
 """
 
 import math

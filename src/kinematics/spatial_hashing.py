@@ -1,3 +1,11 @@
+"""A 3D spatial hashing algorithm.
+
+A hashing algorithm that splits 3D points into buckets and determines closest neighbors of certain points through
+linear search.
+
+Written by Alison Duan '23, Spring 2022.
+"""
+
 from builtins import int, range
 from collections import defaultdict
 import math

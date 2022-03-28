@@ -1,10 +1,9 @@
-"""
-Representation of a node in an RRT graph, which represents a single arm configuration.
+"""Representation of a node in an RRT graph, which represents a single arm configuration.
 
 Represents a single configuration of the precision arm using the five joint angles. Specifications of the arm itself are
-held in the arm's URDF file.
+held in models/SimpleArmModelForURDF.urdf.
 
-Written by Simon Kapen, Spring 2021.
+Written by Simon Kapen '24, Spring 2021.
 """
 from util.error_handling import nostderr
 import numpy as np
@@ -13,7 +12,7 @@ import random
 import kinpy as kp
 from util import line
 
-# Global arm configuration
+# Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
     chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
     serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")

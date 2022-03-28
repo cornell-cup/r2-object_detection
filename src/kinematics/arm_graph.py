@@ -1,10 +1,17 @@
+"""A class representing a graph of nodes representing arm configurations.
+
+Written by Simon Kapen '24 and Alison Duan '23, Spring 2021-Spring 2022.
+Initially adapted from Fanjin Zeng on github, 2019 (gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80).
+"""
+
 from arm_node import Node
 from spatial_hashing import SpatialHash
 from util import line
 import numpy as np
 
+
 class Graph:
-    """An graph representing groups of arm configurations.
+    """A graph representing groups of arm configurations.
     Args:
         start_angles: The initial angles of the arm.
         end_angles: The desired angles of the arm.
@@ -37,7 +44,7 @@ class Graph:
     def add_vex(self, node, parent):
         try:
             idx = self.node_to_index[node]
-        except:
+        except KeyError:
             parent_idx = self.node_to_index[parent]
             idx = len(self.nodes)
 

@@ -1,16 +1,18 @@
+"""A script to configure collisions with a robot arm and obstacles (represented as cuboids).
+
+    Typical usage example:
+
+    arm_is_colliding_prism(node, prism)
+    plot_linear_prism(ax, prism, color)
+
+Written by Raj Sinha '25, Varun Parkash '22, and Simon Kapen '24, Fall 2020-Spring 2022.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import random
 from arm_node import Node
-
-"""******************************************************************** ********
-A script to configure a robot arm and collisions (represented as cubes).
-Run the script to see an example visualization of the arm and an obstruction.
-Run the script with argument "rand" to see a random configuration and test
-the collision detection (result of collision is printed through command line).
-TODO: Implement path-planning algo | Integrate with camera's point cloud output
-****************************************************************************"""
 
 # Global arm configuration
 # chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
