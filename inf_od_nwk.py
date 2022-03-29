@@ -159,12 +159,18 @@ if __name__ == '__main__':
             # endpos = RRTNode.from_point(avg_target, startpos)
             arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
             # send arm_config to the arm to move
-            if success:
-                for config in arm_config:
-                    print("WRITING ARM CONFIG", config)
-                    arm.writeToSerial(config.angles)
+            try:
+                if success:
+                    for config in arm_config:
+                        print("WRITING ARM CONFIG", config.angles)
+                        arm.writeToSerial(config.angles)
+                print("arm config serial written")
+                arm.close_serial()
+            except Exception as e:
+                print("error in writing to arm config")
+                print(e) 
+                arm.close_serial()
 
-            print("arm config serial written")
 
             
 

@@ -17,7 +17,7 @@ def init_serial():
 	'''
 	Initializes the serial port, usually set baud to 9600
 	'''
-	global ser, startseq, endseq
+	global ser
 	ser = serial.Serial( port = '/dev/ttyTHS1', baudrate = 9600)
 
 	
@@ -36,25 +36,21 @@ def read_encoder_values():
 	'''
 	# initialize the array 
 	encoderAngle = [0,0,0,0,0,0]
-	try:
-		while True:
-			 # length of message plus 16
-			good_data = False
-			while (not good_data):
-				ser_msg = ser.read(28)
-				msgtype, msg, status = r2p.decode(ser_msg)
-				# print(msg.hex())
-				print(status)
-				print(ser_msg)
-				if (status):
-					good_data = True
-				else:
-					ser.reset_input_buffer()
-			for i in range(0, 12, 2):
-				encoderAngle[i//2] = (msg[i]<<8) | msg[i+1]
-			print(encoderAngle)
-	except KeyboardInterrupt:
-		ser.close()
+	# length of message plus 16
+	good_data = False 
+	while (not good_data):
+		ser_msg = ser.read(28)
+		msgtype, msg, status = r2.decode(ser_msg)
+		# print(msg.hex())
+		print(status)
+		print(ser_msg)
+		if (status):
+			good_data = True
+		else:
+			ser.reset_input_buffer()
+	for i in range(0, 12, 2):
+		encoderAngle[i//2] = (msg[i]<<8) | msg[i+1]
+	print(encoderAngle)
 	return encoderAngle
 
 
@@ -118,5 +114,5 @@ def publish_updates(updates, timeout):
 
 	
 if __name__ =='__main__':
-	init_serial('/dev/ttyTHS1', 38400)
+	init_serial('/dev/ttyTHS1', 9600)
 	read_encoder_values()
