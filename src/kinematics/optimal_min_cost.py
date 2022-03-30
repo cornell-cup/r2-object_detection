@@ -22,7 +22,6 @@ import random
 from matplotlib import pyplot as plt
 
 
-
 def visited(node, g):
     """ Determines whether the algorithm has already explored in the area of the node's end effector position. """
     # Left commented for testing
@@ -58,7 +57,6 @@ def expand(node, directions, step_size, g):
 
 def find_path(end_node, start_angles, obs, n_iter=150, radius=.03, step_size=.1):
     """Executes the Optimistic Predictive Cost algorithm to find a collision-free path between two configurations.
-
     Arguments:
         end_node: A Node representing the target arm configuration.
         start_angles: A float array representing the initial angles of the arm.
@@ -66,7 +64,6 @@ def find_path(end_node, start_angles, obs, n_iter=150, radius=.03, step_size=.1)
         n_iter: The maximum amount of iterations to find a path.
         radius: The maximum distance from the target end effector position needed to converge.
         step_size: The distance, in radians, between each edge in the graph.
-
     Returns:
         A graph g containing a collision-free path if success = True, or no path if success = False.
       """
@@ -130,7 +127,7 @@ def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=
 
 
 if __name__ == "__main__":
-    random.seed(9421)
+    random.seed(13847)
     # obstacle_bounds = [[-.4, .4], [-.2, .4], [-.4, .4]]
     # print("time started")
     start_time = time.time()
@@ -140,9 +137,15 @@ if __name__ == "__main__":
     #
     # g = find_path(end_node, start_node.angles, obstacles)
 
-    # start_angles = [0.09015071304095702, 6.244120885912649, 1.8464986871137932, 1.2016737110444304, 3.096500467168678]
-    # end_angles = [ 0.94745773,  1.05823173, -4.71244326,  8.91195107,  5.33572758]
-    # obstacles = [[-0.3754707493365236, 0.32391996277369695, -0.028305024669660672, 0.1453914268814345, 0.15484017011991635, 0.13388306206397582], [-0.13126631342576262, 0.34206600505600937, 0.09143863677824432, 0.09288374422300467, 0.10319476789818907, 0.09304262641577561], [0.21797545254721962, 0.10867226379764039, 0.09461617813673084, 0.0864749163919242, 0.16612954845703914, 0.08036648262339353]]
+    # start_angles = [0.48403438244460323, 5.326181663215166, 1.5985755384754776, 1.3130704194233174, 0.1646972276800212]
+    # end_angles = [0.50680136, 5.41570846, 2.69687345, 1.82939604, -0.50680152]
+    # obstacles = [
+    #     [0.046264068326599184, 0.2904310706809034, -0.20008977664382757, 0.09162306237980725, 0.08896203158385652,
+    #      0.18141438772659008],
+    #     [-0.016393651282753274, 0.13647388688724255, -0.08405667897538899, 0.07325748715604971, 0.1719001772835061,
+    #      0.12514730978419003],
+    #     [0.0036383314905867326, 0.21447615410452847, 0.22043596824095468, 0.08671343867145281, 0.19556976023118172,
+    #      0.08797419459934705]]
     # end_node = Node(end_angles)
     # g = find_path(Node(end_angles), start_angles, obstacles)
     # if g.success:
@@ -158,8 +161,8 @@ if __name__ == "__main__":
     #     plot_3d(g, [Node(start_angles), end_node], obstacles)
 
     goal_end_effector_bounds = [[-.4, .4], [.05, .4], [-.4, .4]]
-    trials = 10
-    graphs = opc_graph_list(trials, n_iter=200, radius=.03, step_size=.1, bounds=goal_end_effector_bounds, num_obstacles=3)
+    trials = 1000
+    graphs = opc_graph_list(trials, n_iter=150, radius=.03, step_size=.1, bounds=goal_end_effector_bounds, num_obstacles=3)
     num_successes = tpm.converge_test(graphs)
     # tpm.print_failed_cases(graphs, failing_obstacles)
     print("Average nodes generated: ", tpm.avg_nodes_test(graphs))
@@ -168,5 +171,6 @@ if __name__ == "__main__":
     total_time = time.time() - start_time
     print("Time taken: ", total_time)
     print("Average time per graph: ", total_time / trials)
+
 
 

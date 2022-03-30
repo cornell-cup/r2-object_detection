@@ -37,11 +37,12 @@ class Node(object):
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
     a0_bounds = (3 * math.pi / 2, .9 * math.pi / 2)
-    a1_bounds = (3.4 * math.pi / 2, math.pi / 2)
-    a2_bounds = (0, 2 * math.pi)
+    a1_bounds = (3 * math.pi / 2, 1.22173)
+    a2_bounds = (1.7 * math.pi, 2.8 * math.pi / 2)
     a3_bounds = (0, 2 * math.pi)
     a4_bounds = (0, 2 * math.pi)
 
+    null = (2 * math.pi, 0)
     bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
     def __init__(self, configuration: list[float]):

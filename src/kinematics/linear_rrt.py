@@ -102,11 +102,9 @@ def generate_linear_path(start_angles, end_angles, num_iter):
 
         new_node = Node(new_angles)
 
-        new_idx = g.add_vex(new_node)
+        new_idx = g.add_vex(new_node, current_node)
 
         dist = line.distance(new_node.end_effector_pos, current_node.end_effector_pos)
-
-        g.add_edge(current_idx, new_idx, dist)
 
         current_angles = new_angles
         current_idx = new_idx
@@ -207,7 +205,7 @@ def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=1
     Returns:
         An array of Node instances or float arrays representing a valid path between the start and end configurations
     """
-    end_angles = Node.from_point(end_x, end_y, end_z)
+    end_angles = Node.from_point((end_x, end_y, end_z)).angles
     return linear_rrt(start_angles, end_angles, obstacles, num_iter)
 
 
@@ -341,7 +339,17 @@ if __name__ == '__main__':
     num_obstacles = 5
 
     # linear_rrt_test(50, obstacles)
-    plot_random_path(iterations, num_obstacles)
+    # plot_random_path(iterations, num_obstacles)
     # plot_path([4.6916344287189435, 4.090985392727952, 2.3692680894666482, 2.0596249149355357, 4.325243067547699],
     #           [2.998393231026213, 2.257996400624798, 3.5617493855518596, 2.0009026772223946, 4.473243223507486],
     #           iterations, obstacles)
+
+    start_node, end_node, obstacles = rrt.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
+
+    path, success = linear_rrt_to_point(start_node.angles, .2, .2, .2, obstacles)
+    g = Graph(start_node.angles, end_node.angles)
+    if path is not None:
+        g.add_vex(path[0], g.start_node)
+        for i in range(1, len(path)):
+            g.add_vex(path[i], path[i-1])
+        arm_plot.plot_3d(g, path, obstacles)

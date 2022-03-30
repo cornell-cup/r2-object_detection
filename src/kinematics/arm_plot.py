@@ -128,7 +128,7 @@ def plot_trial_times(graph_list, times):
 
 if __name__ == "__main__":
     path = []
-    for i in range(50):
+    for i in range(100):
         node = Node(None)
         path.append(node)
 
