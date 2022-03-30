@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 import collision_detection
 from arm_node import Node
+from matplotlib.animation import FuncAnimation
 
 """
 Written by Simon Kapen, Spring 2021.
@@ -19,6 +20,7 @@ def arr_to_int(arr):
 
 
 def plot_3d(G, path, obstacles, path2=None):
+    fig = plt.figure(figsize=(6, 6))
     ax = plt.axes(projection='3d')
 
     end_effector_positions = []
@@ -56,6 +58,7 @@ def plot_3d(G, path, obstacles, path2=None):
     ax.set_zlim3d(-.4, .4)
 
     plt.show()
+
 
 
 def plot_nodes(ax, float_vertices):
