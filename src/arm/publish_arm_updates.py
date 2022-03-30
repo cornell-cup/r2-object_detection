@@ -5,6 +5,8 @@ import numpy as np
 import serial
 import sys
 import codecs
+import time 
+import math
 
 # Dedicate a /dev port for specifically the precise arm
 ser = None
@@ -88,7 +90,7 @@ def writeToSerial(writeArray):
 	ser.write(write_byte)
 
 
-def publish_updates(updates, timeout):
+def publish_updates(update_array, timeout):
 	''' 
 	This function publishes updates to the arm configuration by writing 
 	to the serial buffer. We use R2Protocol to write to the arduino, which 
@@ -102,15 +104,14 @@ def publish_updates(updates, timeout):
 	    timeout: an integer that represents the time between updates that 
 		     the arm is allotted to move to the desired position. 
 	'''
-	for index, update_array in enumerate(updates): 
-		assert len(update_array) == 6
-		# convert updates to ints
-		update_array = [int(i) for i in update_array]
-        	# for index in range(len(update_array)):
-        	#     update_array[index] = int(update_array[index])
-		writeToSerial(update_array)
-		print("array {} sent: {}".format(index, update_array))
-		time.sleep(timeout)
+	assert len(update_array) == 6
+	# convert updates to ints
+	update_array = [int(i*180/math.pi) for i in update_array]
+	# for index in range(len(update_array)):
+	#     update_array[index] = int(update_array[index])
+	writeToSerial(update_array)
+	print("array {} sent".format(update_array))
+	time.sleep(timeout)
 
 	
 if __name__ =='__main__':
