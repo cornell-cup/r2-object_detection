@@ -1,10 +1,9 @@
-"""
-Representation of a node in an RRT graph, which represents a single arm configuration.
+"""Representation of a node in an RRT graph, which represents a single arm configuration.
 
 Represents a single configuration of the precision arm using the five joint angles. Specifications of the arm itself are
-held in the arm's URDF file.
+held in models/SimpleArmModelForURDF.urdf.
 
-Written by Simon Kapen, Spring 2021.
+Written by Simon Kapen '24, Spring 2021.
 """
 from util.error_handling import nostderr
 import numpy as np
@@ -13,7 +12,7 @@ import random
 import kinpy as kp
 from util import line
 
-# Global arm configuration
+# Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
     chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
     serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")
@@ -38,11 +37,12 @@ class Node(object):
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
     a0_bounds = (3 * math.pi / 2, .9 * math.pi / 2)
-    a1_bounds = (3.4 * math.pi / 2, math.pi / 2)
-    a2_bounds = (0, 2 * math.pi)
+    a1_bounds = (3 * math.pi / 2, 1.22173)
+    a2_bounds = (1.7 * math.pi, 2.8 * math.pi / 2)
     a3_bounds = (0, 2 * math.pi)
     a4_bounds = (0, 2 * math.pi)
 
+    null = (2 * math.pi, 0)
     bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
     def __init__(self, configuration: list[float]):

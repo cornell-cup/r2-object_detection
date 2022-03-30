@@ -1,3 +1,9 @@
+"""Functions for randomly generating a test environment for an arm path.
+
+Written by Simon Kapen '24, Spring 2022.
+"""
+
+
 import random
 import matplotlib.pyplot as plt
 import collision_detection

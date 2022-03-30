@@ -6,8 +6,8 @@ the object detection algorithm, the algorithm attempts to find a collision-free 
 end configuration. This is done by growing a tree pseudo-randomly, and returning a set of configurations which is then
 passed to the ECE subteam.
 
-Written by Simon Kapen and Alison Duan, Spring 2021.
-Dijkstra algorithm and Graph structure adapted from Fanjin Zeng on github, 2019.
+Written by Simon Kapen '24 and Alison Duan '23, Spring 2021.
+Dijkstra algorithm adapted from Fanjin Zeng on github, 2019 (gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80).
 """
 
 import math
@@ -290,7 +290,6 @@ def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num
             continue
         if not current_start_node.valid_configuration():
             raise Exception("Approved an invalid start node")
-
 
         if arm_is_colliding(current_end_node, random_obstacles):
             raise Exception("Approved a colliding node")

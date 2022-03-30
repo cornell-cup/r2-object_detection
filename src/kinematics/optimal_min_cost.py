@@ -5,28 +5,35 @@ Given a start and end configuration, determines a collision-free path with the l
 done by picking nodes that are close to the goal and trying to expand from them in multiple directions. It returns
 a set of configurations which is passed to the ECEs.
 
-Written by Simon Kapen and Raj Sinha, Spring 2022.
+Written by Simon Kapen '24 and Raj Sinha '25, Spring 2022.
 """
 from arm_node import Node
 from arm_graph import Graph
 import arm_plot
 from util.angles import true_angle_distances_arm
 import numpy as np
-import matplotlib.pyplot as plt
 from util import angles, line
 import collision_detection
-from pure_rrt import random_start_environment, dijkstra, arm_is_colliding
+from pure_rrt import dijkstra, arm_is_colliding
 from arm_plot import plot_3d
 import time
+from test import tpm
+import random
+from matplotlib import pyplot as plt
 
 
 def visited(node, g):
     """ Determines whether the algorithm has already explored in the area of the node's end effector position. """
-    for n in g.nodes:
-        if np.array_equal(np.round(n.end_effector_pos, 3), np.round(node.end_effector_pos, 3)):
-            return True
+    # Left commented for testing
+    # for n in g.nodes:
+    #     if np.array_equal(np.round(n.end_effector_pos, 3), np.round(node.end_effector_pos, 3)):
+    #         return True
+    # return False
+    nearest_node_index = np.argmin(np.sum(np.square(g.end_effectors - node.end_effector_pos), axis=1))
 
-    return False
+    nearest_node = g.nodes[nearest_node_index]
+
+    return np.array_equal(np.round(nearest_node.end_effector_pos, 3), np.round(node.end_effector_pos, 3))
 
 
 def expand(node, directions, step_size, g):
@@ -48,69 +55,122 @@ def expand(node, directions, step_size, g):
             g.add_vex(node_neg, node)
 
 
-def find_path(end_node, start_angles, obs, n_iter=150, step_size=.1):
+def find_path(end_node, start_angles, obs, n_iter=150, radius=.03, step_size=.1):
+    """Executes the Optimistic Predictive Cost algorithm to find a collision-free path between two configurations.
+    Arguments:
+        end_node: A Node representing the target arm configuration.
+        start_angles: A float array representing the initial angles of the arm.
+        obs: An array of float arrays representing obstacles.
+        n_iter: The maximum amount of iterations to find a path.
+        radius: The maximum distance from the target end effector position needed to converge.
+        step_size: The distance, in radians, between each edge in the graph.
+    Returns:
+        A graph g containing a collision-free path if success = True, or no path if success = False.
+      """
     g = Graph(start_angles, end_node.angles)
     g.ranking.append(g.start_node)
 
     for i in range(n_iter):
-        print(i)
         best_node = g.ranking.pop(0)
 
         if arm_is_colliding(best_node, obs):
             continue
 
         dist_to_goal = line.distance(best_node.end_effector_pos, end_node.end_effector_pos)
-        # print(dist_to_goal)
-        if dist_to_goal < 0.03:
+        if dist_to_goal < radius:
             g.end_node = Node.from_point(end_node.end_effector_pos, start_config=best_node.angles)
             g.add_vex(g.end_node, best_node)
-            # g.end_node = best_node
             g.success = True
-            # print(print(dist_to_goal))
             return g
-
-        # if dist_to_goal < step_size and step_size > .001:
-        #     step_size /= 2
-        #     print(step_size)
 
         expand(best_node, 3, step_size, g)
 
     return g
 
 
+def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=1):
+    """ Generates a list of Optimistic Predictive Cost graphs. """
+
+    print("RUNNING {t} TRIALS OF OPC WITH {o} OBSTACLES\n".format(t=num_trials, o=num_obstacles))
+    graphs = []
+    failed_obstacles = []
+
+    for i in range(0, num_trials):
+        trial_start_time = time.time()
+
+        print("Trial: ", i + 1)
+        current_start_node, current_end_node, random_obstacles = \
+            tpm.random_start_environment(num_obstacles, bounds)
+        if current_start_node is None:
+            continue
+        if not current_start_node.valid_configuration():
+            raise Exception("Approved an invalid start node")
+
+        if arm_is_colliding(current_end_node, random_obstacles):
+            raise Exception("Approved a colliding node")
+
+        G = find_path(current_end_node, current_start_node.angles, random_obstacles, n_iter=n_iter, radius=radius,
+                step_size=step_size)
+
+        if G.success:
+            print("SUCCESS")
+        else:
+            print("FAIL")
+
+        print("Trial time:", time.time() - trial_start_time)
+        print("")
+
+        graphs.append(G)
+        failed_obstacles.append(random_obstacles)
+
+    return graphs
+
+
 if __name__ == "__main__":
-    obstacle_bounds = [[-.4, .4], [-.2, .4], [-.4, .4]]
-    print("time started")
+    random.seed(13847)
+    # obstacle_bounds = [[-.4, .4], [-.2, .4], [-.4, .4]]
+    # print("time started")
     start_time = time.time()
-    start_node, end_node, obstacles = random_start_environment(5, obstacle_bounds, obstacle_size=.4)
-    start_angles = start_node.angles
-    end_pos = end_node.end_effector_pos
-
-    g = find_path(end_node, start_node.angles, obstacles)
-
-    # start_angles = [5.369371017085593, 1.170449817096421, 1.2196071198743046, 0.5373588543596212, 4.749227044258129]
-    # end_angles = [5.79216011, 0.58102332, -0.42800113, 0.15302296, 6.77421087]
-    # obstacles = [
-    #     [0.3208665645587594, 0.37814481229761404, 0.23882439366195474, 0.016853955529503174, 0.17582898559826995,
-    #      0.16858049170914127],
-    #     [0.18775580336670283, 0.24715717642614093, 0.1740361031691925, 0.37310350982500556, 0.10699879554315049,
-    #      0.39210221856095057],
-    #     [0.367780650270748, 0.2385358011780404, 0.30517239147997577, 0.03582676773275471, 0.15362943031993448,
-    #      0.08434869814078888],
-    #     [0.316037333704863, 0.22237310777884473, -0.04340689128060243, 0.23796543278086038, 0.33430711939413205,
-    #      0.3141177486229645],
-    #     [-0.3206491982198045, 0.28909375117870534, -0.1589868186492286, 0.24619332779849118, 0.007638981080338692,
-    #      0.08744967731817717]]
+    # start_node, end_node, obstacles = tpm.random_start_environment(5, obstacle_bounds, obstacle_size=.4)
+    # start_angles = start_node.angles
+    # end_pos = end_node.end_effector_pos
     #
+    # g = find_path(end_node, start_node.angles, obstacles)
+
+    # start_angles = [0.48403438244460323, 5.326181663215166, 1.5985755384754776, 1.3130704194233174, 0.1646972276800212]
+    # end_angles = [0.50680136, 5.41570846, 2.69687345, 1.82939604, -0.50680152]
+    # obstacles = [
+    #     [0.046264068326599184, 0.2904310706809034, -0.20008977664382757, 0.09162306237980725, 0.08896203158385652,
+    #      0.18141438772659008],
+    #     [-0.016393651282753274, 0.13647388688724255, -0.08405667897538899, 0.07325748715604971, 0.1719001772835061,
+    #      0.12514730978419003],
+    #     [0.0036383314905867326, 0.21447615410452847, 0.22043596824095468, 0.08671343867145281, 0.19556976023118172,
+    #      0.08797419459934705]]
+    # end_node = Node(end_angles)
     # g = find_path(Node(end_angles), start_angles, obstacles)
-    if g.success:
-        path = dijkstra(g)
-        print("\nTime taken: ", (time.time() - start_time))
-        plot_3d(Graph(start_angles, end_node.angles), path, obstacles)
-    else:
-        print("\nTime taken: ", (time.time() - start_time))
-        print("Path not found. :(")
-        print(start_angles)
-        print(end_node.angles)
-        print(obstacles)
-        plot_3d(g, [Node(start_angles), end_node], obstacles)
+    # if g.success:
+    #     path = dijkstra(g)
+    #     print("\nTime taken: ", (time.time() - start_time))
+    #     plot_3d(Graph(start_angles, end_node.angles), path, obstacles)
+    # else:
+    #     print("\nTime taken: ", (time.time() - start_time))
+    #     print("Path not found. :(")
+    #     print(start_angles)
+    #     print(end_node.angles)
+    #     print(obstacles)
+    #     plot_3d(g, [Node(start_angles), end_node], obstacles)
+
+    goal_end_effector_bounds = [[-.4, .4], [.05, .4], [-.4, .4]]
+    trials = 1000
+    graphs = opc_graph_list(trials, n_iter=150, radius=.03, step_size=.1, bounds=goal_end_effector_bounds, num_obstacles=3)
+    num_successes = tpm.converge_test(graphs)
+    # tpm.print_failed_cases(graphs, failing_obstacles)
+    print("Average nodes generated: ", tpm.avg_nodes_test(graphs))
+    print("Num. successes: ", num_successes)
+    print("Convergence rate: ", num_successes / trials)
+    total_time = time.time() - start_time
+    print("Time taken: ", total_time)
+    print("Average time per graph: ", total_time / trials)
+
+
+
