@@ -223,6 +223,19 @@ def arm_is_colliding_prism(node, prism):
     return False
 
 
+def arm_is_colliding_prisms(node: Node, obstacles):
+    """Checks if an arm configuration is colliding with any obstacle in the c-space.
+
+    Args:
+        node: An instance of arm_node.Node.
+        obstacles: An array of float arrays representing obstacles.
+    """
+    for obs in obstacles:
+        if arm_is_colliding_prism(node, obs):
+            return True
+    return False
+
+
 def newLineCollider(line_seg, prism):
     """
         Return True if the line segment is colliding with the prism, else False.
