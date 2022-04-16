@@ -9,33 +9,13 @@ import os
 from datetime import datetime
 from matplotlib import image
 
-def process_features(X, norm_matrix):
-    """
-    Preprocess features before feeding into algorithm
-    """
-    c = X.shape[-1]
-
-    X = X.reshape((-1, c))
-    X = np.divide(X, norm_matrix) #The last value should have a number between 1 and 10
-    X = X.reshape((480, 640, c))
-    return np.float32(X)
 
 
+def preprocess_data(depth_img, rgbd):
+    norm_matrix = [1,1,1,0.5]
 
-def sel_features(input_matrix):
-    """
-    Selects the desired features in a depth frame
-    """
-    coord_list = []
-    for y in reversed(range(0, len(input_matrix))):
-        for x in range (0, len(input_matrix[0])):
-            coord_list.append([input_matrix[y,x],x,abs(y-len(input_matrix)+1)])
-    return coord_list
-
-
-def preprocess_data(depth_image, color_matrix, rgbd):
-    rgbd = process_features(rgbd, [1,1,1,1.])
-    return rgbd
+    rgbd = rgbd/norm_matrix
+    return np.float32(rgbd)
     
 
 def postprocess_im(depth_img, segmentation, labelled_img):
@@ -51,10 +31,14 @@ def postprocess_im(depth_img, segmentation, labelled_img):
     """
 
     # Fixed threshold either has 125 or 100 refer to 04-12-14:49:33 and 04-12-13:10:36
-    thresh = max(np.min(depth_img), 100) # set threshold
+    thresh = max(np.min(depth_img), 125) # set threshold
     labels = np.unique(labelled_img)
     labelled_img = labelled_img.reshape(depth_img.shape)
-    prop = 0.3
+    prop = 0.4
+
+    labels = np.unique(labelled_img)
+
+    # Bug in labelling
     
     for label in labels:
         coords = np.count_nonzero(labelled_img == label)
@@ -62,7 +46,9 @@ def postprocess_im(depth_img, segmentation, labelled_img):
         violated_px = labelled_img[(labelled_img==label) & (depth_img < thresh)]
         if len(violated_px) > prop * coords:
             print ("label", label,"violated")
-            segmentation[labelled_img==label] = [255,255,255,255]
+            # TODO: make it a label of varying length
+            print (segmentation.shape)
+            segmentation[labelled_img==label] = [255]*segmentation.shape[-1]
 
     cv2.imshow('new segmentation', segmentation)
     cv2.waitKey()
@@ -93,16 +79,18 @@ def viz_image(images, names):
     if key & 0xFF == ord('q'):
         cv2.destroyAllWindows()
 
-def cv_kmeans(img, debug=False):
+def cv_kmeans(input_img, img_shape, debug=False):
     """ 
     Performs kmeans clustering on the input matrix. Expect the input_matrix 
     to have dimension (k, d, c) where k and d are the image dimension and c is 
-    the number of channels in the image
+    the number of channels in the image. img_shape is the desired image shape
     """
-    c = img.shape[-1]
-    twoDimg = img.reshape((-1,c))
+    
+    c = input_img.shape[-1]
+
+    twoDimg = np.float32(input_img.reshape((-1,c)))
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    print ("running kmeans")
+    
     distortions = []
     labels=[]
     K_max=6
@@ -120,19 +108,20 @@ def cv_kmeans(img, debug=False):
         plt.ylabel('Distortion')
         plt.title('The Elbow Method showing the optimal k')
         plt.show()
-    X_trans = preprocessing.normalize
     idx = 0
     for i in range(len(distortions)-1):
         if (distortions[i] - distortions[i+1] < (distortions[0]/10)):
             idx = i
             break
-    print("k: ", idx+1)
-
+    
     res = center[labels[idx].flatten()]
-    result_image = res.reshape((img.shape))
+    res = res[:,:3]
+    result_image = res.reshape((img_shape))
 
     cv2.imshow("res", result_image)
+    cv2.waitKey()
     return result_image, labels[idx]
+
 
 
 def get_depth_images(dir):
@@ -140,9 +129,8 @@ def get_depth_images(dir):
     org_img = image.imread(path+"/Orignal.jpg")
     RGB_img = cv2.cvtColor(org_img, cv2.COLOR_BGR2RGB)
     depth_img = cv2.imread(path+"/Depth Frame.jpg",0)
-    
-    
     return RGB_img, depth_img
+
 
 def create_rgbd(rgb_img, depth_img):
     b, g, r = cv2.split(rgb_img)
@@ -152,7 +140,24 @@ def create_rgbd(rgb_img, depth_img):
     
     return rgbd
 
+
+def erode_and_dilate(img, debug=False):
+
+    # erosion takes the min and dilation takes the max
+    # since we want to keep white pixels we erode then dilate
+    kernel = np.ones((7,7), np.uint8)
+    img_erosion = cv2.erode(img, kernel, iterations=4)
+    img_dilated = cv2.dilate(img_erosion, kernel, iterations=1)
+    if debug:
+            #viz_image([img_erosion,img_dilated],["eroded", "dilated"])
+            cv2.imshow("eroded", img_erosion)
+            cv2.imshow("dilated", img_dilated)
+    return img_dilated
+
 def get_bound (img, debug=False):
+    # gets xy coordinates of bottom left corner of boudning boxes.
+    # returns list of tuples in the form (x,y,w,h)
+    box_coords = []
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     vals = np.unique(gray)
     for v in vals:
@@ -160,46 +165,47 @@ def get_bound (img, debug=False):
             continue
         tmp = gray.copy()
         #create a mask where all values equal to v are 1 and everything else is 0
+        label_val = 150
         mask = (tmp == v).astype(int) 
-        
         tmp[mask==0] = 0
-        tmp[mask==1] = 150
+        tmp[mask==1] = label_val
         
-        # erosion takes the min and dilation takes the max
-        # since we want to keep white pixels we erode then dilate
-        kernel = np.ones((7,7), np.uint8)
-        img_erosion = cv2.erode(tmp, kernel, iterations=4)
-        img_dilation = cv2.dilate(img_erosion, kernel, iterations=1)
-
         # Re update the mask using the dilated image where all 
         # desired pixels (white) are set to 1
-        mask = (img_dilation == 150).astype(int)
+        denoised_img = erode_and_dilate(tmp, debug)
+        mask = (denoised_img == label_val).astype(int)
+        
         active_px = np.argwhere(mask!=0)
         active_px = active_px[:,[1,0]]
         x,y,w,h = cv2.boundingRect(active_px)
-        
+        box_coords.append((x,y,w,h))
+
         if debug:
-            cv2.imshow("eroded", img_erosion)
-            cv2.imshow("dilated", img_dilation)
-        cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),1)
-        cv2.imshow("org", img)
-        cv2.imshow("tmp", tmp)
-        
-        cv2.waitKey()
-    
-    cv2.imshow("gray", gray)
+            # draw bounding box rectangle
+            cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),1)
+            cv2.imshow("org", img)
+            cv2.imshow("tmp", tmp)
+            cv2.waitKey()
+    return box_coords
+
 
 
 
 
 def main():
-    org_img, depth_img = get_depth_images("04-12-14:51:37")
+    org_img, depth_img = get_depth_images("04-12-14:49:33")
+    cv2.imshow("org", org_img)
     rgbd = create_rgbd(org_img, depth_img)
-    cv2.imshow('org',org_img)
 
-    preprocessed_rgbd = preprocess_data(depth_img, org_img, rgbd)
-    result_img, labels = cv_kmeans(rgbd)
+    preprocessed_rgbd = preprocess_data(depth_img,rgbd)
+
+    result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape, True)
+
     result_img = postprocess_im(depth_img, result_img, labels)
+    print ("result image is same as rgbd",result_img == rgbd)
+    
+
+
     get_bound(result_img, True)
     
     viz_image([org_img, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
