@@ -16,8 +16,9 @@ from random import random
 from collections import deque
 import time
 import random
-from collision_detection import arm_is_colliding_prisms
+from collision_detection import arm_is_colliding_prisms, arm_is_colliding
 from optimizers import path_optimizer_two, path_optimizer_four, checkPath
+from src.kinematics import obstacle_generation
 from util import line
 from arm_node import Node
 from arm_graph import Graph
@@ -224,7 +225,6 @@ def dijkstra(G):
     return list(path)
 
 
-<<<<<<< HEAD
 def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
     """Generates a start environment for a run of RRT.
 
@@ -265,9 +265,6 @@ def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
 
     return random_start_node, random_end_node, current_obstacles
 
-
-=======
->>>>>>> 32a24b62aad128758bbbc728cea695f223157d59
 def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num_obstacles=1):
     """ Generates a list of RRT graphs. """
     print("RUNNING {t} TRIALS OF RRT WITH {o} OBSTACLES\n".format(t=num_trials, o=num_obstacles))
