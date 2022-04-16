@@ -21,6 +21,7 @@ from optimizers import path_optimizer_two, path_optimizer_four, checkPath
 from util import line
 from arm_node import Node
 from arm_graph import Graph
+from matplotlib.widgets import Button
 from arm_plot import plot_3d
 import obstacle_generation
 from util.angles import true_angle_distances_arm
@@ -269,9 +270,9 @@ def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
     while arm_is_colliding(random_start_node, current_obstacles) or not random_start_node.valid_configuration():
         random_start_node = Node(None)
 
-    print("start angles:", random_start_node.angles)
-    print("end angles:", random_end_node.angles)
-    print("obstacles:", current_obstacles)
+    #print("start angles:", random_start_node.angles)
+    #print("end angles:", random_end_node.angles)
+    #print("obstacles:", current_obstacles)
 
     return random_start_node, random_end_node, current_obstacles
 
@@ -344,9 +345,76 @@ def print_failed_cases(graphs: list[Graph], failed_obstacles):
             print()
 
 
+def test():
+    total_time_two = 0
+    total_time_four = 0
+    start = time.time()
+    runs = 1000
+    for i in range(1000):
+        print('run')
+        n_iter = 1000
+        radius = .07
+        stepSize = .35
+        threshold = 2
+        num_obstacles = 1
+        bounds = [[-.4, .4], [0, .4], [-.4, .4]]
+        # start_node = RRTNode([7.4883959080999105, -0.9802836168249124, 2.7119532197892307, 2.690692578970348, 1.4327288698060625])
+        # end_node = RRTNode([0.80873032,  0.58529255 , 1.57082885 , 2.15507481 ,-0.80873048])
+        start_node, end_node, obstacles = random_start_environment(num_obstacles, bounds)
+        location = random.uniform(.1, .1)
+        prism = [location, location, location, .2, .2, .2]
+        obstacles = [prism]
+        start_time = time.time()
+        print("RRT started")
 
+        try:
+            G = rrt(start_node.angles,
+                end_node.angles,
+                obstacles,
+                n_iter, radius, stepSize=stepSize)
+            size1 = 0
+            if G.success:
+                path = dijkstra(G)
+                size1 = len(path)
+                runTime = time.time() - start_time
 
-if __name__ == '__main__':
+                optimize_start_time2 = time.time()
+                path2 = path_optimizer_two(path, prism)
+                size2 = len(path2)
+                if checkPath(path2, prism):
+                    optimizeTime2 = time.time() - optimize_start_time2
+                    total_time_two += optimizeTime2
+
+                optimize_start_time4 = time.time()
+                path4 = path_optimizer_four(path, prism)
+                size4 = len(path4)
+                if checkPath(path4, prism):
+                    optimizeTime4 = time.time() - optimize_start_time4
+                    total_time_four += optimizeTime4
+        except Exception:
+            print("Exception thrown")
+            runs -= 1
+
+    full_runtime = time.time() - start
+    print("total time for 2s", total_time_two)
+    print("total time for 4s", total_time_four)
+    print("total runs", runs)
+    print("time per run for 2s", total_time_two/runs)
+    print("time per run for 4s", total_time_four/runs)
+    print("full run time:", full_runtime)
+
+def optimize(path,prism):
+    collision = False
+    lastPath = path
+    newPath = None
+    while not collision:
+        newPath = path_optimizer_two(lastPath, prism)
+        if newPath == lastPath:
+            break
+        lastPath = newPath
+    return newPath
+
+def multiple_runs():
     n_iter = 1000
     radius = .07
     stepSize = .35
@@ -368,43 +436,79 @@ if __name__ == '__main__':
             n_iter, radius, stepSize=stepSize)
     size1 = 0
     if G.success:
+        collision = False
         path = dijkstra(G)
         size1 = len(path)
-        runTime = time.time() - start_time
-        optimize_start_time2 = time.time()
-        path2 = path_optimizer_two(path, prism)
-        size2 = len(path2)
-        if (path2 == path):
-            print('No optimizations could be made')
-        if checkPath(path2, prism):
-            optimizeTime2 = time.time() - optimize_start_time2
-            print('Optimization Time for 2 step', optimizeTime2)
-            print('Generation Runtime', runTime)
-            print("New Path is valid, Size", size2)
-            print('Original Path size:', size1)
-            plot_3d(G, path, obstacles, path2)
-            plot_3d(G, None, obstacles, path2)
-        else:
-            print("Optimized path encounters collisions, and was discarded.")
-            plot_3d(G, path, obstacles, path2)
-
-        optimize_start_time4 = time.time()
-        path4 = path_optimizer_four(path, prism)
-        size4 = len(path4)
-        if path4 == path:
-            print("bruh they are the same")
-        if checkPath(path4, prism):
-            optimizeTime4 = time.time() - optimize_start_time4
-            print('Optimization Time for 4 step', optimizeTime4)
-            print('Generation Runtime', runTime)
-            print("New Path is valid, Size", size4)
-            print('Original Path size:', size1)
-            plot_3d(G, path, obstacles, path4)
-            plot_3d(G, None, obstacles, path4)
-        else:
-            print("Optimized path encounters collisions, and was discarded.")
-            plot_3d(G, path, obstacles, path4)
-
+        print("Original Path Size:", size1)
+        plot_3d(G,path,obstacles,None)
+        bestPath = optimize(path, prism)
+        print("Optimal Path Size:", len(bestPath))
+        plot_3d(G,bestPath,obstacles,None)
     else:
         print("Path not found. :(")
         plot_3d(G, [start_node, end_node], obstacles, None)
+
+if __name__ == '__main__':
+    #test()
+    multiple_runs()
+    # n_iter = 1000
+    # radius = .07
+    # stepSize = .35
+    # threshold = 2
+    # num_obstacles = 1
+    # bounds = [[-.4, .4], [0, .4], [-.4, .4]]
+    # # start_node = RRTNode([7.4883959080999105, -0.9802836168249124, 2.7119532197892307, 2.690692578970348, 1.4327288698060625])
+    # # end_node = RRTNode([0.80873032,  0.58529255 , 1.57082885 , 2.15507481 ,-0.80873048])
+    # start_node, end_node, obstacles = random_start_environment(num_obstacles, bounds)
+    # location = random.uniform(.1, .1)
+    # prism = [location, location, location, .2, .2, .2]
+    # obstacles = [prism]
+    # start_time = time.time()
+    # print("RRT started")
+    #
+    # G = rrt(start_node.angles,
+    #         end_node.angles,
+    #         obstacles,
+    #         n_iter, radius, stepSize=stepSize)
+    # size1 = 0
+    # if G.success:
+    #     path = dijkstra(G)
+    #     size1 = len(path)
+    #     runTime = time.time() - start_time
+    #     optimize_start_time2 = time.time()
+    #     path2 = path_optimizer_two(path, prism)
+    #     size2 = len(path2)
+    #     if (path2 == path):
+    #         print('No optimizations could be made')
+    #     if checkPath(path2, prism):
+    #         optimizeTime2 = time.time() - optimize_start_time2
+    #         print('Optimization Time for 2 step', optimizeTime2)
+    #         print('Generation Runtime', runTime)
+    #         print("New Path is valid, Size", size2)
+    #         print('Original Path size:', size1)
+    #         plot_3d(G, path, obstacles, path2)
+    #         plot_3d(G, None, obstacles, path2)
+    #     else:
+    #         print("Optimized path encounters collisions, and was discarded.")
+    #         plot_3d(G, path, obstacles, path2)
+    #
+    #     optimize_start_time4 = time.time()
+    #     path4 = path_optimizer_four(path, prism)
+    #     size4 = len(path4)
+    #     if path4 == path:
+    #         print("bruh they are the same")
+    #     if checkPath(path4, prism):
+    #         optimizeTime4 = time.time() - optimize_start_time4
+    #         print('Optimization Time for 4 step', optimizeTime4)
+    #         print('Generation Runtime', runTime)
+    #         print("New Path is valid, Size", size4)
+    #         print('Original Path size:', size1)
+    #         plot_3d(G, path, obstacles, path4)
+    #         plot_3d(G, None, obstacles, path4)
+    #     else:
+    #         print("Optimized path encounters collisions, and was discarded.")
+    #         plot_3d(G, path, obstacles, path4)
+    #
+    # else:
+    #     print("Path not found. :(")
+    #     plot_3d(G, [start_node, end_node], obstacles, None)
