@@ -106,7 +106,7 @@ def publish_updates(update_array, timeout):
 	'''
 	assert len(update_array) == 6
 	# convert updates to ints
-	update_array = [int(i*180/math.pi) for i in update_array]
+	# update_array = [int(i*180/math.pi) for i in update_array]
 	# for index in range(len(update_array)):
 	#     update_array[index] = int(update_array[index])
 	writeToSerial(update_array)

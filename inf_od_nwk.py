@@ -161,8 +161,9 @@ if __name__ == '__main__':
             # send arm_config to the arm to move
             if success:
                 for config in arm_config:
-                    print("WRITING ARM CONFIG", config.angles)
-                    arm.publish_updates(config.angles, 0.5)
+                    converted_array = alr.radians_to_degrees(config)
+                    print("WRITING ARM CONFIG", converted_array)
+                    arm.publish_updates(converted_array, 0.5)
             print("arm config serial written")
             arm.close_serial()
             """
