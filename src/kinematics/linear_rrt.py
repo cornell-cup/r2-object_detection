@@ -15,8 +15,9 @@ from util import line
 import collision_detection as cd
 import arm_plot
 import time
-import collision_detection
 from util.angles import true_angle_distances_arm
+from test import tpm
+from obstacle_generation import random_start_environment
 import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
@@ -131,7 +132,7 @@ def valid_path_configuration(pose, obstacles):
     """
 
     for obs in obstacles:
-        if cd.arm_is_colliding(pose, obs):
+        if cd.arm_is_colliding_prism(pose, obs):
             return False
 
     # TODO: fix valid configuration method, then check that before returning true
@@ -152,7 +153,7 @@ def path_is_colliding(path, obstacles):
 
     for obstacle in obstacles:
         for node in path:
-            if cd.arm_is_colliding(node, obstacle):
+            if cd.arm_is_colliding_prism(node, obstacle):
                 return True
 
     return False
@@ -253,7 +254,7 @@ def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
         while not valid_path_configuration(end_node, obstacles):
             end_node = Node(None)
 
-        if rrt.arm_is_colliding(end_node, obstacles):
+        if cd.arm_is_colliding_prisms(end_node, obstacles):
             raise Exception("Approved a colliding node")
 
         _, success = linear_rrt(start_node.angles, end_node.angles, obstacles, iter_per_path)
@@ -277,7 +278,7 @@ def plot_random_path(iterations, num_obstacles):
         arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
     """
 
-    start_node, end_node, obstacles = rrt.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
+    start_node, end_node, obstacles = tpm.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
 
     plot_path(start_node.angles, end_node.angles, iterations, obstacles)
 
@@ -326,7 +327,7 @@ def path_optimizer(path,prism):
         p1 = path[i].end_effector_pos
         p2 = path[i+2].end_effector_pos
         line_seg = ([p1[0],p1[1],p1[2],p2[0],p2[1],p2[2]])
-        if collision_detection.newLineCollider(line_seg, prism) == False:
+        if cd.newLineCollider(line_seg, prism) == False:
             optimizedList.remove(path[i+1])
     return optimizedList
 
@@ -336,7 +337,7 @@ if __name__ == '__main__':
     np.set_printoptions(precision=20)
     trials = 100
     iterations = 10
-    num_obstacles = 5
+    num_obstacles = 8
 
     # linear_rrt_test(50, obstacles)
     # plot_random_path(iterations, num_obstacles)
@@ -344,10 +345,10 @@ if __name__ == '__main__':
     #           [2.998393231026213, 2.257996400624798, 3.5617493855518596, 2.0009026772223946, 4.473243223507486],
     #           iterations, obstacles)
 
-    start_node, end_node, obstacles = rrt.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
+    start_node, end_node, obstacles = random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
 
     path, success = linear_rrt_to_point(start_node.angles, .2, .2, .2, obstacles)
-    g = Graph(start_node.angles, end_node.angles)
+    g = Graph(start_node.angles, Node.from_point((.2, .2, .2)).angles)
     if path is not None:
         g.add_vex(path[0], g.start_node)
         for i in range(1, len(path)):

@@ -6,51 +6,12 @@ Written by Simon Kapen '24, Spring 2022.
 """
 
 from arm_graph import Graph
+from util.angles import true_angle_distances_arm
+from util import line
 from arm_node import Node
 import random
-from pure_rrt import arm_is_colliding
+from collision_detection import arm_is_colliding_prisms
 import obstacle_generation
-
-
-def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
-    """Generates a start environment for a run of RRT.
-
-     Returns:
-         An Node representing a valid start configuration.
-         An Node representing a valid end configuration.
-         A set of [num_obstacles] obstacles that do not collide with the start or end configurations.
-    """
-
-    random_start_node = Node(configuration=None)
-    random_end_node = Node.from_point([random.uniform(bounds[0][0], bounds[0][1]),
-                                          random.uniform(bounds[1][0], bounds[1][1]),
-                                          random.uniform(bounds[2][0], bounds[2][1])],
-                                         random_start_node.angles)
-
-    max_tries = 10
-    tries = 1
-    while not random_end_node.valid_configuration():
-        random_end_node = Node.from_point([random.uniform(bounds[0][0], bounds[0][1]),
-                                              random.uniform(bounds[1][0], bounds[1][1]),
-                                              random.uniform(bounds[2][0], bounds[2][1])], random_start_node.angles)
-        tries += 1
-        if tries > max_tries:
-            return None, None, None
-
-    current_obstacles = obstacle_generation.generate_random_obstacles(num_obstacles, bounds,
-                                                                      max_side_length=obstacle_size)
-    while arm_is_colliding(random_end_node, current_obstacles):
-        current_obstacles = obstacle_generation.generate_random_obstacles(num_obstacles, bounds,
-                                                                          max_side_length=obstacle_size)
-
-    while arm_is_colliding(random_start_node, current_obstacles) or not random_start_node.valid_configuration():
-        random_start_node = Node(None)
-
-    print("start angles:", random_start_node.angles)
-    print("end angles:", random_end_node.angles)
-    print("obstacles:", current_obstacles)
-
-    return random_start_node, random_end_node, current_obstacles
 
 
 def avg_nodes_test(graphs: list[Graph]):
@@ -83,7 +44,7 @@ def max_iter_success(graphs):
     return max_success
 
 
-def print_failed_cases(graphs: list[Graph], failed_obstacles):
+def print_failed_cases(graphs, failed_obstacles):
     """ Outputs failed start angles, end angles, and obstacles for a list of RRT graphs. """
     print("FAILED CASES")
 
@@ -95,3 +56,14 @@ def print_failed_cases(graphs: list[Graph], failed_obstacles):
                   .format(ea0=ea[0], ea1=ea[1], ea2=ea[2], ea3=ea[3], ea4=ea[4]))
             print("obstacles =", failed_obstacles[i])
             print()
+
+
+def avg_distance_traveled_test(paths):
+    total_dist = 0
+    for path in paths:
+        path_dist = 0
+        for i in range(1, len(path)):
+            path_dist += line.distance(path[i].end_effector_pos, path[i-1].end_effector_pos)
+        total_dist += path_dist
+
+    return total_dist / len(paths)

@@ -6,7 +6,8 @@ Written by Simon Kapen '24, Spring 2022.
 
 import random
 import matplotlib.pyplot as plt
-import collision_detection
+from collision_detection import plot_linear_prism, arm_is_colliding_prisms
+from arm_node import Node
 
 
 def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side_length=.2, min_side_length = .05):
@@ -43,6 +44,48 @@ def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side
     return obstacles
 
 
+def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
+    """Generates a start environment for a run of RRT.
+
+     Returns:
+         An Node representing a valid start configuration.
+         An Node representing a valid end configuration.
+         A set of [num_obstacles] obstacles that do not collide with the start or end configurations.
+    """
+
+    random_start_node = Node(configuration=None)
+    random_end_node = Node.from_point([random.uniform(bounds[0][0], bounds[0][1]),
+                                          random.uniform(bounds[1][0], bounds[1][1]),
+                                          random.uniform(bounds[2][0], bounds[2][1])],
+                                         random_start_node.angles)
+
+    max_tries = 10
+    tries = 1
+    while not random_end_node.valid_configuration():
+        random_end_node = Node.from_point([random.uniform(bounds[0][0], bounds[0][1]),
+                                              random.uniform(bounds[1][0], bounds[1][1]),
+                                              random.uniform(bounds[2][0], bounds[2][1])], random_start_node.angles)
+        tries += 1
+        if tries > max_tries:
+            return None, None, None
+
+    current_obstacles = generate_random_obstacles(num_obstacles, bounds, max_side_length=obstacle_size)
+    while arm_is_colliding_prisms(random_end_node, current_obstacles):
+        current_obstacles = generate_random_obstacles(num_obstacles, bounds, max_side_length=obstacle_size)
+
+    while arm_is_colliding_prisms(random_start_node, current_obstacles) or not random_start_node.valid_configuration():
+        random_start_node = Node(None)
+
+    print("start angles:", random_start_node.angles)
+    print("end angles:", random_end_node.angles)
+    print("obstacles:", current_obstacles)
+
+    return random_start_node, random_end_node, current_obstacles
+
+
+
+
+
 if __name__ == "__main__":
     ax = plt.axes(projection='3d')
     obs_array = generate_random_obstacles(5, [[-.4, .4], [0, .4], [-.4, .4]])
@@ -54,5 +97,5 @@ if __name__ == "__main__":
     ax.set_zlim3d(-.4, .4)
     # obstacles
     for o in obs_array:
-        collision_detection.plot_linear_prism(ax, o)
+        plot_linear_prism(ax, o)
     plt.show()

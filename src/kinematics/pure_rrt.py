@@ -16,28 +16,16 @@ from random import random
 from collections import deque
 import time
 import random
-import collision_detection
+from collision_detection import arm_is_colliding_prisms
 from optimizers import path_optimizer_two, path_optimizer_four, checkPath
 from util import line
 from arm_node import Node
 from arm_graph import Graph
 from matplotlib.widgets import Button
 from arm_plot import plot_3d
-import obstacle_generation
+from obstacle_generation import random_start_environment
 from util.angles import true_angle_distances_arm
 import sys
-
-def arm_is_colliding(node: Node, obstacles):
-    """Checks if an arm configuration is colliding with any obstacle in the c-space.
-
-    Args:
-        node: An instance of arm_node.Node.
-        obstacles: An array of float arrays representing obstacles.
-    """
-    for obs in obstacles:
-        if collision_detection.arm_is_colliding_prism(node, obs):
-            return True
-    return False
 
 
 def nearest(g: Graph, node: Node):
@@ -90,11 +78,11 @@ def extend_heuristic(g: Graph, rand_node: Node, step_size: float, threshold: int
     near_node = g.ranking[0]
     new_node = steer(rand_node.angles, near_node.angles, step_size)
 
-    if g.dist_to_end(new_node) < g.dist_to_end(near_node) and not arm_is_colliding(new_node, obstacles) \
+    if g.dist_to_end(new_node) < g.dist_to_end(near_node) and not arm_is_colliding_prisms(new_node, obstacles) \
             and new_node.valid_configuration():
         nearest_to_new, nearest_to_new_idx = nearest(g, new_node.end_effector_pos)
 
-        if arm_is_colliding(new_node, obstacles):
+        if arm_is_colliding_prisms(new_node, obstacles):
             raise Exception("Adding a colliding node")
         g.add_vex(new_node, nearest_to_new)
         # dist = line.distance(new_node.end_effector_pos, nearest_to_new.end_effector_pos)
@@ -157,7 +145,7 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
 
     for i in range(n_iter):
         rand_node = Node(None)
-        if arm_is_colliding(rand_node, obstacles):
+        if arm_is_colliding_prisms(rand_node, obstacles):
             continue
 
         if i % 2 == 0 or not G.ranking:
@@ -167,7 +155,7 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
 
             new_node = steer(rand_node.angles, nearest_node.angles, stepSize)
 
-            if arm_is_colliding(new_node, obstacles) or not new_node.valid_configuration():
+            if arm_is_colliding_prisms(new_node, obstacles) or not new_node.valid_configuration():
                 continue
 
             nearest_to_new, _ = nearest(G, new_node.end_effector_pos)
@@ -178,14 +166,14 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
 
         else:
             new_node, newidx = extend_heuristic(G, rand_node, stepSize, heuristic_threshold, obstacles)
-            if arm_is_colliding(new_node, obstacles):
+            if arm_is_colliding_prisms(new_node, obstacles):
                 continue
 
         end_eff_dist_to_goal = line.distance(new_node.end_effector_pos, G.end_node.end_effector_pos)
         angle_dist_to_goal = np.linalg.norm(true_angle_distances_arm(new_node.angles, G.end_node.angles))
 
         if end_eff_dist_to_goal < radius and not G.success:
-            if arm_is_colliding(G.end_node, obstacles):
+            if arm_is_colliding_prisms(G.end_node, obstacles):
                 raise Exception("Adding a colliding node")
             desired_position = G.end_node.end_effector_pos
             if angle_dist_to_goal > angle_threshold:
@@ -236,6 +224,7 @@ def dijkstra(G):
     return list(path)
 
 
+<<<<<<< HEAD
 def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
     """Generates a start environment for a run of RRT.
 
@@ -277,6 +266,8 @@ def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
     return random_start_node, random_end_node, current_obstacles
 
 
+=======
+>>>>>>> 32a24b62aad128758bbbc728cea695f223157d59
 def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num_obstacles=1):
     """ Generates a list of RRT graphs. """
     print("RUNNING {t} TRIALS OF RRT WITH {o} OBSTACLES\n".format(t=num_trials, o=num_obstacles))
@@ -292,7 +283,7 @@ def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num
         if not current_start_node.valid_configuration():
             raise Exception("Approved an invalid start node")
 
-        if arm_is_colliding(current_end_node, random_obstacles):
+        if arm_is_colliding_prisms(current_end_node, random_obstacles):
             raise Exception("Approved a colliding node")
 
         G = rrt(current_start_node.angles, current_end_node.angles, random_obstacles, n_iter=n_iter, radius=radius,
