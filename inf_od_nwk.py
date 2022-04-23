@@ -139,6 +139,7 @@ if __name__ == '__main__':
             cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
             cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
+            print ("Press q to quit or r to continue")
             if key & 0xFF == ord('q') or key == 27:
                 cv2.destroyAllWindows()
                 break
