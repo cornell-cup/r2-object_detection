@@ -230,13 +230,8 @@ def radians_to_degrees(rrtnode):
     return degrees
 
 
-<<<<<<< HEAD:src/kinematics/assuming_linearity_rrt.py
-def path_radians_to_degrees(path: List[RRTNode]):
-    """Converts a path of RRTNode instances into a path of degree arrays to be used in arm encoder movements."""
-=======
 def path_radians_to_degrees(path: list[Node]):
     """Converts a path of Node instances into a path of degree arrays to be used in arm encoder movements."""
->>>>>>> master:src/kinematics/linear_rrt.py
     return list(map(radians_to_degrees, path))
 
 
