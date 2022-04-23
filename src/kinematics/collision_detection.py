@@ -395,7 +395,7 @@ def main():
     # create the prism to be avoided (hard coded)
     lim = .3
     location = random.uniform(-lim,lim)
-    prism = ([.3, .3, .3, .2, .3, .4])
+    prism = ([0, 0, 0, .2, .3, .4])
     exoPrism = ([prism[0]-.05,prism[1]-.05,prism[2]-.05,prism[3]+.1,prism[4]+.1,prism[5]+.1])
     plot_linear_prism(ax, prism, 'blue')
     plot_linear_prism(ax, exoPrism, 'red')
