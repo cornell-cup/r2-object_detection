@@ -1,9 +1,17 @@
-from rrtnode import RRTNode
+"""A class representing a graph of nodes representing arm configurations.
+
+Written by Simon Kapen '24 and Alison Duan '23, Spring 2021-Spring 2022.
+Initially adapted from Fanjin Zeng on github, 2019 (gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80).
+"""
+
+from arm_node import Node
 from spatial_hashing import SpatialHash
-import line
+from util import line
+import numpy as np
+
 
 class Graph:
-    """An RRT graph.
+    """A graph representing groups of arm configurations.
     Args:
         start_angles: The initial angles of the arm.
         end_angles: The desired angles of the arm.
@@ -20,10 +28,8 @@ class Graph:
         sx, sy, sz: The distance between the start and end nodes.
     """
     def __init__(self, start_angles, end_angles):
-        self.start_node = RRTNode(start_angles)
-        self.end_node = RRTNode(end_angles)
-
-        #self.nodes = [self.start_node]
+        self.start_node = Node(start_angles)
+        self.end_node = Node(end_angles)
 
         self.edges = []
         self.success = False
@@ -33,22 +39,27 @@ class Graph:
         self.distances = {0: 0.}
         self.ranking = []
         self.nodes = [self.start_node]
+        self.end_effectors = np.array([self.start_node.end_effector_pos])
 
-        self.spatial_hash = SpatialHash(0.2, 0.2, 0.2)
-        self.spatial_hash.insert_node(self.start_node.end_effector_pos, self.start_node, 0)
-
-    def add_vex(self, node):
+    def add_vex(self, node, parent):
         try:
             idx = self.node_to_index[node]
-        except:
+        except KeyError:
+            parent_idx = self.node_to_index[parent]
             idx = len(self.nodes)
+
+            dist = parent.optimistic_cost + Node.distance(parent, node)
+            node.optimistic_cost = dist
+
+            self.neighbors[idx] = []
+
+            self.add_edge(idx, parent_idx, Node.distance(parent, node))
+
             self.nodes.append(node)
             self.node_to_index[node] = idx
-            self.neighbors[idx] = []
             self.ranking.append(node)
-            self.ranking.sort(key=lambda n: self.dist_to_end(n))
-
-            self.spatial_hash.insert_node(node.end_effector_pos, node, idx)
+            self.ranking.sort(key=lambda n: dist + Node.distance(n, self.end_node))
+            self.end_effectors = np.vstack([self.end_effectors, node.end_effector_pos])
         return idx
 
     def add_edge(self, idx1, idx2, cost):

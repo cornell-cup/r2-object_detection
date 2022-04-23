@@ -31,6 +31,7 @@ from src.camera import Camera
 from src.projections import *
 from networking.Client import Client
 import arm.publish_arm_updates as arm 
+import kinematics.assuming_linearity_rrt as alr 
 
 #  this is a test comment
 net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
@@ -138,13 +139,12 @@ if __name__ == '__main__':
             # TODO: make sure that this startpos works
             startpos = arm.read_encoder_values()
 
-            data_packet = [startpos, gripper_pt1_arm.tolist(), gripper_pt2_arm.tolist()]
-            robot.send_data(data_packet)
-
-            # TODO: add in a check to make sure we actually receive an arm config
-            arm_config = robot.listen()
-            print(arm_config)
-
+            # inverse kinematics
+            avg_target = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
+                          for i in range(length(gripper_pt1_arm))]
+            endpos = RRTNode.from_point(avg_target, startpos)
+            arm_config = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000):
+            
             # send arm_config to the arm to move
             arm.writeToSerial(arm_config)
 
