@@ -1,12 +1,11 @@
-"""
-Representation of a node in an RRT graph, which represents a single arm configuration.
+"""Representation of a node in an RRT graph, which represents a single arm configuration.
 
 Represents a single configuration of the precision arm using the five joint angles. Specifications of the arm itself are
-held in the arm's URDF file.
+held in models/SimpleArmModelForURDF.urdf.
 
-Written by Simon Kapen, Spring 2021.
+Written by Simon Kapen '24, Spring 2021.
 """
-from error_handling import nostderr
+from util.error_handling import nostderr
 import numpy as np
 import math
 import random
@@ -14,14 +13,15 @@ import kinpy as kp
 from typing import List
 
 URDF_FILE="/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics/models/SimpleArmModelforURDF.urdf"
+from util import line
 
-# Global arm configuration
+# Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
     chain = kp.build_chain_from_urdf(open(URDF_FILE).read())
     serial_chain = kp.build_serial_chain_from_urdf(open(URDF_FILE).read(), "hand_1",  "base_link")
 
 
-class RRTNode(object):
+class Node(object):
     """
     A node generated in a RRT graph.
     Args:
@@ -36,14 +36,16 @@ class RRTNode(object):
         bounds: An array of float arrays listing the lower and upper bounds of each arm angle.
         end_effector_pos: A np array of the [x, y, z] of the end effector.
         angles: A np array listing the joint angles in radians.
+        optimistic_cost: A float representing the optimal path cost traveling through this node.
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
-    a0_bounds = (3 * math.pi / 2, 4.9 * math.pi / 2)
-    a1_bounds = (-math.pi / 2, math.pi / 2)
-    a2_bounds = (0, 2 * math.pi)
+    a0_bounds = (3 * math.pi / 2, .9 * math.pi / 2)
+    a1_bounds = (3 * math.pi / 2, 1.22173)
+    a2_bounds = (1.7 * math.pi, 2.8 * math.pi / 2)
     a3_bounds = (0, 2 * math.pi)
     a4_bounds = (0, 2 * math.pi)
 
+    null = (2 * math.pi, 0)
     bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
 
     def __init__(self, configuration: List[float]):
@@ -54,6 +56,7 @@ class RRTNode(object):
 
         self.joint_positions = self.forward_kinematics()
         self.end_effector_pos = self.joint_positions[-1]
+        self.optimistic_cost = 0
         self.fail_count = 0
 
     def forward_kinematics(self):
@@ -78,7 +81,7 @@ class RRTNode(object):
         self.fail_count = self.fail_count + 1
 
     def angle_within_bounds(self, angle, joint):
-        return 0 < angle < self.bounds[joint][0] or self.bounds[joint][1] < angle < 2 * math.pi
+        return (0 < angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi)
 
     def angles_within_bounds(self, angles):
         for i, angle in enumerate(angles):
@@ -87,11 +90,11 @@ class RRTNode(object):
         return True
 
     def random_angle_config(self):
-        """ Returns a set of random angles within the bounds of the arm. """
+        """ Returns a set of random angles within the bounds of the arm."""
         rand_angles = [0, 0, 0, 0, 0]
 
         for a in range(0, 5):
-            rand_angles[a] = random.uniform(self.bounds[a][0], self.bounds[a][1])
+            rand_angles[a] = random_angle(self.bounds[a][0], self.bounds[a][1])
 
         return rand_angles
 
@@ -101,9 +104,9 @@ class RRTNode(object):
          Returns True if none of the joints cross into the negative Y-axis.
          TODO: also return true if the bounds are correct.
          """
-
         for i in range(0, len(self.joint_positions)):
             if self.joint_positions[i][1] < self.joint_positions[0][1]:
+                # print("joint positions not in bounds")
                 return False
 
         if not self.angles_within_bounds(self.angles):
@@ -118,4 +121,17 @@ class RRTNode(object):
 
         return angle_config
 
+    @classmethod
+    def distance(cls, node1, node2):
+        return line.distance(node1.end_effector_pos, node2.end_effector_pos)
 
+
+def random_angle(left_bound, right_bound):
+    """ Generates a random angle from (left_bound, 2pi) and (0, right_bound). """
+
+    delta_a = math.pi * 2 - left_bound
+    delta_b = right_bound
+    if (delta_a == 0 and delta_b == 0) or (np.random.rand() < delta_a / (delta_a + delta_b)):
+        return random.uniform(left_bound, math.pi * 2)
+    else:
+        return random.uniform(0, right_bound)

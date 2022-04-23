@@ -1,16 +1,18 @@
+"""A script to configure collisions with a robot arm and obstacles (represented as cuboids).
+
+    Typical usage example:
+
+    arm_is_colliding_prism(node, prism)
+    plot_linear_prism(ax, prism, color)
+
+Written by Raj Sinha '25, Varun Parkash '22, and Simon Kapen '24, Fall 2020-Spring 2022.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import random
-from rrtnode import RRTNode
-
-"""******************************************************************** ********
-A script to configure a robot arm and collisions (represented as cubes).
-Run the script to see an example visualization of the arm and an obstruction.
-Run the script with argument "rand" to see a random configuration and test
-the collision detection (result of collision is printed through command line).
-TODO: Implement path-planning algo | Integrate with camera's point cloud output
-****************************************************************************"""
+from arm_node import Node
 
 # Global arm configuration
 # chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
@@ -109,7 +111,7 @@ def plot_arm(ax, node, line_label):
 
     INSTANCE ARGUMENTS:
     ax         [matplotlib.axes] : figure with 3D axes.
-    node        [RRTNode]        : robot arm configuration.
+    node        [Node]        : robot arm configuration.
     line_label [str]             : label for the arm plot.
     """
     points = node.joint_positions
@@ -192,7 +194,7 @@ def arm_is_colliding(node, cube):
     Return True if the arm is colliding with the cube, else False.
 
     INSTANCE ARGUMENTS:
-    node  [RRTNode] : Instance of RRTNode representing a robot arm configuration.
+    node  [Node] : Instance of Node representing a robot arm configuration.
     cube [list]     : specifications of the cube formatted as
                       [<x coord.>, <y coord.>, <z coord.>, <side length>].
     """
@@ -209,16 +211,27 @@ def arm_is_colliding_prism(node, prism):
     Return True if the arm is colliding with the cube, else False.
 
     INSTANCE ARGUMENTS:
-    node  [RRTNode] : Instance of RRTNode representing a robot arm configuration.
+    node  [Node] : Instance of Node representing a robot arm configuration.
     cube [list]     : specifications of the cube formatted as
                       [<x coord.>, <y coord.>, <z coord.>, <side length>].
     """
     points = node.joint_positions
-    print("points follow: ")
-    print(points)
     for i in range(len(node.angles) - 1):
-        line = [points[i], points[i + 1]]
-        if line_is_colliding(line, prism):
+        line = np.append(points[i], points[i + 1])
+        if newLineCollider(line, prism):
+            return True
+    return False
+
+
+def arm_is_colliding_prisms(node: Node, obstacles):
+    """Checks if an arm configuration is colliding with any obstacle in the c-space.
+
+    Args:
+        node: An instance of arm_node.Node.
+        obstacles: An array of float arrays representing obstacles.
+    """
+    for obs in obstacles:
+        if arm_is_colliding_prism(node, obs):
             return True
     return False
 
@@ -265,7 +278,6 @@ def newLineCollider(line_seg, prism):
     if (prism[2] <= line_seg[5]) & (line_seg[5] <= prism[2] + prism[5]):
         checkZ = True
     if (checkX & checkZ & checkY):
-        print('POINT TYPE COLLISION')
         return True
 
     checkX = False
@@ -276,9 +288,7 @@ def newLineCollider(line_seg, prism):
     x = prism[0]
     y = prism[1]
     z = prism[2]
-    print('x', x)
-    print('y', y)
-    print('z', z)
+
     l = prism[3]  # length goes with x
     w = prism[4]  # width goes with y
     h = prism[5]
@@ -289,19 +299,10 @@ def newLineCollider(line_seg, prism):
     z1 = line_seg[2]
     z2 = line_seg[5]
 
-    print("p1x: ", x1)
-    print("p1y: ", y1)
-    print("p1z: ", z1)
-    print("p2x: ", x2)
-    print("p2y: ", y2)
-    print("p2z: ", z2)
-
     # check if the line collides with either  x surface
     if (x2 - x1 != 0):
         t1 = (x - x1) / (x2 - x1)
         t2 = ((x + l) - x1) / (x2 - x1)
-        print("t1", t1)
-        print("t2", t2)
         yt1 = y1 + t1 * (y2 - y1)
         yt2 = y1 + t2 * (y2 - y1)
         zt1 = z1 + t1 * (z2 - z1)
@@ -309,19 +310,10 @@ def newLineCollider(line_seg, prism):
         xt1 = x1 + t1 * (x2 - x1)
         xt2 = x1 + t2 * (x2 - x1)
 
-        print('xt1:', xt1)
-        print('xt2:', xt2)
-        print('yt1:', yt1)
-        print('yt2:', yt2)
-        print('zt1:', zt1)
-        print('zt2:', zt2)
         if (y <= yt1 and yt1 <= y + w and z <= zt1 and zt1 <= z + h and t1 >= 0 and t1 <= 1):
-            print('collision first side X')
             return True
         elif (y <= yt2 and yt2 <= y + w and z <= zt2 and zt2 <= z + h and t2 >= 0 and t2 <= 1):
-            print('collision second side X')
             return True
-    print('no collision in x planes')
 
     # check if the line collides with either y surface
     if (y2 - y1 != 0):
@@ -332,16 +324,9 @@ def newLineCollider(line_seg, prism):
         zt1 = z1 + t1 * (z2 - z1)
         zt2 = z1 + t2 * (z2 - z1)
         if (x <= xt1 and xt1 <= x + l and z <= zt1 and zt1 <= z + h and t1 >= 0 and t1 <= 1):
-            print('collision first side Y')
-            print(xt1)
-            print(zt1)
             return True
         elif (x <= xt2 and xt2 <= x + l and z <= zt2 and zt2 <= z + h and t2 >= 0 and t2 <= 1):
-            print('collision second side Y')
-            print(xt2)
-            print(zt2)
             return True
-    print('no collision in y planes')
 
     # check if the line collides with either z surface
     if (z2 - z1 != 0):
@@ -353,12 +338,9 @@ def newLineCollider(line_seg, prism):
         yt2 = y1 + t2 * (y2 - y1)
 
         if (x <= xt1 and xt1 <= x + l and y <= yt1 and yt1 <= y + w and t1 >= 0 and t1 <= 1):
-            print('collision first side Z')
             return True
         elif (x <= xt2 and xt2 <= x + l and y <= yt2 and yt2 <= y + w and t2 >= 0 and t2 <= 1):
-            print('collision second side Z')
             return True
-    print('no collision in z planes')
 
 
 def checkCollision(prism, rrtNode):
@@ -369,9 +351,6 @@ def checkCollision(prism, rrtNode):
         # print([p1[0][0],p1[0][1],p1[0][2]])
         line_seg = ([p1[0][0], p1[0][1], p1[0][2], p2[0][0], p2[0][1], p2[0][2]])
         if (newLineCollider(line_seg, prism)):
-            print('Collision on line', i, '-', i + 1)
-            print("p1", p1)
-            print("p2", p2)
             return True
     return False
 
@@ -416,7 +395,7 @@ def main():
     # create the prism to be avoided (hard coded)
     lim = .3
     location = random.uniform(-lim,lim)
-    prism = ([.3, .3, .3, .2, .3, .4])
+    prism = ([0, 0, 0, .2, .3, .4])
     exoPrism = ([prism[0]-.05,prism[1]-.05,prism[2]-.05,prism[3]+.1,prism[4]+.1,prism[5]+.1])
     plot_linear_prism(ax, prism, 'blue')
     plot_linear_prism(ax, exoPrism, 'red')
@@ -443,7 +422,7 @@ def main():
         plot_lines(ax, xs, ys, zs, None)
     """
     # Create a random arm
-    arm = RRTNode(None)
+    arm = Node(None)
     plot_arm(ax,arm,None)
     class Index:
         def draw(self, event):

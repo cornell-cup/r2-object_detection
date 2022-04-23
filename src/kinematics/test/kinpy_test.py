@@ -1,13 +1,13 @@
-"""
-Test that displays an arm configuration using kinpy.
-Made by Simon Kapen in Fall 2021.
+"""Test that displays an arm configuration using kinpy.
+
+Written by Simon Kapen '24 in Fall 2021.
 """
 
 import kinpy as kp
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
-from rrtnode import RRTNode
+from arm_node import Node
 
 chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1", "base_link")
@@ -16,7 +16,7 @@ angle_config = kp.ik.inverse_kinematics(chain, kp.Transform(pos=[0.2, 0.2, 0.2])
 ret = chain.forward_kinematics(angle_config, end_only=False)
 print(ret)
 
-node = RRTNode.from_point([.2, .2, .2])
+node = Node.from_point([.2, .2, .2])
 print(node.joint_positions)
 
 # # Generate locations of each joint. Input angles here.
