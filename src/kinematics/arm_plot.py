@@ -47,11 +47,8 @@ def plot_3d(G, path, obstacles, path2=None):
     ax.scatter3D(G.start_node.end_effector_pos[0], G.start_node.end_effector_pos[1], G.start_node.end_effector_pos[2], c='red')
     ax.scatter3D(G.end_node.end_effector_pos[0], G.end_node.end_effector_pos[1], G.end_node.end_effector_pos[2], c='purple')
 
-<<<<<<< HEAD:src/kinematics/arm_plot.py
-=======
     # collision_detection.plot_linear_prism(ax, (0, 0, 0, .01, .3, .01), "blue")
 
->>>>>>> kinematics:src/kinematics/rrtplot.py
     for obs in obstacles:
         collision_detection.plot_linear_prism(ax, obs, 'blue')
 
@@ -102,18 +99,11 @@ def plot_path(ax, path,color='green'):
 
 def plot_arm_configs(ax, path, obstacles, color='green'):
     for i in range(0, len(path)):
-<<<<<<< HEAD:src/kinematics/arm_plot.py
-        for obstacle in obstacles:
-            if collision_detection.arm_is_colliding_prism(path[i], obstacle):
-                print(path[i].angles)
-                color = 'red'
-=======
         if obstacles is not None:
             for obstacle in obstacles:
                 if collision_detection.arm_is_colliding_prism(path[i], obstacle):
                     print(path[i].angles)
                     color = 'red'
->>>>>>> kinematics:src/kinematics/rrtplot.py
         v1 = []
         v2 = []
         v3 = []
@@ -145,13 +135,6 @@ def plot_trial_times(graph_list, times):
     plt.show()
 
 
-<<<<<<< HEAD:src/kinematics/arm_plot.py
-if __name__ == "__main__":
-    path = []
-    for i in range(100):
-        node = Node(None)
-        path.append(node)
-=======
 def plot_ik_trial(target_point, obtained_config):
     """ Visualizes the distance between a target point and a point obtained through inverse kinematics. """
     ax = plt.axes(projection='3d')
@@ -170,7 +153,6 @@ if __name__ == "__main__":
     # for i in range(100):
     #     node = Node(None)
     #     configs.append(node)
->>>>>>> kinematics:src/kinematics/rrtplot.py
 
     ax = plt.axes(projection='3d')
     plot_arm_configs(ax, configs, [])

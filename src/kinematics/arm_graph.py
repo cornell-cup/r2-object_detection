@@ -27,11 +27,6 @@ class Graph:
         ranking: List of all intermediate nodes, ordered by distance between the end effector to the target position.
         sx, sy, sz: The distance between the start and end nodes.
     """
-<<<<<<< HEAD:src/kinematics/arm_graph.py
-    def __init__(self, start_angles, end_angles):
-        self.start_node = Node(start_angles)
-        self.end_node = Node(end_angles)
-=======
     def __init__(self, start_angles, end_angles, target_end_pos=None):
         self.start_node = Node(start_angles)
         if end_angles is not None:
@@ -41,7 +36,6 @@ class Graph:
             self.target_end_pos = target_end_pos
         else:
             self.target_end_pos = self.end_node.end_effector_pos
->>>>>>> kinematics:src/kinematics/rrtgraph.py
 
         self.edges = []
         self.success = False

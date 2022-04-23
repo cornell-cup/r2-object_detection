@@ -11,11 +11,12 @@ import math
 import random
 import kinpy as kp
 from util import line
+from typing import List
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
-    chain = kp.build_chain_from_urdf(open("models/XArm.urdf").read())
-    serial_chain = kp.build_serial_chain_from_urdf(open("models/XArm.urdf").read(), "link5", "base_link")
+    chain = kp.build_chain_from_urdf(open("./src/kinematics/models/XArm.urdf").read())
+    serial_chain = kp.build_serial_chain_from_urdf(open("./src/kinematics/models/XArm.urdf").read(), "link5", "base_link")
 
 xarm_joint_names = ['arm1', 'arm2', 'arm3', 'arm4', 'arm5']
 xarm_link_names = ['base_link', 'link1', 'link2', 'link3', 'link4']
@@ -107,11 +108,7 @@ class Node(object):
 
          Returns True if none of the joints cross into the negative Y-axis.
          """
-<<<<<<< HEAD:src/kinematics/arm_node.py
-        for i in range(0, len(self.joint_positions)):
-=======
         for i in range(1, len(self.joint_positions)):
->>>>>>> kinematics:src/kinematics/rrtnode.py
             if self.joint_positions[i][1] < self.joint_positions[0][1]:
                 # print("joint positions not in bounds")
                 return False
@@ -126,11 +123,7 @@ class Node(object):
         angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
                                                 initial_state=start_config)
 
-<<<<<<< HEAD:src/kinematics/arm_node.py
-        return angle_config
-=======
         return Node(angle_config)
->>>>>>> kinematics:src/kinematics/rrtnode.py
 
     @classmethod
     def distance(cls, node1, node2):
