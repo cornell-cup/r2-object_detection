@@ -1,4 +1,4 @@
-from src.kinematics import collision_detection
+import collision_detection
 
 """
 Written by Yashraj Sinha, Spring 2022.

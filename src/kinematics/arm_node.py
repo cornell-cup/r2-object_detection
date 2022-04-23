@@ -14,8 +14,11 @@ from util import line
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
-    chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
-    serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")
+    chain = kp.build_chain_from_urdf(open("models/XArm.urdf").read())
+    serial_chain = kp.build_serial_chain_from_urdf(open("models/XArm.urdf").read(), "link5", "base_link")
+
+xarm_joint_names = ['arm1', 'arm2', 'arm3', 'arm4', 'arm5']
+xarm_link_names = ['base_link', 'link1', 'link2', 'link3', 'link4']
 
 
 class Node(object):
@@ -51,21 +54,25 @@ class Node(object):
         else:
             self.angles = configuration
 
-        self.joint_positions = self.forward_kinematics()
+        self.joint_positions = self.forward_kinematics(xarm_joint_names, xarm_link_names)
         self.end_effector_pos = self.joint_positions[-1]
         self.optimistic_cost = 0
         self.fail_count = 0
 
-    def forward_kinematics(self):
+    def forward_kinematics(self, joint_names, link_names):
         """Computes forward kinematics of the arm given the joint angles.
 
         Returns:
             An array of the [x, y, z] of each joint of the arm based on the node's angle configuration.
         """
-        th = {'Rev2': self.angles[0], 'Rev3': self.angles[1], 'Rev4': self.angles[2], 'Rev5': self.angles[3],
-              'Rev6': self.angles[4]}
+        th = {}
+        for i in range(len(joint_names)):
+            th[joint_names[i]] = self.angles[i]
+
         ret = chain.forward_kinematics(th)
-        return [ret['link2_1'].pos, ret['link3_1'].pos, ret['link4_1'].pos, ret['link5_1'].pos, ret['hand_1'].pos]
+
+        angles = [ret[name].pos for name in link_names]
+        return angles
 
     def get_link_lengths(self):
         """ Computes the link lengths of each link in the arm. """
@@ -99,9 +106,8 @@ class Node(object):
         """Determines if the current arm configuration of the node is a valid one.
 
          Returns True if none of the joints cross into the negative Y-axis.
-         TODO: also return true if the bounds are correct.
          """
-        for i in range(0, len(self.joint_positions)):
+        for i in range(1, len(self.joint_positions)):
             if self.joint_positions[i][1] < self.joint_positions[0][1]:
                 # print("joint positions not in bounds")
                 return False

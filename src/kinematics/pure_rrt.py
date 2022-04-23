@@ -27,7 +27,7 @@ from util.angles import true_angle_distances_arm
 import sys
 
 
-def nearest(g: Graph, node: Node):
+def nearest(g: Graph, target_end_effector_pos):
     """ Finds the nearest node to the input node in Cartesian space, 
         by end effector position.
 
@@ -36,7 +36,7 @@ def nearest(g: Graph, node: Node):
         its index in the hashtable of the input graph.
     """
     # print(g.end_effectors)
-    nearest_node_index = np.argmin(np.sum(np.square(g.end_effectors - node), axis=1))
+    nearest_node_index = np.argmin(np.sum(np.square(g.end_effectors - target_end_effector_pos), axis=1))
 
     return g.nodes[nearest_node_index], nearest_node_index
 
@@ -187,12 +187,15 @@ def rrt(start_angles, end_angles, obstacles, n_iter=300, radius=0.02, angle_thre
     return G
 
 
-def dijkstra(G):
+def dijkstra(G, target_node=None):
     """
     Dijkstra algorithm for finding shortest path from start position to end.
     """
     srcIdx = G.node_to_index[G.start_node]
     dstIdx = G.node_to_index[G.end_node]
+
+    if target_node is not None:
+        dstIdx = G.node_to_index[target_node]
 
     # build dijkstra
     nodes = list(G.neighbors.keys())
@@ -227,7 +230,7 @@ def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num
     """ Generates a list of RRT graphs. """
     print("RUNNING {t} TRIALS OF RRT WITH {o} OBSTACLES\n".format(t=num_trials, o=num_obstacles))
     graphs = []
-    failed_obstacles = []
+    generated_obstacles = []
     for i in range(0, num_trials):
         trial_start_time = time.time()
 
@@ -253,56 +256,21 @@ def rrt_graph_list(num_trials, n_iter, radius, step_size, threshold, bounds, num
         print("Trial time:", time.time() - trial_start_time)
         print("")
         graphs.append(G)
-        failed_obstacles.append(random_obstacles)
+        generated_obstacles.append(random_obstacles)
 
-    return graphs, failed_obstacles
-
-
-def avg_nodes_test(graphs: list[Graph]):
-    """ The average amount of nodes generated until the end goal is reached. """
-    total_nodes = 0
-    for i in range(0, len(graphs)):
-        total_nodes += len(graphs[i].nodes)
-
-    return total_nodes / len(graphs)
-
-
-def converge_test(graphs: list[Graph]):
-    """ Counts the amount of successes for a list of RRT graphs. """
-    num_success = 0
-    for i in range(0, len(graphs)):
-        if graphs[i].success:
-            num_success += 1
-
-    return num_success
-
-
-def print_failed_cases(graphs: list[Graph], failed_obstacles):
-    """ Outputs failed start angles, end angles, and obstacles for a list of RRT graphs. """
-    print("FAILED CASES")
-
-    for i in range(0, len(graphs)):
-        if not graphs[i].success:
-            print("start_angles =", graphs[i].start_node.angles)
-            ea = graphs[i].end_node.angles
-            print("end_angles = [{ea0}, {ea1}, {ea2}, {ea3}, {ea4}]"
-                  .format(ea0=ea[0], ea1=ea[1], ea2=ea[2], ea3=ea[3], ea4=ea[4]))
-            print("obstacles =", failed_obstacles[i])
-            print()
-
-
+    return graphs, generated_obstacles
 
 
 if __name__ == '__main__':
-    n_iter = 1000
-    radius = .07
+    n_iter = 2000
+    radius = .01
     stepSize = .35
     threshold = 2
     num_obstacles = 1
-    bounds = [[-.4, .4], [0, .4], [-.4, .4]]
+    bounds = [[-.05, .05], [-.05, .05], [-.05, .05]]
     # start_node = RRTNode([7.4883959080999105, -0.9802836168249124, 2.7119532197892307, 2.690692578970348, 1.4327288698060625])
     # end_node = RRTNode([0.80873032,  0.58529255 , 1.57082885 , 2.15507481 ,-0.80873048])
-    start_node, end_node, obstacles = random_start_environment(num_obstacles, bounds)
+    start_node, end_node, obstacles, _ = random_start_environment(num_obstacles, bounds)
     location = random.uniform(.1, .1)
     prism = [location, location, location, .2, .2, .2]
     obstacles = [prism]
