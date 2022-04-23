@@ -8,11 +8,11 @@ sys.path.insert(1, '/usr/local/lib/python3.6')
 sys.path.insert(2, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics')
 sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src')
 
-from src.camera import Camera
-from src.projections import *
-from networking.Client import Client
+# from src.camera import Camera
+# from src.projections import *
+# from networking.Client import Client
 import src.arm.publish_arm_updates as arm 
-import src.kinematics.assuming_linearity_rrt as alr 
+import src.kinematics.linear_rrt as alr 
 
 WIDTH = 640
 HEIGHT = 480
@@ -45,19 +45,19 @@ if __name__ == '__main__':
             break
 
     arm.close_serial()
-        """
-        try:
-            if success:
-                for config in arm_config:
-                    print("WRITING ARM CONFIG", config.angles)
-                    arm.writeToSerial(config.angles.astype(int))
-            print("arm config serial written")
-            arm.close_serial()
-        except Exception as e:
-            print("error in writing to arm config")
-            print(e) 
-            arm.close_serial() 
+    """
+    try:
+        if success:
+            for config in arm_config:
+                print("WRITING ARM CONFIG", config.angles)
+                arm.writeToSerial(config.angles.astype(int))
+        print("arm config serial written")
+        arm.close_serial()
+    except Exception as e:
+        print("error in writing to arm config")
+        print(e) 
+        arm.close_serial() 
 
 
-        """
+    """
 
