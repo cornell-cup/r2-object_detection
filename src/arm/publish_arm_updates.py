@@ -55,7 +55,6 @@ def read_encoder_values():
 	print(encoderAngle)
 	return encoderAngle
 
-
     
 def writeToSerial(writeArray):
 	'''
@@ -115,5 +114,5 @@ def publish_updates(update_array, timeout):
 
 	
 if __name__ =='__main__':
-	init_serial('/dev/ttyTHS1', 9600)
+	init_serial()
 	read_encoder_values()

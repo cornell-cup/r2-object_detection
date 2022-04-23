@@ -1,16 +1,6 @@
 #!/usr/bin/python3
 
-# import jetson.inference
-# import jetson.utils
-
-#  this is a test comment
-# net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
-# display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
-print("GOT PAST STARTING VIDEO")
-"""Run grasp detection code with the intel realsense camera"""
-
 import math
-import cv2
 import numpy as np
 import sys
 
@@ -31,8 +21,10 @@ TARGET_POINT = [0.1, 0.1, 0.1]
 
 if __name__ == '__main__':
     detections = []
+    arm.init_serial()
+
     for i in range(5):
-        arm.init_serial()
+        
         print("serial port initialized")
         startpos = arm.read_encoder_values()
         print("arm vals read")
@@ -49,8 +41,10 @@ if __name__ == '__main__':
                 converted_array = alr.radians_to_degrees(config)
                 print("WRITING ARM CONFIG", converted_array)
                 arm.publish_updates(converted_array, 0.5)
-        print("arm config serial written")
-        arm.close_serial()
+            print("arm config serial written")
+            break
+
+    arm.close_serial()
         """
         try:
             if success:
