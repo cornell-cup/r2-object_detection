@@ -7,3 +7,4 @@ tensorrt
 wheel
 pbr
 kinpy
+scipy

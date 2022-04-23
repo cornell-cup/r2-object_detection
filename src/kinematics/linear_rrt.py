@@ -207,7 +207,7 @@ def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=1
     Returns:
         An array of Node instances or float arrays representing a valid path between the start and end configurations
     """
-    end_angles = Node.from_point((end_x, end_y, end_z))
+    end_angles = Node.from_point((end_x, end_y, end_z)).angles
     return linear_rrt(start_angles, end_angles, obstacles, num_iter)
 
 
@@ -279,7 +279,8 @@ def plot_random_path(iterations, num_obstacles):
         arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
     """
 
-    start_node, end_node, obstacles = tpm.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
+    start_node, end_node, obstacles = tpm.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]],
+                                                                   [[-.4, .4], [-.2, .4], [-.4, .4]])
 
     plot_path(start_node.angles, end_node.angles, iterations, obstacles)
 

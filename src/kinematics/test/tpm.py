@@ -12,6 +12,10 @@ from arm_node import Node
 import random
 from collision_detection import arm_is_colliding_prisms
 import obstacle_generation
+<<<<<<< HEAD
+=======
+from arm_plot import plot_3d
+>>>>>>> kinematics
 
 
 def avg_nodes_test(graphs: list[Graph]):
@@ -51,11 +55,21 @@ def print_failed_cases(graphs, failed_obstacles):
     for i in range(0, len(graphs)):
         if not graphs[i].success:
             print("start_angles =", graphs[i].start_node.angles)
+<<<<<<< HEAD
             ea = graphs[i].end_node.angles
             print("end_angles = [{ea0}, {ea1}, {ea2}, {ea3}, {ea4}]"
                   .format(ea0=ea[0], ea1=ea[1], ea2=ea[2], ea3=ea[3], ea4=ea[4]))
             print("obstacles =", failed_obstacles[i])
             print()
+=======
+            # ea = graphs[i].end_node.angles
+            # print("end_angles = [{ea0}, {ea1}, {ea2}, {ea3}, {ea4}]"
+            #       .format(ea0=ea[0], ea1=ea[1], ea2=ea[2], ea3=ea[3], ea4=ea[4]))
+            print("obstacles =", failed_obstacles[i])
+
+            print()
+            plot_3d(graphs[i], [graphs[i].start_node], failed_obstacles[i])
+>>>>>>> kinematics
 
 
 def avg_distance_traveled_test(paths):
