@@ -9,14 +9,7 @@ import time
 import math
 
 # Dedicate a /dev port for specifically the precise arm
-<<<<<<< HEAD
 ser = None
-=======
-ser = serial.Serial(
-    port = '/dev/ttyTHS1',
-	baudrate = 9600,
-)
->>>>>>> master
 
 '''
 Arduino to Jetson Communication with R2 Protocol
@@ -89,11 +82,6 @@ def writeToSerial(writeArray):
 		second_half = max(angle-255, 0)
 		split_write_array.append(first_half)
 		split_write_array.append(second_half)
-<<<<<<< HEAD
-
-=======
-	
->>>>>>> master
 	# cast writeArray from int to byte, encode the array using the R2Protocol
 	write_byte = r2.encode(bytes('PARM','utf-8'), bytearray(split_write_array))
 	# send the encoded array across the Jetson Serial lines
@@ -106,24 +94,6 @@ def publish_updates(update_array, timeout):
 	to the serial buffer. We use R2Protocol to write to the arduino, which 
 	will connect/write to the motor controllers directly. 
 
-<<<<<<< HEAD
-	Args: 
-	    updates: a list of update integer lists of size 6. Each update 
-		     list consists of 6 angle configurations in radians, 
-		     which will need to be converted to degrees before being
-		     written to the serial buffer. 
-	    timeout: an integer that represents the time between updates that 
-		     the arm is allotted to move to the desired position. 
-	'''
-	assert len(update_array) == 6
-	# convert updates to ints
-	# update_array = [int(i*180/math.pi) for i in update_array]
-	# for index in range(len(update_array)):
-	#     update_array[index] = int(update_array[index])
-	writeToSerial(update_array)
-	print("array {} sent".format(update_array))
-	time.sleep(timeout)
-=======
         Args: 
             updates: a list of update integer lists of size 6. Each update 
                      list consists of 6 angle configurations in radians, 
@@ -141,7 +111,6 @@ def publish_updates(update_array, timeout):
         writeToSerial(update_array)
         print("array {} sent: {}".format(index, update_array))
         time.sleep(timeout)
->>>>>>> master
 
 	
 if __name__ =='__main__':
