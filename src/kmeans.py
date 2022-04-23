@@ -140,6 +140,8 @@ def create_rgbd(rgb_img, depth_img):
     
     return rgbd
 
+def connected_component_analysis(img):
+    pass
 
 def erode_and_dilate(img, debug=False):
 
