@@ -278,7 +278,8 @@ def plot_random_path(iterations, num_obstacles):
         arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
     """
 
-    start_node, end_node, obstacles = tpm.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
+    start_node, end_node, obstacles = tpm.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]],
+                                                                   [[-.4, .4], [-.2, .4], [-.4, .4]])
 
     plot_path(start_node.angles, end_node.angles, iterations, obstacles)
 

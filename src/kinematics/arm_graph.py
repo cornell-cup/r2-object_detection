@@ -27,9 +27,15 @@ class Graph:
         ranking: List of all intermediate nodes, ordered by distance between the end effector to the target position.
         sx, sy, sz: The distance between the start and end nodes.
     """
-    def __init__(self, start_angles, end_angles):
+    def __init__(self, start_angles, end_angles, target_end_pos=None):
         self.start_node = Node(start_angles)
-        self.end_node = Node(end_angles)
+        if end_angles is not None:
+            self.end_node = Node(end_angles)
+
+        if target_end_pos is not None:
+            self.target_end_pos = target_end_pos
+        else:
+            self.target_end_pos = self.end_node.end_effector_pos
 
         self.edges = []
         self.success = False
@@ -58,7 +64,7 @@ class Graph:
             self.nodes.append(node)
             self.node_to_index[node] = idx
             self.ranking.append(node)
-            self.ranking.sort(key=lambda n: dist + Node.distance(n, self.end_node))
+            self.ranking.sort(key=lambda n: dist + line.distance(n.end_effector_pos, self.target_end_pos))
             self.end_effectors = np.vstack([self.end_effectors, node.end_effector_pos])
         return idx
 
