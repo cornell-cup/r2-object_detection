@@ -5,17 +5,23 @@ held in models/SimpleArmModelForURDF.urdf.
 
 Written by Simon Kapen '24, Spring 2021.
 """
+import numpy
+
 from util.error_handling import nostderr
 import numpy as np
 import math
 import random
 import kinpy as kp
+import ikpy as IKPY
 from util import line
+from ikpy.chain import Chain
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
-    chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
-    serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read(), "hand_1",  "base_link")
+    chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.URDF").read())
+    serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.URDF").read(), "hand_1",
+                                                   "base_link")
+    bruh_chain = Chain.from_urdf_file("models/SimpleArmModelforURDF.URDF")
 
 
 class Node(object):
@@ -70,8 +76,8 @@ class Node(object):
     def get_link_lengths(self):
         """ Computes the link lengths of each link in the arm. """
         lengths = []
-        for i in range(0, len(self.joint_positions)-1):
-            lengths.append(np.linalg.norm(self.joint_positions[i+1] - self.joint_positions[i]))
+        for i in range(0, len(self.joint_positions) - 1):
+            lengths.append(np.linalg.norm(self.joint_positions[i + 1] - self.joint_positions[i]))
         return lengths
 
     def inc_fail_count(self):
@@ -115,7 +121,6 @@ class Node(object):
         """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
         angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
                                                 initial_state=start_config)
-
         return Node(angle_config)
 
     @classmethod
@@ -132,3 +137,70 @@ def random_angle(left_bound, right_bound):
         return random.uniform(left_bound, math.pi * 2)
     else:
         return random.uniform(0, right_bound)
+
+
+def test_from_point(point, start_config=[0, 0, 0, 0, 0]):
+    # Uses inverse kinematics to calculate a node given its cartesian coordinates.
+    angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
+                                            initial_state=start_config)
+    return Node(angle_config)
+
+
+def kinpy_from_point(point, start_config=[0, 0, 0, 0, 0]):
+    """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
+    angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
+                                                initial_state=start_config)
+    return Node(angle_config)
+
+def ikpy_from_point(point, start_config=[0, 0, 0]):
+    """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
+    th = {-1: 'revolute', 0: 'revolute', 1: 'revolute', 2: 'revolute', 3: 'revolute'}
+    angle_config = IKPY.chain.ik.inverse_kinematic_optimization(serial_chain,point,start_config)
+    return Node(angle_config)
+
+def thresholdCheck(a, b, threshold):
+    dist = abs(a)-abs(b)
+    if -threshold < dist and dist < threshold:
+        return True
+    #print("Off by", dist)
+    return False
+
+
+if __name__ == '__main__':
+    # this test will involve going from point (0,0,0) to (1,2,3)
+    start_point = [0, 0, 0]
+    sucess = 0
+    tests = 1
+    for i in range(tests):
+        fail = False
+        randomX = random.uniform(-.5,.5)
+        randomY = random.uniform(-.5,.5)
+        randomZ = random.uniform(-.5,.5)
+        #print("Target X: ", randomX)
+        #print("Target Y: ", randomY)
+        #print("Target Z: ", randomZ)
+        end_point = [randomX, randomY, randomZ]
+        end_point = [.1,.2,.3]
+        angles = bruh_chain.inverse_kinematics(end_point)
+        print(angles)
+        final = bruh_chain.forward_kinematics(angles)
+        print(final)
+        #ikpy_angle_configs = ikpy_from_point(end_point)
+        #print("Kinpy Angles", kinpy_angle_configs.angles)
+        #kinpy_forward = kinpy_angle_configs.forward_kinematics()
+    #     if not thresholdCheck(randomX,kinpy_forward[4][0], .05):
+    #         fail = True
+    #     if not thresholdCheck(randomY,kinpy_forward[4][1], .05):
+    #         fail = True
+    #     if not thresholdCheck(randomZ,kinpy_forward[4][2], .05):
+    #         fail = True
+    #     if not fail:
+    #         sucess += 1
+    # print("Successes: ", sucess)
+    # print("Failures: ", tests - sucess)
+    # print("Rate: ", sucess/tests)
+
+
+
+# you put in angle configs to forward kinematics and get out an ending point
+# you put in an ending point to inverse kinematics and get angle configs
