@@ -1,13 +1,21 @@
-from rrtnode import RRTNode
-import line
+"""A class representing a graph of nodes representing arm configurations.
+
+Written by Simon Kapen '24 and Alison Duan '23, Spring 2021-Spring 2022.
+Initially adapted from Fanjin Zeng on github, 2019 (gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80).
+"""
+
+from arm_node import Node
+from spatial_hashing import SpatialHash
+from util import line
+import numpy as np
+
 
 class Graph:
-    """
-    An RRT graph.
+    """A graph representing groups of arm configurations.
     Args:
         start_angles: The initial angles of the arm.
         end_angles: The desired angles of the arm.
-    Instance Attributes:
+    Attributes:
         start_node: Node containing cartesian coordinates and arm angles of the start position.
         end_node: Node containing cartesian coordinates and arm angles of the end position.
         nodes: List of all nodes in the graph.
@@ -19,11 +27,16 @@ class Graph:
         ranking: List of all intermediate nodes, ordered by distance between the end effector to the target position.
         sx, sy, sz: The distance between the start and end nodes.
     """
-    def __init__(self, start_angles, end_angles):
-        self.start_node = RRTNode(start_angles)
-        self.end_node = RRTNode(end_angles)
+    def __init__(self, start_angles, end_angles, target_end_pos=None):
+        self.start_node = Node(start_angles)
+        if end_angles is not None:
+            self.end_node = Node(end_angles)
 
-        self.nodes = [self.start_node]
+        if target_end_pos is not None:
+            self.target_end_pos = target_end_pos
+        else:
+            self.target_end_pos = self.end_node.end_effector_pos
+
         self.edges = []
         self.success = False
 
@@ -31,17 +44,28 @@ class Graph:
         self.neighbors = {0: []}
         self.distances = {0: 0.}
         self.ranking = []
+        self.nodes = [self.start_node]
+        self.end_effectors = np.array([self.start_node.end_effector_pos])
 
-    def add_vex(self, node):
+    def add_vex(self, node, parent):
         try:
             idx = self.node_to_index[node]
-        except:
+        except KeyError:
+            parent_idx = self.node_to_index[parent]
             idx = len(self.nodes)
+
+            dist = parent.optimistic_cost + Node.distance(parent, node)
+            node.optimistic_cost = dist
+
+            self.neighbors[idx] = []
+
+            self.add_edge(idx, parent_idx, Node.distance(parent, node))
+
             self.nodes.append(node)
             self.node_to_index[node] = idx
-            self.neighbors[idx] = []
             self.ranking.append(node)
-            self.ranking.sort(key=lambda n: self.dist_to_end(n))
+            self.ranking.sort(key=lambda n: dist + line.distance(n.end_effector_pos, self.target_end_pos))
+            self.end_effectors = np.vstack([self.end_effectors, node.end_effector_pos])
         return idx
 
     def add_edge(self, idx1, idx2, cost):
