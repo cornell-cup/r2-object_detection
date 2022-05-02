@@ -6,6 +6,7 @@ import math
 # import matplotlib.pyplot as plt
 # from mpl_toolkits import mplot3d #import art3d
 from grasp_detection import grab_points
+import camera
 
 """Collection of utility functions for grasp detection, such as getting
 grasp coordinates relative to a given coordinate system, and plotting grasp
@@ -253,5 +254,15 @@ def plot_grasp_3D(pt1, pt2, gripper_h):
     the camera, and the two grasp points"""
     pass
 
+def bound_to_coor(depth_scale, depth_frame, depth_img, bounds):
+    boxes = []
+    for bound in bounds:
+        # x, y gives the left lower
+        x,y,w,h = bound
+        center_depth = depth_img[x+w/2,y+h/2].astype(float)
+        distance = center_depth*depth_scale
+        box = proj_pixel_to_point(x, y, distance, depth_frame)
+        boxes.append(box)
+    return boxes
     
 
