@@ -58,10 +58,10 @@ def approx_shape(img):
     # detect the shapes.
     vertices = []
     tmp = img.copy()
+    tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
     for cnt in contours :
         area = cv2.contourArea(cnt)
         # Shortlisting the regions based on there area.
-        # TODO: select the set of approx that gives the biggest area
         if area > 600: 
             approx = cv2.approxPolyDP(cnt, 
                                     0.05 * cv2.arcLength(cnt, True), True)

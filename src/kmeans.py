@@ -155,6 +155,7 @@ def erode_and_dilate(img, debug=False):
             #viz_image([img_erosion,img_dilated],["eroded", "dilated"])
             cv2.imshow("eroded", img_erosion)
             cv2.imshow("dilated", img_dilated)
+            cv2.waitKey()
     return img_dilated
 
 def get_bound (img, debug=False):
@@ -179,20 +180,16 @@ def get_bound (img, debug=False):
         mask = (denoised_img == label_val).astype(int)
         #cv2.imshow("denoised image", denoised_img)
         bound.draw_boxes(denoised_img)
-        box_coords.append(bound.get_rect_params(img))
+        box_coords.append(bound.get_rect_params(denoised_img))
         
-        active_px = np.argwhere(mask!=0)
-        active_px = active_px[:,[1,0]]
-        x,y,w,h = cv2.boundingRect(active_px)
-        box_coords.append((x,y,w,h))
 
         if debug:
             # draw bounding box rectangle
-            cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),3)
+            # cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),3)
             cv2.imshow("org", img)
             cv2.imshow("tmp", tmp)
             cv2.waitKey()
-            #bound.draw_boxes(tmp)
+            bound.draw_boxes(tmp)
     return box_coords
 
 
