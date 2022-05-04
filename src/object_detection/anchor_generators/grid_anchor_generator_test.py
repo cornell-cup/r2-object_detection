@@ -24,7 +24,7 @@ from object_detection.utils import test_case
 class GridAnchorGeneratorTest(test_case.TestCase):
 
   def test_construct_single_anchor(self):
-    """Builds a 1x1 anchor grid to test the size of the output boxes."""
+    """Builds a 1x1 anchor grid to kinematics_test the size of the output boxes."""
     def graph_fn():
       scales = [0.5, 1.0, 2.0]
       aspect_ratios = [0.25, 1.0, 4.0]

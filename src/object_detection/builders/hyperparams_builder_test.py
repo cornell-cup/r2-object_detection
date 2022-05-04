@@ -377,7 +377,7 @@ class HyperparamsBuilderTest(tf.test.TestCase):
     with tf.Graph().as_default() as g:
       with self.test_session(graph=g) as sess:
         var = tf.get_variable(
-            name='test',
+            name='kinematics_test',
             shape=shape,
             dtype=tf.float32,
             initializer=initializer)

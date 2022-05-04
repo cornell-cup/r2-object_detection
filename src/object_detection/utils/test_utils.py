@@ -245,7 +245,7 @@ class GraphContextOrNone(object):
 
   This is useful to write model tests that work with both TF1.X and TF2.X.
 
-  Example test using this pattern:
+  Example kinematics_test using this pattern:
 
   class ModelTest(test_case.TestCase):
     def test_model(self):

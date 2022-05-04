@@ -54,7 +54,7 @@ _layers_to_check = [
     'out_relu']
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class MobilenetV2Test(test_case.TestCase):
 
   def _build_conv_hyperparams(self):

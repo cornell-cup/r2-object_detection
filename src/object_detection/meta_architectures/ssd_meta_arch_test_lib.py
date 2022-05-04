@@ -95,7 +95,7 @@ class FakeSSDKerasFeatureExtractor(ssd_meta_arch.SSDKerasFeatureExtractor):
 
 
 class MockAnchorGenerator2x2(anchor_generator.AnchorGenerator):
-  """A simple 2x2 anchor grid on the unit square used for test only."""
+  """A simple 2x2 anchor grid on the unit square used for kinematics_test only."""
 
   def name_scope(self):
     return 'MockAnchorGenerator'
@@ -121,7 +121,7 @@ class MockAnchorGenerator2x2(anchor_generator.AnchorGenerator):
 
 
 class SSDMetaArchTestBase(test_case.TestCase):
-  """Base class to test SSD based meta architectures."""
+  """Base class to kinematics_test SSD based meta architectures."""
 
   def _create_model(
       self,

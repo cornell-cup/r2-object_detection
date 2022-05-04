@@ -35,7 +35,7 @@ if tf_version.is_tf2():
 # pylint: enable=g-import-not-at-top
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class FreezableBatchNormTest(tf.test.TestCase, parameterized.TestCase):
   """Tests for FreezableBatchNorm operations."""
 

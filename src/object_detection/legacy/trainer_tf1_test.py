@@ -31,7 +31,7 @@ NUMBER_OF_CLASSES = 2
 
 
 def get_input_function():
-  """A function to get test inputs. Returns an image with one box."""
+  """A function to get kinematics_test inputs. Returns an image with one box."""
   image = tf.random_uniform([32, 32, 3], dtype=tf.float32)
   key = tf.constant('image_000000')
   class_label = tf.random_uniform(
@@ -51,7 +51,7 @@ def get_input_function():
 
 
 class FakeDetectionModel(model.DetectionModel):
-  """A simple (and poor) DetectionModel for use in test."""
+  """A simple (and poor) DetectionModel for use in kinematics_test."""
 
   def __init__(self):
     super(FakeDetectionModel, self).__init__(num_classes=NUMBER_OF_CLASSES)
@@ -201,7 +201,7 @@ class FakeDetectionModel(model.DetectionModel):
     pass
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class TrainerTest(tf.test.TestCase):
 
   def test_configure_trainer_and_train_two_steps(self):

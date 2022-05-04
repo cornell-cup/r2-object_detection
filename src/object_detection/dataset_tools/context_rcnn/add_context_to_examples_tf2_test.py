@@ -71,7 +71,7 @@ def FloatListFeature(value):
   return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class GenerateContextDataTest(tf.test.TestCase):
 
   def _create_first_tf_example(self):

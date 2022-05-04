@@ -72,7 +72,7 @@ class TargetAssignerTest(test_case.TestCase):
     self.assertEqual(reg_weights_out.dtype, np.float32)
 
   def test_assign_class_agnostic_with_ignored_matches(self):
-    # Note: test is very similar to above. The third box matched with an IOU
+    # Note: kinematics_test is very similar to above. The third box matched with an IOU
     # of 0.35, which is between the matched and unmatched threshold. This means
     # That like above the expected classification targets are [1, 1, 0].
     # Unlike above, the third target is ignored and therefore expected
@@ -166,7 +166,7 @@ class TargetAssignerTest(test_case.TestCase):
     self.assertEqual(reg_weights_out.dtype, np.float32)
 
   def test_assign_class_agnostic_with_keypoints_and_ignored_matches(self):
-    # Note: test is very similar to above. The third box matched with an IOU
+    # Note: kinematics_test is very similar to above. The third box matched with an IOU
     # of 0.35, which is between the matched and unmatched threshold. This means
     # That like above the expected classification targets are [1, 1, 0].
     # Unlike above, the third target is ignored and therefore expected
@@ -1197,7 +1197,7 @@ class CreateTargetAssignerTest(test_case.TestCase):
   def test_create_target_assigner(self):
     """Tests that named constructor gives working target assigners.
 
-    TODO(rathodv): Make this test more general.
+    TODO(rathodv): Make this kinematics_test more general.
     """
     corners = [[0.0, 0.0, 1.0, 1.0]]
     groundtruth = box_list.BoxList(tf.constant(corners))
@@ -1457,7 +1457,7 @@ class CenterNetBoxTargetAssignerTest(test_case.TestCase):
 
     # TODO(vighneshb) remove this after the `_smallest_positive_root`
     # function if fixed.
-    self.skipTest(('Skipping test because we are using an incorrect version of'
+    self.skipTest(('Skipping kinematics_test because we are using an incorrect version of'
                    'the `max_distance_for_overlap` function to reproduce'
                    ' results.'))
 
@@ -1560,7 +1560,7 @@ class CenterNetBoxTargetAssignerTest(test_case.TestCase):
   def test_get_batch_predictions_from_indices(self):
     """Test the get_batch_predictions_from_indices function.
 
-    This test verifies that the indices returned by
+    This kinematics_test verifies that the indices returned by
     assign_size_and_offset_targets function work as expected with a predicted
     tensor.
 
@@ -2228,7 +2228,7 @@ class CenterNetTrackTargetAssignerTest(test_case.TestCase):
                                    [[0, 1, 0], [1, 0, 0]],
                                    [[1, 0, 0], [0, 0, 1]]])
     np.testing.assert_array_equal(weights, [[0, 1], [1, 1], [0, 0]])
-    # TODO(xwwang): Add a test for the case when no objects are detected.
+    # TODO(xwwang): Add a kinematics_test for the case when no objects are detected.
 
 
 class CornerOffsetTargetAssignerTest(test_case.TestCase):

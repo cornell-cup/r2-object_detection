@@ -31,7 +31,7 @@ from object_detection.utils import tf_version
 
 @parameterized.parameters({'bifpn_num_iterations': 2},
                           {'bifpn_num_iterations': 8})
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class BiFPNFeaturePyramidGeneratorTest(test_case.TestCase):
 
   def _build_conv_hyperparams(self):

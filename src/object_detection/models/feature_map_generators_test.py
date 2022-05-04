@@ -486,7 +486,7 @@ class FPNFeatureMapGeneratorTest(test_case.TestCase, parameterized.TestCase):
         (key, value.shape) for key, value in out_feature_maps.items())
     self.assertDictEqual(expected_feature_map_shapes, out_feature_map_shapes)
 
-  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
   def test_use_bounded_activations_add_operations(
       self, use_native_resize_op):
     with test_utils.GraphContextOrNone() as g:
@@ -515,7 +515,7 @@ class FPNFeatureMapGeneratorTest(test_case.TestCase, parameterized.TestCase):
     op_names = {op.name: None for op in g.get_operations()}
     self.assertDictContainsSubset(expected_added_operations, op_names)
 
-  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
   def test_use_bounded_activations_clip_value(
       self, use_native_resize_op):
     tf_graph = tf.Graph()
@@ -752,7 +752,7 @@ class GetDepthFunctionTest(tf.test.TestCase):
     {'replace_pool_with_conv': False},
     {'replace_pool_with_conv': True},
 )
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class PoolingPyramidFeatureMapGeneratorTest(tf.test.TestCase):
 
   def test_get_expected_feature_map_shapes(self, replace_pool_with_conv):

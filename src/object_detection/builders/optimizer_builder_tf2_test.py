@@ -24,7 +24,7 @@ from object_detection.protos import optimizer_pb2
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class OptimizerBuilderV2Test(tf.test.TestCase):
   """Test building optimizers in V2 mode."""
 

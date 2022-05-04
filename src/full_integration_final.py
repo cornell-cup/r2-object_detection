@@ -30,7 +30,7 @@ import numpy as np
 from camera import Camera
 from projections import *
 
-#  this is a test comment
+#  this is a kinematics_test comment
 net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
 display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
 

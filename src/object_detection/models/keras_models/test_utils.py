@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Test utils for other test files."""
+"""Test utils for other kinematics_test files."""
 
 # import tensorflow as tf
 #

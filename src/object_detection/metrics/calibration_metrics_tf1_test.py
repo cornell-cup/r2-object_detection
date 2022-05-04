@@ -25,7 +25,7 @@ from object_detection.metrics import calibration_metrics
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class CalibrationLibTest(tf.test.TestCase):
 
   @staticmethod

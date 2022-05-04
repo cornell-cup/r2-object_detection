@@ -38,7 +38,7 @@ def _get_categories_list():
   }]
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class CalibrationDetectionEvaluationTest(tf.test.TestCase):
 
   def _get_ece(self, ece_op, update_op):

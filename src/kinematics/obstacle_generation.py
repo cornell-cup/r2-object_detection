@@ -1,4 +1,4 @@
-"""Functions for randomly generating a test environment for an arm path.
+"""Functions for randomly generating a kinematics_test environment for an arm path.
 
 Written by Simon Kapen '24, Spring 2022.
 """

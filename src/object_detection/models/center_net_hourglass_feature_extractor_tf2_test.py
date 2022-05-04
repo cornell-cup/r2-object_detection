@@ -23,7 +23,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetHourglassFeatureExtractorTest(test_case.TestCase):
 
   def test_center_net_hourglass_feature_extractor(self):

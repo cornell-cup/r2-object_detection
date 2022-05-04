@@ -242,7 +242,7 @@ class ContextRCNNMetaArchTest(test_case.TestCase, parameterized.TestCase):
       resized_inputs.append(tf.shape(image))
       return resized_inputs
 
-    # anchors in this test are designed so that a subset of anchors are inside
+    # anchors in this kinematics_test are designed so that a subset of anchors are inside
     # the image and a subset of anchors are outside.
     first_stage_anchor_scales = (0.001, 0.005, 0.1)
     first_stage_anchor_aspect_ratios = (0.5, 1.0, 2.0)
@@ -438,10 +438,10 @@ class ContextRCNNMetaArchTest(test_case.TestCase, parameterized.TestCase):
             masks_are_class_agnostic=masks_are_class_agnostic,
             share_box_across_classes=share_box_across_classes), **common_kwargs)
 
-  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
   @mock.patch.object(context_rcnn_meta_arch, 'context_rcnn_lib')
   def test_prediction_mock_tf1(self, mock_context_rcnn_lib_v1):
-    """Mocks the context_rcnn_lib_v1 module to test the prediction.
+    """Mocks the context_rcnn_lib_v1 module to kinematics_test the prediction.
 
     Using mock object so that we can ensure _compute_box_context_attention is
     called in side the prediction function.
@@ -485,7 +485,7 @@ class ContextRCNNMetaArchTest(test_case.TestCase, parameterized.TestCase):
       {'testcase_name': 'nostatic_shapes', 'static_shapes': False},
       )
   def test_prediction_end_to_end(self, static_shapes):
-    """Runs prediction end to end and test the shape of the results."""
+    """Runs prediction end to end and kinematics_test the shape of the results."""
     with test_utils.GraphContextOrNone() as g:
       model = self._build_model(
           is_training=False,

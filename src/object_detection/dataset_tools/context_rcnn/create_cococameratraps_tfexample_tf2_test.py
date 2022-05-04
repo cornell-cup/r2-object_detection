@@ -37,7 +37,7 @@ except ModuleNotFoundError:
   pass
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CreateCOCOCameraTrapsTfexampleTest(tf.test.TestCase):
 
   IMAGE_HEIGHT = 360

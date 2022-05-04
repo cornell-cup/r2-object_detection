@@ -14,7 +14,7 @@
 # ==============================================================================
 """Tests for SSD Mobilenet V1 feature extractors.
 
-By using parameterized test decorator, this test serves for both Slim-based and
+By using parameterized kinematics_test decorator, this kinematics_test serves for both Slim-based and
 Keras-based Mobilenet V1 feature extractors in SSD.
 """
 import unittest
@@ -26,7 +26,7 @@ from object_detection.models import ssd_mobilenet_v1_feature_extractor
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class SsdMobilenetV1FeatureExtractorTest(
     ssd_feature_extractor_test.SsdFeatureExtractorTestBase):
 

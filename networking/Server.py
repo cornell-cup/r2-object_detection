@@ -38,7 +38,7 @@ class Server(Network):
         self.socket.sendto(json.dumps({'id': self.send_ID, 'content': update}).encode('utf-8'), self.client)
 
 
-# test with Client.py main method
+# kinematics_test with Client.py main method
 if __name__ == "__main__":
     computer = Server()
     while True:

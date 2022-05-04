@@ -1722,7 +1722,7 @@ class NegativeSizeTest(test_case.TestCase):
   def test_negative_size_no_assert(self):
     """Test that negative size boxes are filtered out without assert.
 
-    This test simulates the behaviour when we run on TPU and Assert ops are
+    This kinematics_test simulates the behaviour when we run on TPU and Assert ops are
     not supported.
     """
 

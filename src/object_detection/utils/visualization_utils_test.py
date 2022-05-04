@@ -76,12 +76,12 @@ class VisualizationUtilsTest(test_case.TestCase):
     visualization_utils.STANDARD_COLORS = default_standard_colors
 
   def create_colorful_test_image(self):
-    """This function creates an image that can be used to test vis functions.
+    """This function creates an image that can be used to kinematics_test vis functions.
 
     It makes an image composed of four colored rectangles.
 
     Returns:
-      colorful test numpy array image.
+      colorful kinematics_test numpy array image.
     """
     ch255 = np.full([100, 200, 1], 255, dtype=np.uint8)
     ch128 = np.full([100, 200, 1], 128, dtype=np.uint8)
@@ -485,7 +485,7 @@ class VisualizationUtilsTest(test_case.TestCase):
 
   def test_eval_metric_ops(self):
     if self.is_tf2():
-      self.skipTest('This test is only compatible with Tensorflow 1.X, '
+      self.skipTest('This kinematics_test is only compatible with Tensorflow 1.X, '
                     'estimator eval ops are not supported in Tensorflow 2.')
     category_index = {1: {'id': 1, 'name': 'dog'}, 2: {'id': 2, 'name': 'cat'}}
     max_examples_to_draw = 4

@@ -22,7 +22,7 @@ from object_detection.models.keras_models import hourglass_network as hourglass
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class HourglassFeatureExtractorTest(tf.test.TestCase, parameterized.TestCase):
 
   def test_identity_layer(self):
@@ -102,7 +102,7 @@ class HourglassFeatureExtractorTest(tf.test.TestCase, parameterized.TestCase):
     self.assertEqual(outputs[1].shape, (2, 16, 16, 6))
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class HourglassDepthTest(tf.test.TestCase):
 
   def test_hourglass_104(self):

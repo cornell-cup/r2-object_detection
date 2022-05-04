@@ -29,7 +29,7 @@ from object_detection.utils import test_utils
 
 class SSDResnetFPNFeatureExtractorTestBase(
     ssd_feature_extractor_test.SsdFeatureExtractorTestBase):
-  """Helper test class for SSD Resnet v1 FPN feature extractors."""
+  """Helper kinematics_test class for SSD Resnet v1 FPN feature extractors."""
 
   @abc.abstractmethod
   def _resnet_scope_name(self):
