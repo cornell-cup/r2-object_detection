@@ -84,7 +84,7 @@ download_and_unzip ${BASE_INSTANCES_URL} ${INSTANCES_FILE}
 TRAIN_ANNOTATIONS_FILE="${SCRATCH_DIR}/annotations/instances_train2017.json"
 VAL_ANNOTATIONS_FILE="${SCRATCH_DIR}/annotations/instances_val2017.json"
 
-# Download the test image info.
+# Download the kinematics_test image info.
 BASE_IMAGE_INFO_URL="http://images.cocodataset.org/annotations"
 IMAGE_INFO_FILE="image_info_test2017.zip"
 download_and_unzip ${BASE_IMAGE_INFO_URL} ${IMAGE_INFO_FILE}

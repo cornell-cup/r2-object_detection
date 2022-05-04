@@ -119,7 +119,7 @@ def plot_arm_configs(ax, path, obstacles, color='green'):
         ax.plot(v3[0], v3[1], zs=v3[2], color=color)
         ax.plot(v4[0], v4[1], zs=v4[2], color=color)
 
-    #ax.text(-0.3, -0.3, 0.4, "plot text test")
+    #ax.text(-0.3, -0.3, 0.4, "plot text kinematics_test")
 
 
 def plot_trial_times(graph_list, times):

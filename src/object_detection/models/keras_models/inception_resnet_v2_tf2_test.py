@@ -16,7 +16,7 @@
 
 """Tests for inception_resnet_v2.py.
 
-This test mainly focuses on comparing slim inception resnet v2 and Keras
+This kinematics_test mainly focuses on comparing slim inception resnet v2 and Keras
 inception resnet v2 for object detection. To verify the consistency of the two
 models, we compare:
   1. Output shape of each layer given different inputs
@@ -101,7 +101,7 @@ _NUM_CHANNELS = 3
 _BATCH_SIZE = 2
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class InceptionResnetV2Test(test_case.TestCase):
 
   def _create_application_with_layer_outputs(

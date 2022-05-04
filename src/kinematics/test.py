@@ -1,4 +1,4 @@
-"""A black-box test suite of linear RRT.
+"""A black-box kinematics_test suite of linear RRT.
 
 Written by Simon Kapen, Fall 2021.
 """

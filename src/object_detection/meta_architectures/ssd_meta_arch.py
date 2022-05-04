@@ -1098,7 +1098,7 @@ class SSDMetaArch(model.DetectionModel):
         with rows of the Match objects corresponding to groundtruth boxes
         and columns corresponding to anchors.
     """
-    # TODO(rathodv): Add a test for these summaries.
+    # TODO(rathodv): Add a kinematics_test for these summaries.
     try:
       # TODO(kaftan): Integrate these summaries into the v2 style loops
       with tf.compat.v2.init_scope():

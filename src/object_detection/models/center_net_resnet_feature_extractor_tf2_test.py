@@ -22,7 +22,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetResnetFeatureExtractorTest(test_case.TestCase):
 
   def test_output_size(self):

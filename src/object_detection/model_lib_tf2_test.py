@@ -39,7 +39,7 @@ if six.PY2:
 else:
   from unittest import mock  # pylint: disable=g-importing-member,g-import-not-at-top
 
-# Model for test. Current options are:
+# Model for kinematics_test. Current options are:
 # 'ssd_mobilenet_v2_pets_keras'
 MODEL_NAME_FOR_TEST = 'ssd_mobilenet_v2_pets_keras'
 
@@ -73,7 +73,7 @@ def _get_config_kwarg_overrides():
   }
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class ModelLibTest(tf.test.TestCase):
 
   @classmethod
@@ -145,7 +145,7 @@ class SimpleModel(model.DetectionModel):
     return []
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class ModelCheckpointTest(tf.test.TestCase):
   """Test for model checkpoint related functionality."""
 
@@ -181,7 +181,7 @@ class IncompatibleModel(SimpleModel):
     return {'weight': self.weight}
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CheckpointV2Test(tf.test.TestCase):
 
   def setUp(self):

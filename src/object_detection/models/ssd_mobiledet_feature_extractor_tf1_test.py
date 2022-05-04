@@ -26,7 +26,7 @@ except:  # pylint: disable=bare-except
   pass
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class SSDMobileDetFeatureExtractorTest(
     ssd_feature_extractor_test.SsdFeatureExtractorTestBase):
 

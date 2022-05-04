@@ -39,7 +39,7 @@ class TestUtilsTest(test_case.TestCase):
     self.assertAllEqual(np.squeeze(pyramid_image[:, :, 0]),
                         expected_first_channel)
 
-    # Actual test.
+    # Actual kinematics_test.
     expected_image = np.array([[[3, 30],
                                 [2, 20],
                                 [1, 10],

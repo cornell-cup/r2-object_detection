@@ -180,7 +180,7 @@ class FakeFasterRCNNKerasMultilevelFeatureExtractor(
 
 
 class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
-  """Base class to test Faster R-CNN and R-FCN meta architectures."""
+  """Base class to kinematics_test Faster R-CNN and R-FCN meta architectures."""
 
   def _build_arg_scope_with_hyperparams(self,
                                         hyperparams_text_proto,
@@ -326,7 +326,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
       resized_inputs.append(tf.shape(image))
       return resized_inputs
 
-    # anchors in this test are designed so that a subset of anchors are inside
+    # anchors in this kinematics_test are designed so that a subset of anchors are inside
     # the image and a subset of anchors are outside.
     first_stage_anchor_generator = None
     if multi_level:
@@ -562,7 +562,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
           clip_anchors_to_image=use_static_shapes,
           use_static_shapes=use_static_shapes)
     def graph_fn(images):
-      """Function to construct tf graph for the test."""
+      """Function to construct tf graph for the kinematics_test."""
 
       preprocessed_inputs, true_image_shapes = model.preprocess(images)
       prediction_dict = model.predict(preprocessed_inputs, true_image_shapes)
@@ -636,7 +636,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
           use_static_shapes=use_static_shapes,
           multi_level=True)
     def graph_fn(images):
-      """Function to construct tf graph for the test."""
+      """Function to construct tf graph for the kinematics_test."""
 
       preprocessed_inputs, true_image_shapes = model.preprocess(images)
       prediction_dict = model.predict(preprocessed_inputs, true_image_shapes)
@@ -745,7 +745,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
      rpn_objectness_predictions_with_background) = self.execute(graph_fn, [],
                                                                 graph=g)
     # At training time, anchors that exceed image bounds are pruned.  Thus
-    # the `expected_num_anchors` in the above inference mode test is now
+    # the `expected_num_anchors` in the above inference mode kinematics_test is now
     # a strict upper bound on the number of anchors.
     num_anchors_strict_upper_bound = height * width * 3 * 3
     self.assertAllEqual(image_shape, input_image_shape)
@@ -905,7 +905,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
           use_static_shapes=use_static_shapes)
 
     def graph_fn(images, gt_boxes, gt_classes, gt_weights):
-      """Function to construct tf graph for the test."""
+      """Function to construct tf graph for the kinematics_test."""
       preprocessed_inputs, true_image_shapes = model.preprocess(images)
       model.provide_groundtruth(
           groundtruth_boxes_list=tf.unstack(gt_boxes),
@@ -1012,7 +1012,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
                  rpn_objectness_predictions_with_background,
                  rpn_features_to_crop,
                  anchors):
-      """Function to construct tf graph for the test."""
+      """Function to construct tf graph for the kinematics_test."""
       preprocessed_images, true_image_shapes = model.preprocess(images)
       proposals = model.postprocess({
           'rpn_box_encodings': rpn_box_encodings,
@@ -1225,7 +1225,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
                  class_predictions_with_background,
                  num_proposals,
                  proposal_boxes):
-      """Function to construct tf graph for the test."""
+      """Function to construct tf graph for the kinematics_test."""
       _, true_image_shapes = model.preprocess(images)
       detections = model.postprocess({
           'refined_box_encodings': refined_box_encodings,
@@ -1334,7 +1334,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
     self.assertTrue(
         preprocessed_inputs.shape.is_compatible_with([2, 5, 5, 3]))
 
-  # TODO(rathodv): Split test into two - with and without masks.
+  # TODO(rathodv): Split kinematics_test into two - with and without masks.
   def test_loss_first_stage_only_mode(self):
     with test_utils.GraphContextOrNone() as g:
       model = self._build_model(
@@ -1395,7 +1395,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
     self.assertAllClose(loc_loss, 0)
     self.assertAllClose(obj_loss, 0)
 
-  # TODO(rathodv): Split test into two - with and without masks.
+  # TODO(rathodv): Split kinematics_test into two - with and without masks.
   def test_loss_full(self):
     with test_utils.GraphContextOrNone() as g:
       model = self._build_model(
@@ -1747,7 +1747,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
                  num_proposals, proposal_boxes, refined_box_encodings,
                  class_predictions_with_background, groundtruth_boxes,
                  groundtruth_classes):
-      """Function to construct tf graph for the test."""
+      """Function to construct tf graph for the kinematics_test."""
       prediction_dict = {
           'rpn_box_encodings': rpn_box_encodings,
           'rpn_objectness_predictions_with_background':
@@ -2063,7 +2063,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
     self.assertAllClose(cls_loss, 0)
 
   def test_restore_map_for_classification_ckpt(self):
-    if tf_version.is_tf2(): self.skipTest('Skipping TF1 only test.')
+    if tf_version.is_tf2(): self.skipTest('Skipping TF1 only kinematics_test.')
     # Define mock tensorflow classification graph and save variables.
     test_graph_classification = tf.Graph()
     with test_graph_classification.as_default():
@@ -2103,7 +2103,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
           self.assertNotIn(model.second_stage_feature_extractor_scope, var)
 
   def test_restore_map_for_detection_ckpt(self):
-    if tf_version.is_tf2(): self.skipTest('Skipping TF1 only test.')
+    if tf_version.is_tf2(): self.skipTest('Skipping TF1 only kinematics_test.')
     # Define mock tensorflow classification graph and save variables.
     # Define first detection graph and save variables.
     test_graph_detection1 = tf.Graph()
@@ -2154,7 +2154,7 @@ class FasterRCNNMetaArchTestBase(test_case.TestCase, parameterized.TestCase):
               six.b(model2.second_stage_feature_extractor_scope), var)
 
   def test_load_all_det_checkpoint_vars(self):
-    if tf_version.is_tf2(): self.skipTest('Skipping TF1 only test.')
+    if tf_version.is_tf2(): self.skipTest('Skipping TF1 only kinematics_test.')
     test_graph_detection = tf.Graph()
     with test_graph_detection.as_default():
       model = self._build_model(

@@ -5,8 +5,10 @@ held in models/SimpleArmModelForURDF.urdf.
 
 Written by Simon Kapen '24, Spring 2021.
 """
-import numpy
+import time
 
+import numpy
+import matplotlib.pyplot as plt
 from util.error_handling import nostderr
 import numpy as np
 import math
@@ -18,13 +20,9 @@ from ikpy.chain import Chain
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
-#     chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.URDF").read())
-#     serial_chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.URDF").read(), "hand_1",
-#                                                    "base_link")
-#     bruh_chain = Chain.from_urdf_file("models/SimpleArmModelforURDF.URDF")
     chain = kp.build_chain_from_urdf(open("models/XArm.urdf").read())
     serial_chain = kp.build_serial_chain_from_urdf(open("models/XArm.urdf").read(), "link5", "base_link")
-    bruh_chain = Chain.from_urdf_file("models/SimpleArmModelforURDF.URDF")
+    amazon_arm_chain = Chain.from_urdf_file("models/XArm.urdf")
     xarm_joint_names = ['arm1', 'arm2', 'arm3', 'arm4', 'arm5']
     xarm_link_names = ['base_link', 'link1', 'link2', 'link3', 'link4']
 
@@ -146,14 +144,6 @@ def random_angle(left_bound, right_bound):
     else:
         return random.uniform(0, right_bound)
 
-
-def test_from_point(point, start_config=[0, 0, 0, 0, 0]):
-    # Uses inverse kinematics to calculate a node given its cartesian coordinates.
-    angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
-                                            initial_state=start_config)
-    return Node(angle_config)
-
-
 def kinpy_from_point(point, start_config=[0, 0, 0, 0, 0]):
     """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
     angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
@@ -162,7 +152,6 @@ def kinpy_from_point(point, start_config=[0, 0, 0, 0, 0]):
 
 def ikpy_from_point(point, start_config=[0, 0, 0]):
     """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
-    th = {-1: 'revolute', 0: 'revolute', 1: 'revolute', 2: 'revolute', 3: 'revolute'}
     angle_config = IKPY.chain.ik.inverse_kinematic_optimization(serial_chain,point,start_config)
     return Node(angle_config)
 
@@ -173,40 +162,48 @@ def thresholdCheck(a, b, threshold):
     #print("Off by", dist)
     return False
 
-
 if __name__ == '__main__':
-    # this test will involve going from point (0,0,0) to (1,2,3)
     start_point = [0, 0, 0]
     sucess = 0
     tests = 1
+    start_time = time.time()
     for i in range(tests):
         fail = False
-        randomX = random.uniform(-.5,.5)
-        randomY = random.uniform(-.5,.5)
-        randomZ = random.uniform(-.5,.5)
-        #print("Target X: ", randomX)
-        #print("Target Y: ", randomY)
-        #print("Target Z: ", randomZ)
+        randomX = random.uniform(-.08,.08)
+        randomY = random.uniform(-.08,.08)
+        randomZ = random.uniform(0,.105)
         end_point = [randomX, randomY, randomZ]
-        end_point = [.1,.2,.3]
-        angles = bruh_chain.inverse_kinematics(end_point)
-        print(angles)
-        final = bruh_chain.forward_kinematics(angles)
-        print(final)
-        #ikpy_angle_configs = ikpy_from_point(end_point)
-        #print("Kinpy Angles", kinpy_angle_configs.angles)
-        #kinpy_forward = kinpy_angle_configs.forward_kinematics()
-    #     if not thresholdCheck(randomX,kinpy_forward[4][0], .05):
-    #         fail = True
-    #     if not thresholdCheck(randomY,kinpy_forward[4][1], .05):
-    #         fail = True
-    #     if not thresholdCheck(randomZ,kinpy_forward[4][2], .05):
-    #         fail = True
-    #     if not fail:
-    #         sucess += 1
-    # print("Successes: ", sucess)
-    # print("Failures: ", tests - sucess)
-    # print("Rate: ", sucess/tests)
+        angles = amazon_arm_chain.inverse_kinematics(end_point)
+        final_position = amazon_arm_chain.forward_kinematics(angles)
+        if not thresholdCheck(randomX,final_position[0][3], .001):
+            fail = True
+            print("Fail in X")
+        if not thresholdCheck(randomY,final_position[1][3], .001):
+            fail = True
+            print("Fail in Y")
+        if not thresholdCheck(randomZ,final_position[2][3], .001):
+            fail = True
+            print("Fail in Z")
+        if not fail:
+            sucess += 1
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    # Set the limits for the range of plotted values
+    lim = .6
+    plt.xlim(-lim, lim)
+    plt.ylim(-lim, lim)
+    ax.set_zlim(-lim, lim)
+    # create the prism to be avoided (hard coded)
+    lim = .3
+    run_time = time.time() - start_time
+    print("Successes: ", sucess)
+    print("Failures: ", tests - sucess)
+    print("Rate: ", sucess/tests)
+    print("Total Run Time: ", run_time)
+    print("Average Run Time: ", run_time/tests)
 
 
 

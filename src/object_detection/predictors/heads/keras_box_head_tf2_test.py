@@ -25,7 +25,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class ConvolutionalKerasBoxHeadTest(test_case.TestCase):
 
   def _build_conv_hyperparams(self):
@@ -81,7 +81,7 @@ class ConvolutionalKerasBoxHeadTest(test_case.TestCase):
     self.assertAllEqual([64, 323, 1, 4], box_encodings.shape)
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class MaskRCNNKerasBoxHeadTest(test_case.TestCase):
 
   def _build_fc_hyperparams(
@@ -121,7 +121,7 @@ class MaskRCNNKerasBoxHeadTest(test_case.TestCase):
     self.assertAllEqual([64, 1, 20, 4], prediction.shape)
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class WeightSharedConvolutionalKerasBoxHead(test_case.TestCase):
 
   def _build_conv_hyperparams(self):

@@ -30,7 +30,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class ConvolutionalKerasBoxPredictorTest(test_case.TestCase):
 
   def _build_conv_hyperparams(self):
@@ -257,7 +257,7 @@ class ConvolutionalKerasBoxPredictorTest(test_case.TestCase):
                      ['box_encodings', 'class_predictions_with_background'])
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class WeightSharedConvolutionalKerasBoxPredictorTest(test_case.TestCase):
 
   def _build_conv_hyperparams(self, add_batch_norm=True):

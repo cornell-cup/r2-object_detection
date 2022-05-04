@@ -843,7 +843,7 @@ def reframe_box_masks_to_image_masks(box_masks, boxes, image_height,
     reverse_boxes = transform_boxes_relative_to_boxes(unit_boxes, boxes)
 
     # TODO(vighneshb) Use matmul_crop_and_resize so that the output shape
-    # is static. This will help us run and test on TPUs.
+    # is static. This will help us run and kinematics_test on TPUs.
     resized_crops = tf.image.crop_and_resize(
         image=box_masks_expanded,
         boxes=reverse_boxes,

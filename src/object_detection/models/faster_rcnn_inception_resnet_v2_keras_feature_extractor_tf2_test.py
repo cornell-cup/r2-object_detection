@@ -21,7 +21,7 @@ from object_detection.models import faster_rcnn_inception_resnet_v2_keras_featur
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class FasterRcnnInceptionResnetV2KerasFeatureExtractorTest(tf.test.TestCase):
 
   def _build_feature_extractor(self, first_stage_features_stride):

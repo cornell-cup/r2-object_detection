@@ -89,7 +89,7 @@ def policy_v1():
 
 
 def policy_vtest():
-  """Autoaugment test policy for debugging."""
+  """Autoaugment kinematics_test policy for debugging."""
   # Each tuple is an augmentation operation of the form
   # (operation, probability, magnitude). Each element in policy is a
   # sub-policy that will be applied sequentially on the image.
@@ -1618,7 +1618,7 @@ def distort_image_with_autoaugment(image, bboxes, augmentation_name):
     bboxes: `Tensor` of shape [N, 4] representing ground truth boxes that are
       normalized between [0, 1].
     augmentation_name: The name of the AutoAugment policy to use. The available
-      options are `v0`, `v1`, `v2`, `v3` and `test`. `v0` is the policy used for
+      options are `v0`, `v1`, `v2`, `v3` and `kinematics_test`. `v0` is the policy used for
       all of the results in the paper and was found to achieve the best results
       on the COCO dataset. `v1`, `v2` and `v3` are additional good policies
       found on the COCO dataset that have slight variation in what operations
@@ -1630,7 +1630,7 @@ def distort_image_with_autoaugment(image, bboxes, augmentation_name):
   """
   image = tf.cast(image, tf.uint8)
   available_policies = {'v0': policy_v0, 'v1': policy_v1, 'v2': policy_v2,
-                        'v3': policy_v3, 'test': policy_vtest}
+                        'v3': policy_v3, 'kinematics_test': policy_vtest}
   if augmentation_name not in available_policies:
     raise ValueError('Invalid augmentation_name: {}'.format(augmentation_name))
 

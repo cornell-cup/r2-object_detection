@@ -27,7 +27,7 @@ if tf_version.is_tf1():
   from tensorflow.contrib import quantize as contrib_quantize  # pylint: disable=g-import-not-at-top
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class QuantizationBuilderTest(tf.test.TestCase):
 
   def testQuantizationBuilderSetsUpCorrectTrainArguments(self):

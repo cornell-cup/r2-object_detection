@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Base test class SSDFeatureExtractors."""
+"""Base kinematics_test class SSDFeatureExtractors."""
 
 from __future__ import absolute_import
 from __future__ import division

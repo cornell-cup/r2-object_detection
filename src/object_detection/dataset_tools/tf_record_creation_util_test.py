@@ -34,13 +34,13 @@ class OpenOutputTfrecordsTests(tf.test.TestCase):
     with contextlib2.ExitStack() as tf_record_close_stack:
       output_tfrecords = tf_record_creation_util.open_sharded_output_tfrecords(
           tf_record_close_stack,
-          os.path.join(tf.test.get_temp_dir(), 'test.tfrec'), 10)
+          os.path.join(tf.test.get_temp_dir(), 'kinematics_test.tfrec'), 10)
       for idx in range(10):
         output_tfrecords[idx].write(six.ensure_binary('test_{}'.format(idx)))
 
     for idx in range(10):
       tf_record_path = '{}-{:05d}-of-00010'.format(
-          os.path.join(tf.test.get_temp_dir(), 'test.tfrec'), idx)
+          os.path.join(tf.test.get_temp_dir(), 'kinematics_test.tfrec'), idx)
       records = list(tf.python_io.tf_record_iterator(tf_record_path))
       self.assertAllEqual(records, ['test_{}'.format(idx).encode('utf-8')])
 

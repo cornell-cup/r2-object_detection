@@ -26,7 +26,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
 class RfcnBoxPredictorTest(test_case.TestCase):
 
   def _build_arg_scope_with_conv_hyperparams(self):

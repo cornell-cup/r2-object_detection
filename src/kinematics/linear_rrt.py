@@ -8,6 +8,8 @@ Written by Simon Kapen '24 and Raj Sinha '25, Fall 2021.
 
 import math
 import numpy as np
+from ikpy.chain import Chain
+
 import pure_rrt as rrt
 from arm_graph import Graph
 from arm_node import Node
@@ -16,11 +18,55 @@ import collision_detection as cd
 import arm_plot
 import time
 from util.angles import true_angle_distances_arm
-from test import tpm
+from kinematics_test import tpm
 from obstacle_generation import random_start_environment
+import kinpy as kp
 import random
 import matplotlib.pyplot as plt
+from arm_node import thresholdCheck
 from mpl_toolkits.mplot3d import art3d
+
+# Variable the represents whether we are using IKPY or Kinpy for
+# Inverse Kinematics calculations. (True = IKPY, False = Kinpy)
+ik_py = True
+arm_chain = None
+
+
+def setup_inverse_kinematics_library():
+    """Sets which Inverse Kinematics library this file will use"""
+    global ik_py
+    global arm_chain
+    if ik_py:
+        arm_chain = Chain.from_urdf_file("models/XArm.urdf")
+    else:
+        arm_chain = kp.build_serial_chain_from_urdf(open("models/XArm.urdf").read(), "link5", "base_link")
+
+
+def inverse_kinematics(end_point, start_config=[0, 0, 0, 0, 0]):
+    """Computes Inverse Kinematics from the given point either using IKPY or Kinpy
+    :param end_point: the target point from which kinematics will be calculated,
+                      formatted as (x,y,z)
+    :return: the inverse kinematic angles
+    """
+    setup_inverse_kinematics_library()
+    global ik_py
+    if ik_py:
+        angles = arm_chain.inverse_kinematics(end_point)
+    else:
+        angles = kp.ik.inverse_kinematics(arm_chain,
+                                          kp.Transform(pos=[end_point[0], end_point[1], end_point[2]]),
+                                          initial_state=start_config)
+    return angles
+
+
+def forward_kinematics(angles):
+    setup_inverse_kinematics_library()
+    global ik_py
+    if ik_py:
+        position = arm_chain.forward_kinematics(angles)
+    else:
+        position = arm_chain.kp.forward_kinematics(angles)
+    return position
 
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
@@ -301,14 +347,14 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
         arm_plot.plot_3d(g, path, obstacles)
 
 
-
 # Constants for quick testing of certain cases
 RRT_JUMP_SEED = 6869
 RRT_TEST_SEED = 120938914
 CLEAR_PATH_TEST_SEED = 20
 INCORRECT_END_SEED = 420
 
-def path_optimizer(path,prism):
+
+def path_optimizer(path, prism):
     """
 
     Args:
@@ -324,34 +370,81 @@ def path_optimizer(path,prism):
     """
     optimizedList = path.copy()
     # To save time we will only check every other node
-    for i in range(0, len(path)-2, 2):
+    for i in range(0, len(path) - 2, 2):
         p1 = path[i].end_effector_pos
-        p2 = path[i+2].end_effector_pos
-        line_seg = ([p1[0],p1[1],p1[2],p2[0],p2[1],p2[2]])
+        p2 = path[i + 2].end_effector_pos
+        line_seg = ([p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]])
         if cd.newLineCollider(line_seg, prism) == False:
-            optimizedList.remove(path[i+1])
+            optimizedList.remove(path[i + 1])
     return optimizedList
 
 
 if __name__ == '__main__':
-    # random.seed(a=RRT_JUMP_SEED)
-    np.set_printoptions(precision=20)
-    trials = 100
-    iterations = 10
-    num_obstacles = 8
-
-    # linear_rrt_test(50, obstacles)
-    # plot_random_path(iterations, num_obstacles)
-    # plot_path([4.6916344287189435, 4.090985392727952, 2.3692680894666482, 2.0596249149355357, 4.325243067547699],
-    #           [2.998393231026213, 2.257996400624798, 3.5617493855518596, 2.0009026772223946, 4.473243223507486],
-    #           iterations, obstacles)
-
-    start_node, end_node, obstacles = random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
-
-    path, success = linear_rrt_to_point(start_node.angles, .2, .2, .2, obstacles)
-    g = Graph(start_node.angles, Node.from_point((.2, .2, .2)).angles)
-    if path is not None:
-        g.add_vex(path[0], g.start_node)
-        for i in range(1, len(path)):
-            g.add_vex(path[i], path[i-1])
-        arm_plot.plot_3d(g, path, obstacles)
+    start_point = [0, 0, 0]
+    sucess = 0
+    tests = 10
+    start_time = time.time()
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    for i in range(tests):
+        fail = False
+        randomX = random.uniform(-.08, .08)
+        randomY = random.uniform(-.08, .08)
+        randomZ = random.uniform(0, .105)
+        end_point = [randomX, randomY, randomZ]
+        #print(end_point)
+        angles = inverse_kinematics(end_point)
+        final_position = forward_kinematics(angles)
+        #print(angles)
+        if not thresholdCheck(randomX, final_position[0][3], .001):
+            fail = True
+            print("Fail in X")
+        if not thresholdCheck(randomY, final_position[1][3], .001):
+            fail = True
+            print("Fail in Y")
+        if not thresholdCheck(randomZ, final_position[2][3], .001):
+            fail = True
+            print("Fail in Z")
+        if not fail:
+            sucess += 1
+        plt.plot(end_point[0], end_point[1], end_point[2],'bo',markersize=15)
+        arm_chain.plot(angles, ax, show=False)
+    #arm_plot.plot_nodes(ax, [end_point])
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    # Set the limits for the range of plotted values
+    lim = .12
+    plt.xlim(-lim, lim)
+    plt.ylim(-lim, lim)
+    ax.set_zlim(-.2, .2)
+    run_time = time.time() - start_time
+    print("Successes: ", sucess)
+    print("Failures: ", tests - sucess)
+    print("Rate: ", sucess / tests)
+    print("Total Run Time: ", run_time)
+    print("Average Run Time: ", run_time / tests)
+    #angles = Node(angles)
+    #arm_plot.plot_arm_configs(ax,[angles],None)
+    plt.show()
+    # # random.seed(a=RRT_JUMP_SEED)
+    # np.set_printoptions(precision=20)
+    # trials = 100
+    # iterations = 10
+    # num_obstacles = 8
+    #
+    # # linear_rrt_test(50, obstacles)
+    # # plot_random_path(iterations, num_obstacles)
+    # # plot_path([4.6916344287189435, 4.090985392727952, 2.3692680894666482, 2.0596249149355357, 4.325243067547699],
+    # #           [2.998393231026213, 2.257996400624798, 3.5617493855518596, 2.0009026772223946, 4.473243223507486],
+    # #           iterations, obstacles)
+    #
+    # start_node, end_node, obstacles = random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]])
+    #
+    # path, success = linear_rrt_to_point(start_node.angles, .2, .2, .2, obstacles)
+    # g = Graph(start_node.angles, Node.from_point((.2, .2, .2)).angles)
+    # if path is not None:
+    #     g.add_vex(path[0], g.start_node)
+    #     for i in range(1, len(path)):
+    #         g.add_vex(path[i], path[i-1])
+    #     arm_plot.plot_3d(g, path, obstacles)

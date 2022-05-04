@@ -36,7 +36,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetMetaArchPredictionHeadTest(
     test_case.TestCase, parameterized.TestCase):
   """Test CenterNet meta architecture prediction head."""
@@ -50,7 +50,7 @@ class CenterNetMetaArchPredictionHeadTest(
     self.assertEqual((4, 128, 128, 7), output.shape)
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetMetaArchHelpersTest(test_case.TestCase, parameterized.TestCase):
   """Test for CenterNet meta architecture related functions."""
 
@@ -821,7 +821,7 @@ class CenterNetMetaArchHelpersTest(test_case.TestCase, parameterized.TestCase):
     keypoint_heatmap_np[1, 2, 0, 1] = 0.8
 
     # Note that the keypoint offsets are now per keypoint (as opposed to
-    # keypoint agnostic, in the test test_keypoint_candidate_prediction).
+    # keypoint agnostic, in the kinematics_test test_keypoint_candidate_prediction).
     keypoint_heatmap_offsets_np = np.zeros((2, 3, 3, 4), dtype=np.float32)
     keypoint_heatmap_offsets_np[0, 0, 0] = [0.5, 0.25, 0.0, 0.0]
     keypoint_heatmap_offsets_np[0, 2, 1] = [-0.25, 0.5, 0.0, 0.0]
@@ -1432,7 +1432,7 @@ def _logit(p):
       (p + np.finfo(np.float32).eps) / (1 - p + np.finfo(np.float32).eps))
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetMetaArchLibTest(test_case.TestCase):
   """Test for CenterNet meta architecture related functions."""
 
@@ -1462,7 +1462,7 @@ class CenterNetMetaArchLibTest(test_case.TestCase):
     self.assertAlmostEqual(1, num_instances)
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetMetaArchTest(test_case.TestCase, parameterized.TestCase):
   """Tests for the CenterNet meta architecture."""
 
@@ -2200,7 +2200,7 @@ def get_fake_groundtruth_dict(input_height, input_width, stride):
   return groundtruth_dict
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetMetaComputeLossTest(test_case.TestCase):
   """Test for CenterNet loss compuation related functions."""
 
@@ -2350,7 +2350,7 @@ class CenterNetMetaComputeLossTest(test_case.TestCase):
     self.assertGreater(0.01, loss)
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetMetaArchRestoreTest(test_case.TestCase):
 
   def test_restore_map_resnet(self):
@@ -2412,7 +2412,7 @@ class DummyFeatureExtractor(cnma.CenterNetFeatureExtractor):
     return self._num_feature_outputs
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
 class CenterNetFeatureExtractorTest(test_case.TestCase):
   """Test the base feature extractor class."""
 

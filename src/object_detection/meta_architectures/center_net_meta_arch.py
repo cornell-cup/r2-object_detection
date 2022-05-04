@@ -71,10 +71,10 @@ class CenterNetFeatureExtractor(tf.keras.Model):
     """
     super(CenterNetFeatureExtractor, self).__init__(name=name)
 
-    if channel_means is None or len(channel_means) == 0:  # pylint:disable=g-explicit-length-test
+    if channel_means is None or len(channel_means) == 0:  # pylint:disable=g-explicit-length-kinematics_test
       channel_means = [0., 0., 0.]
 
-    if channel_stds is None or len(channel_stds) == 0:  # pylint:disable=g-explicit-length-test
+    if channel_stds is None or len(channel_stds) == 0:  # pylint:disable=g-explicit-length-kinematics_test
       channel_stds = [1., 1., 1.]
 
     self._channel_means = channel_means
