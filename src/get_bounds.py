@@ -3,56 +3,89 @@ import matplotlib.pyplot as plt
 import sys
 import time
 import cv2
-from sklearn import preprocessing
 import os
 from datetime import datetime
 from matplotlib import image
 
 
-def connected_component_analysis(img):
-    output = cv2.connectedComponentsWithStats(
-	img, 4, cv2.CV_32S)
-    (numLabels, labels, stats, centroids) = output
-    # loop over the number of unique connected component labels
-    for i in range(0, numLabels):
-        # if this is the first component then we examine the
-        # *background* (typically we would just ignore this
-        # component in our loop)
-        if i == 0:
-            text = "examining component {}/{} (background)".format(
-                i + 1, numLabels)
-        # otherwise, we are examining an actual connected component
-        else:
-            text = "examining component {}/{}".format( i + 1, numLabels)
-        # print a status message update for the current connected
-        # component
-        print("[INFO] {}".format(text))
-        # extract the connected component statistics and centroid for
-        # the current label
-        x = stats[i, cv2.CC_STAT_LEFT]
-        y = stats[i, cv2.CC_STAT_TOP]
-        w = stats[i, cv2.CC_STAT_WIDTH]
-        h = stats[i, cv2.CC_STAT_HEIGHT]
-        area = stats[i, cv2.CC_STAT_AREA]
-        (cX, cY) = centroids[i]
 
-        # clone our original image (so we can draw on it) and then draw
-        # a bounding box surrounding the connected component along with
-        # a circle corresponding to the centroid
-        output = image.copy()
-        cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 3)
-        cv2.circle(output, (int(cX), int(cY)), 4, (0, 0, 255), -1)
-        # construct a mask for the current connected component by
-        # finding a pixels in the labels array that have the current
-        # connected component ID
-        componentMask = (labels == i).astype("uint8") * 255
-        # show our output image and connected component mask
-        cv2.imshow("Output", output)
-        cv2.imshow("Connected Component", componentMask)
-        cv2.waitKey(0)
 
-    pass
 
+
+"""
+Input: vertices 
+Algorithm:
+construct graph G from vertices
+initialize v_0 as the vertex with the smallest node
+traverse through graph. increment count by 1
+If count is 4, then create a rectangle with the existing bounding boxes
+
+"""
+def find_rectangle(vertices):
+    """Takes in a list of vertices and finds the bounding rectangle for each
+    vertex. Returns a list in the form: 
+    [((xy for lower right corner),((xy for upper left corner)))] """
+    rect_params_lst = []
+    for vertex in vertices:
+        min_x, min_y = np.min(vertex[:,0]), np.min(vertex[:,1])
+        max_x, max_y = np.max(vertex[:,0]), np.max(vertex[:,1])
+        w, h = max_x - min_x, max_y - min_y 
+        # rect_params_lst.append((min_x, min_y, w, h))
+        rect_params_lst.append(((min_x, min_y), (max_x, max_y)))
+    return rect_params_lst
+
+def get_rect_params(img):
+    img, vertices = approx_shape(img)
+    rect_params = find_rectangle(vertices)
+    return rect_params
+
+
+def approx_shape(img):
+    """ """
+    # Convert to greyscale
+    if len(img.shape) == 3:
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        img_gray = img
+   
+    cv2.imshow('gray', img_gray)
+    # Convert to binary image by thresholding
+    _, threshold = cv2.threshold(img_gray, 245, 255, cv2.THRESH_BINARY_INV)
+    # Find the contours
+    contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    #print (len(contours))
+    # For each contour approximate the curve and
+    # detect the shapes.
+    vertices = []
+    tmp = img.copy()
+    for cnt in contours :
+        area = cv2.contourArea(cnt)
+        # Shortlisting the regions based on there area.
+        # TODO: select the set of approx that gives the biggest area
+        if area > 600: 
+            approx = cv2.approxPolyDP(cnt, 
+                                    0.05 * cv2.arcLength(cnt, True), True)
+            
+            cv2.drawContours(tmp, [approx], 0, (0, 0, 255), 3)
+            vertices.append(approx)
+            
+    
+    cv2.imshow("approximated shape", tmp)
+    cv2.waitKey()
+    #print (vertices)
+    for i in range (0, len(vertices)):
+        vertices[i] = vertices[i].reshape(len(vertices[i]),2)
+    # print (vertices)
+    
+    return img, vertices
+
+def draw_boxes(img):
+    rect_params = get_rect_params(img)
+    tmp = img.copy()
+    for param in rect_params:
+        cv2.rectangle(tmp,param[0],param[1],(100,100,100),1)
+    cv2.imshow("boxes", tmp)
+    cv2.waitKey()
 
 def erode_and_dilate(img, debug=False):
 
@@ -88,6 +121,7 @@ def get_bound (img, debug=False):
         denoised_img = erode_and_dilate(tmp, debug)
         mask = (denoised_img == label_val).astype(int)
         
+        
         active_px = np.argwhere(mask!=0)
         active_px = active_px[:,[1,0]]
         x,y,w,h = cv2.boundingRect(active_px)
@@ -100,3 +134,15 @@ def get_bound (img, debug=False):
             cv2.imshow("tmp", tmp)
             cv2.waitKey()
     return box_coords
+
+
+
+def main():
+    path = os.path.join(os.getcwd(), "kmeans_test_imgs", "30-04-15:06:00")
+    img = cv2.imread(path+"/Result.jpg")
+    #approx_shape(img)
+    draw_boxes(img)
+    
+
+if __name__ == "__main__":
+    main()

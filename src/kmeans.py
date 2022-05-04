@@ -8,6 +8,7 @@ from sklearn import preprocessing
 import os
 from datetime import datetime
 from matplotlib import image
+import get_bounds as bound
 #import get_depth_frame as df
 
 
@@ -140,16 +141,16 @@ def create_rgbd(rgb_img, depth_img):
     
     return rgbd
 
-def connected_component_analysis(img):
-    pass
+
 
 def erode_and_dilate(img, debug=False):
 
     # erosion takes the min and dilation takes the max
     # since we want to keep white pixels we erode then dilate
     kernel = np.ones((7,7), np.uint8)
-    img_erosion = cv2.erode(img, kernel, iterations=4)
-    img_dilated = cv2.dilate(img_erosion, kernel, iterations=1)
+    
+    img_dilated = cv2.dilate(img, kernel, iterations=4)
+    img_erosion = cv2.erode(img_dilated, kernel, iterations=1)
     if debug:
             #viz_image([img_erosion,img_dilated],["eroded", "dilated"])
             cv2.imshow("eroded", img_erosion)
@@ -157,7 +158,7 @@ def erode_and_dilate(img, debug=False):
     return img_dilated
 
 def get_bound (img, debug=False):
-    # gets xy coordinates of bottom left corner of boudning boxes.
+    # gets xy coordinates of bottom left corner of boudning boxes
     # returns list of tuples in the form (x,y,w,h)
     box_coords = []
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -167,15 +168,18 @@ def get_bound (img, debug=False):
             continue
         tmp = gray.copy()
         #create a mask where all values equal to v are 1 and everything else is 0
-        label_val = 150
+        label_val = 0
         mask = (tmp == v).astype(int) 
-        tmp[mask==0] = 0
+        tmp[mask==0] = 255
         tmp[mask==1] = label_val
         
         # Re update the mask using the dilated image where all 
         # desired pixels (white) are set to 1
         denoised_img = erode_and_dilate(tmp, debug)
         mask = (denoised_img == label_val).astype(int)
+        #cv2.imshow("denoised image", denoised_img)
+        bound.draw_boxes(denoised_img)
+        box_coords.append(bound.get_rect_params(img))
         
         active_px = np.argwhere(mask!=0)
         active_px = active_px[:,[1,0]]
@@ -184,10 +188,11 @@ def get_bound (img, debug=False):
 
         if debug:
             # draw bounding box rectangle
-            cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),1)
+            cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),3)
             cv2.imshow("org", img)
             cv2.imshow("tmp", tmp)
             cv2.waitKey()
+            #bound.draw_boxes(tmp)
     return box_coords
 
 
@@ -196,14 +201,13 @@ def get_bound (img, debug=False):
 
 def main():
     #org_image, depth_img, rgbd = df.get_depth_frame()
-    org_img, depth_img = get_depth_images("04-12-14:49:33")
+    org_img, depth_img = get_depth_images("04-12-14:44:58")
     cv2.imshow("org", org_img)
     rgbd = create_rgbd(org_img, depth_img)
 
     preprocessed_rgbd = preprocess_data(depth_img,rgbd)
-
-    result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape, True)
-
+    result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape)
+    
     result_img = postprocess_im(depth_img, result_img, labels)
     print ("result image is same as rgbd",result_img == rgbd)
     
