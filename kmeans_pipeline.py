@@ -41,6 +41,7 @@ sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_de
 from src.camera import Camera
 from src.projections import *
 import src.kinematics.assuming_linearity_rrt as alr 
+from src.kmeans import *
 
 
 
@@ -160,4 +161,20 @@ if __name__ == '__main__':
 
 
             """
+	    
+	    #kmeans
+	    rgbd = create_rgbd(color_img, depth_img)
+	    preprocessed_rgbd = preprocess_data(depth_img,rgbd)
+
+            result_img, labels = cv_kmeans(preprocessed_rgbd, color_img.shape, True)
+
+            result_img = postprocess_im(depth_img, result_img, labels)
+            print ("result image is same as rgbd", result_img == rgbd)
+    
+            collision_bounds = get_bound(result_img, True)
+	    
+	    viz_image([org_img, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
+	
+	    collision_coords = bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds)
+	    print(collision_coords)
 
