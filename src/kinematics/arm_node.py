@@ -19,6 +19,7 @@ from util import line
 from ikpy.chain import Chain
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
+ik_py = True #boolean flag: True if ik_py, False if Kinpy
 with nostderr():
     chain = kp.build_chain_from_urdf(open("models/XArm.urdf").read())
     serial_chain = kp.build_serial_chain_from_urdf(open("models/XArm.urdf").read(), "link5", "base_link")
@@ -71,14 +72,15 @@ class Node(object):
         Returns:
             An array of the [x, y, z] of each joint of the arm based on the node's angle configuration.
         """
-        th = {}
-        for i in range(len(joint_names)):
-            th[joint_names[i]] = self.angles[i]
-
-        ret = chain.forward_kinematics(th)
-
-        angles = [ret[name].pos for name in link_names]
-        return angles
+        if not ik_py:
+            th = {}
+            for i in range(len(joint_names)):
+                th[joint_names[i]] = self.angles[i]
+            ret = chain.forward_kinematics(th)
+            position = [ret[name].pos for name in link_names]
+        else:
+            position = amazon_arm_chain.forward_kinematics(angles)
+        return position
 
     def get_link_lengths(self):
         """ Computes the link lengths of each link in the arm. """
@@ -123,11 +125,20 @@ class Node(object):
         return True
 
     @classmethod
-    def from_point(cls, point, start_config=[0, 0, 0, 0, 0]):
-        """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
-        angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
-                                                initial_state=start_config)
-        return Node(angle_config)
+    def from_point(cls, end_point, start_config=[0, 0, 0, 0, 0]):
+        """Computes Inverse Kinematics from the given point either using IKPY or Kinpy
+        :param end_point: the target point from which kinematics will be calculated,
+                      formatted as (x,y,z)
+        :return: the inverse kinematic angles
+        """
+        global ik_py
+        if ik_py:
+            angles = amazon_arm_chain.inverse_kinematics(end_point)
+        else:
+            angles = kp.ik.inverse_kinematics(serial_chain,
+                                          kp.Transform(pos=[end_point[0], end_point[1], end_point[2]]),
+                                          initial_state=start_config)
+        return Node(angles)
 
     @classmethod
     def distance(cls, node1, node2):
@@ -143,17 +154,6 @@ def random_angle(left_bound, right_bound):
         return random.uniform(left_bound, math.pi * 2)
     else:
         return random.uniform(0, right_bound)
-
-def kinpy_from_point(point, start_config=[0, 0, 0, 0, 0]):
-    """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
-    angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
-                                                initial_state=start_config)
-    return Node(angle_config)
-
-def ikpy_from_point(point, start_config=[0, 0, 0]):
-    """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
-    angle_config = IKPY.chain.ik.inverse_kinematic_optimization(serial_chain,point,start_config)
-    return Node(angle_config)
 
 def thresholdCheck(a, b, threshold):
     dist = abs(a)-abs(b)
