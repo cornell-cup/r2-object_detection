@@ -260,7 +260,7 @@ def bound_to_coor(depth_scale, depth_frame, depth_img, bounds):
         # ((min x, min y), (max x, max y))
         print(bound)
         print(bound[0])
-        min_x, min_y, max_x, max_y = bound[0][0], bound[0][1], bound[1][0], bound[1][1]
+        min_x, min_y, max_x, max_y = bound[0][0][0], bound[0][0][1], bound[0][1][0], bound[0][1][1]
         # x, y gives the left lower and right upper 
         center_depth = depth_img[(min_x+max_x)/2,(min_y+max_y)/2].astype(float)
         distance = center_depth*depth_scale
