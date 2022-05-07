@@ -4,10 +4,16 @@ Written by Simon Kapen '24 and Alison Duan '23, Spring 2021-Spring 2022.
 Initially adapted from Fanjin Zeng on github, 2019 (gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80).
 """
 
-from arm_node import Node
-from spatial_hashing import SpatialHash
-from util import line
-import numpy as np
+try: 
+	from arm_node import Node
+	from spatial_hashing import SpatialHash
+	from util import line
+	import numpy as np
+except: 
+	from src.kinematics.arm_node import Node
+	from src.kinematics.spatial_hashing import SpatialHash
+	from util import line
+	import numpy as np
 
 
 class Graph:

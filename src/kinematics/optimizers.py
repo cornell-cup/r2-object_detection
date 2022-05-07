@@ -1,5 +1,8 @@
-import collision_detection
-
+try:
+	import collision_detection
+except: 
+	import src.kinematics.collision_detection
+	
 """
 Written by Yashraj Sinha, Spring 2022.
 Optimizes arm paths from rrt. 

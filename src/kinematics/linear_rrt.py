@@ -8,21 +8,34 @@ Written by Simon Kapen '24 and Raj Sinha '25, Fall 2021.
 
 import math
 import numpy as np
-import pure_rrt as rrt
-from arm_graph import Graph
-from arm_node import Node
-from util import line
-import collision_detection as cd
-import arm_plot
+
 import time
-from util.angles import true_angle_distances_arm
 from test import tpm
-from obstacle_generation import random_start_environment
 import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 from typing import List
 
+try: 
+	from arm_graph import Graph
+	from arm_node import Node
+	from util import line
+	import pure_rrt as rrt
+
+	import collision_detection as cd
+	import arm_plot
+	from util.angles import true_angle_distances_arm
+	from obstacle_generation import random_start_environment
+except: 
+	from src.kinematics.arm_graph import Graph
+	from src.kinematics.arm_node import Node
+	from src.kinematics.util import line
+	import src.kinematics.pure_rrt as rrt
+
+	import src.kinematics.collision_detection as cd
+	import src.kinematics.arm_plot
+	from src.kinematics.util.angles import true_angle_distances_arm
+	from src.kinematics.obstacle_generation import random_start_environment
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.

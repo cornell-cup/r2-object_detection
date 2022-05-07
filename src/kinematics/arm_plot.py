@@ -6,11 +6,17 @@ Written by Simon Kapen '24 and Raj Sinha '25, Spring 2021.
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import art3d
-import collision_detection
-from arm_node import Node
+
 from matplotlib.animation import FuncAnimation
 import math
 from util.line import distance
+
+try : 
+	import collision_detection
+	from arm_node import Node
+except: 
+	import src.kinematics.collision_detection
+	from src.kinematics.arm_node import Node
 
 
 def arr_to_int(arr):

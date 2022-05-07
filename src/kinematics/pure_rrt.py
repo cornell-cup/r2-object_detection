@@ -16,18 +16,31 @@ from random import random
 from collections import deque
 import time
 import random
-from collision_detection import arm_is_colliding_prisms, arm_is_colliding
-from optimizers import path_optimizer_two, path_optimizer_four, checkPath
-from src.kinematics import obstacle_generation
-from util import line
-from arm_node import Node
-from arm_graph import Graph
-from matplotlib.widgets import Button
-from arm_plot import plot_3d
-from obstacle_generation import random_start_environment
-from util.angles import true_angle_distances_arm
+
 import sys
 
+try: 
+	from collision_detection import arm_is_colliding_prisms, arm_is_colliding
+	from optimizers import path_optimizer_two, path_optimizer_four, checkPath
+	import obstacle_generation
+	from util import line
+	from arm_node import Node
+	from arm_graph import Graph
+	from matplotlib.widgets import Button
+	from arm_plot import plot_3d
+	from obstacle_generation import random_start_environment
+	from util.angles import true_angle_distances_arm
+except: 
+	from src.kinematics.collision_detection import arm_is_colliding_prisms, arm_is_colliding
+	from src.kinematics.optimizers import path_optimizer_two, path_optimizer_four, checkPath
+	from src.kinematics import obstacle_generation
+	from src.kinematics.util import line
+	from src.kinematics.arm_node import Node
+	from src.kinematics.arm_graph import Graph
+	from matplotlib.widgets import Button
+	from src.kinematics.arm_plot import plot_3d
+	from src.kinematics.obstacle_generation import random_start_environment
+	from src.kinematics.util.angles import true_angle_distances_arm
 
 def nearest(g: Graph, target_end_effector_pos):
     """ Finds the nearest node to the input node in Cartesian space, 

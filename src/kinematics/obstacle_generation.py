@@ -6,13 +6,18 @@ Written by Simon Kapen '24, Spring 2022.
 
 import random
 import matplotlib.pyplot as plt
-from collision_detection import plot_linear_prism, arm_is_colliding_prisms
-from arm_node import Node
-from util.line import distance
+
 import numpy as np
 import typing
 
-
+try: 
+	from collision_detection import plot_linear_prism, arm_is_colliding_prisms
+	from arm_node import Node
+	from util.line import distance
+except: 
+	from src.kinematics.collision_detection import plot_linear_prism, arm_is_colliding_prisms
+	from src.kinematics.arm_node import Node
+	from src.kinematics.util.line import distance
 def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side_length=.2, min_side_length = .05):
     """Randomly generates cuboid obstacles for an environment.
 

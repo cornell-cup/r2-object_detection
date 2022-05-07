@@ -12,8 +12,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import random
-from arm_node import Node
-
+try: 
+	from arm_node import Node
+except: 
+	from src.kinematics.arm_node import Node
 # Global arm configuration
 # chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.urdf").read())
 global ax

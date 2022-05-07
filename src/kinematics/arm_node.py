@@ -5,13 +5,19 @@ held in models/SimpleArmModelForURDF.urdf.
 
 Written by Simon Kapen '24, Spring 2021.
 """
-from util.error_handling import nostderr
 import numpy as np
 import math
 import random
-import kinpy as kp
-from util import line
 from typing import List
+
+try:
+	from util import line
+	from util.error_handling import nostderr
+except: 
+	from src.kinematics.util import line
+	from src.kinematics.util.error_handling import nostderr
+
+import kinpy as kp
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
