@@ -4,13 +4,6 @@ import math
 import numpy as np
 import sys
 
-# sys.path.insert(1, '/usr/local/lib/python3.6')
-# sys.path.insert(2, '../r2-object_detection/src/kinematics')
-# sys.path.insert(3, '../r2-object_detection/src')
-
-# from src.camera import Camera
-# from src.projections import *
-# from networking.Client import Client
 import arm.publish_arm_updates as arm
 import kinematics.linear_rrt 
 
