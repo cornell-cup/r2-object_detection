@@ -20,7 +20,7 @@ import time
 from ikpy.chain import Chain
 from .optimal_min_cost import find_path
 from .util.angles import true_angle_distances_arm
-from .test import tpm
+from .kinematics_test import tpm
 from .obstacle_generation import random_start_environment
 import random
 import matplotlib.pyplot as plt
@@ -320,17 +320,10 @@ def path_optimizer(path, prism):
     # To save time we will only check every other node
     for i in range(0, len(path) - 2, 2):
         p1 = path[i].end_effector_pos
-<<<<<<< HEAD:c1c0_object_detection/kinematics/linear_rrt.py
-        p2 = path[i+2].end_effector_pos
-        line_seg = ([p1[0],p1[1],p1[2],p2[0],p2[1],p2[2]])
-        if newLineCollider(line_seg, prism) == False:
-            optimizedList.remove(path[i+1])
-=======
         p2 = path[i + 2].end_effector_pos
         line_seg = ([p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]])
         if cd.newLineCollider(line_seg, prism) == False:
             optimizedList.remove(path[i + 1])
->>>>>>> master:src/kinematics/linear_rrt.py
     return optimizedList
 
     # start_point = [0, 0, 0]

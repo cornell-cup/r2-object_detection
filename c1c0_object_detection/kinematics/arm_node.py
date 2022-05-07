@@ -21,8 +21,8 @@ from ikpy.chain import Chain
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 ik_py = True #boolean flag: True if ik_py, False if Kinpy
 with nostderr():
-    arm_chain = Chain.from_urdf_file("models/XArm.urdf")
-    arm_chain = Chain.from_urdf_file("models/SimpleArmModelforURDF.urdf")
+    arm_chain = Chain.from_urdf_file("c1c0_object_detection/kinematics/models/XArm.urdf")
+    # arm_chain = Chain.from_urdf_file("c1c0_object_detection/kinematics/models/SimpleArmModelforURDF.urdf")
 
 
 class Node(object):

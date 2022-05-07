@@ -9,11 +9,9 @@ Written by Simon Kapen '24 and Raj Sinha '25, Spring 2022.
 """
 from .arm_node import Node
 from .arm_graph import Graph
-import .arm_plot
 from .util.angles import true_angle_distances_arm
 import numpy as np
 from .util import angles, line
-import .collision_detection
 from .pure_rrt import dijkstra, nearest
 from .arm_plot import plot_3d
 import time
