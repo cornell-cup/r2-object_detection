@@ -145,9 +145,9 @@ def create_rgbd(rgb_img, depth_img):
 
 
 def get_image_bounds(color_img, depth_img):
-    rgbd = create_rgbd(org_img, depth_img)
+    rgbd = create_rgbd(color_img, depth_img)
     preprocessed_rgbd = preprocess_data(depth_img,rgbd)
-    result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape)
+    result_img, labels = cv_kmeans(preprocessed_rgbd, color_img.shape)
     result_img = postprocess_im(depth_img, result_img, labels)
     return bound.get_bound(result_img, False)
 
