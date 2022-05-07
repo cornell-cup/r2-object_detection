@@ -258,10 +258,12 @@ def bound_to_coor(depth_scale, depth_frame, depth_img, bounds):
     boxes = []
     for bound in bounds:
         # x, y gives the left lower
-        x,y,w,h = bound
-        center_depth = depth_img[x+w/2,y+h/2].astype(float)
+        (min_x, min_y),(max_x, max_y) = bound
+        center_depth = depth_img[(min_x+max_x)/2,(min_y+max_y)/2].astype(float)
         distance = center_depth*depth_scale
-        box = proj_pixel_to_point(x, y, distance, depth_frame)
+        x1,y1,z1 = proj_pixel_to_point(min_x, min_y, distance, depth_frame)
+        x2,y2,z2 = proj_pixel_to_point(max_x, max_y, distance, depth_frame)
+        box = x1,y1,z1,abs(x2-x1),abs(z2-z1),abs(y2-y1)
         boxes.append(box)
     return boxes
     
