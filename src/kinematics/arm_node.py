@@ -16,6 +16,7 @@ import random
 
 import ikpy as IKPY
 from util import line
+from typing import List
 from ikpy.chain import Chain
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
@@ -64,7 +65,7 @@ class Node(object):
 
     bounds = XARM_URDF_BOUNDS
 
-    def __init__(self, configuration: list[float]):
+    def __init__(self, configuration: List[float]):
         if configuration is None:
             self.angles = self.random_angle_config()
         else:

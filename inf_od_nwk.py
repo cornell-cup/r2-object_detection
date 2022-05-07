@@ -23,28 +23,34 @@
 
 import jetson.inference
 import jetson.utils
+
+net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
+display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
+print("GOT PAST STARTING VIDEO")
+"""Run grasp detection code with the intel realsense camera"""
+
 import math
 import cv2
 import numpy as np
+import sys
+
+sys.path.insert(1, '/usr/local/lib/python3.6')
+sys.path.insert(2, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics')
+sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src')
 
 from src.camera import Camera
 from src.projections import *
 from networking.Client import Client
-import arm.publish_arm_updates as arm 
-import kinematics.assuming_linearity_rrt as alr 
+import src.arm.publish_arm_updates as arm 
+import src.kinematics.assuming_linearity_rrt as alr 
 
-#  this is a test comment
-net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
-display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
 
-"""Run grasp detection code with the intel realsense camera"""
 
 WIDTH = 640
 HEIGHT = 480
 
 if __name__ == '__main__':
     detections = []
-    robot = Client()
     with Camera(WIDTH, HEIGHT) as cam:
         for i in range(5): 
             try:
@@ -133,24 +139,45 @@ if __name__ == '__main__':
             cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
             cv2.imshow("clamp points", depth_img)
             key = cv2.waitKey(0)
-
-	        # send grasp coordinates to external server for processing
-            # request should return an arm configuration
-            # TODO: make sure that this startpos works
-            startpos = arm.read_encoder_values()
-
-            # inverse kinematics
-            avg_target = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
-                          for i in range(length(gripper_pt1_arm))]
-            endpos = RRTNode.from_point(avg_target, startpos)
-            arm_config = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000):
-            
-            # send arm_config to the arm to move
-            arm.writeToSerial(arm_config)
-
+            print ("Press q to quit or r to continue")
             if key & 0xFF == ord('q') or key == 27:
                 cv2.destroyAllWindows()
                 break
             if key & 0xFF == ord('r'):
                 cv2.destroyAllWindows()
+	        # send grasp coordinates to external server for processing
+            # request should return an arm configuration
+            # TODO: make sure that this startpos works
+            arm.init_serial()
+            print("serial port initialized")
+            startpos = arm.read_encoder_values()
+            print("arm vals read")
+            # inverse kinematics
+            avg = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
+                          for i in range(len(gripper_pt1_arm))]
+            print("target calculated", avg)
+            arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+            # send arm_config to the arm to move
+            if success:
+                for config in arm_config:
+                    converted_array = alr.radians_to_degrees(config)
+                    print("WRITING ARM CONFIG", converted_array)
+                    arm.publish_updates(converted_array, 0.5)
+            print("arm config serial written")
+            arm.close_serial()
+            """
+            try:
+                if success:
+                    for config in arm_config:
+                        print("WRITING ARM CONFIG", config.angles)
+                        arm.writeToSerial(config.angles.astype(int))
+                print("arm config serial written")
+                arm.close_serial()
+            except Exception as e:
+                print("error in writing to arm config")
+                print(e) 
+                arm.close_serial() 
+
+
+            """
 

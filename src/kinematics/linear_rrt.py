@@ -25,9 +25,8 @@ import optimal_min_cost as opc
 import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
+from typing import List
 
-# Variable the represents whether we are using IKPY or Kinpy for
-# Inverse Kinematics calculations. (True = IKPY, False = Kinpy)
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.

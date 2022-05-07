@@ -1,3 +1,7 @@
+import sys
+
+#sys.path.insert(0, "/home/cornellcup-cs-jetson/Desktop/c1c0-modules/pyrealsense_build")
+sys.path.insert(1, '/usr/local/lib/python3.6')
 import pyrealsense2 as rs
 import numpy as np
 import cv2
