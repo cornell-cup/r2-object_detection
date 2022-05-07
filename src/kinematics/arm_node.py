@@ -5,21 +5,24 @@ held in models/SimpleArmModelForURDF.urdf.
 
 Written by Simon Kapen '24, Spring 2021.
 """
+import time
+
+import numpy
+import matplotlib.pyplot as plt
 from util.error_handling import nostderr
 import numpy as np
 import math
 import random
-import kinpy as kp
+
+import ikpy as IKPY
 from util import line
 from typing import List
+from ikpy.chain import Chain
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
+ik_py = True #boolean flag: True if ik_py, False if Kinpy
 with nostderr():
-    chain = kp.build_chain_from_urdf(open("./src/kinematics/models/XArm.urdf").read())
-    serial_chain = kp.build_serial_chain_from_urdf(open("./src/kinematics/models/XArm.urdf").read(), "link5", "base_link")
-
-xarm_joint_names = ['arm1', 'arm2', 'arm3', 'arm4', 'arm5']
-xarm_link_names = ['base_link', 'link1', 'link2', 'link3', 'link4']
+    arm_chain = Chain.from_urdf_file("models/XArm.urdf")
 
 
 class Node(object):
@@ -40,14 +43,27 @@ class Node(object):
         optimistic_cost: A float representing the optimal path cost traveling through this node.
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
-    a0_bounds = (3 * math.pi / 2, .9 * math.pi / 2)
-    a1_bounds = (3 * math.pi / 2, 1.22173)
-    a2_bounds = (1.7 * math.pi, 2.8 * math.pi / 2)
-    a3_bounds = (0, 2 * math.pi)
-    a4_bounds = (0, 2 * math.pi)
 
     null = (2 * math.pi, 0)
-    bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
+    SIMPLE_ARM_BOUNDS = [
+        (3 * math.pi / 2, .9 * math.pi / 2),
+        (3 * math.pi / 2, 1.22173),
+        (1.7 * math.pi, 2.8 * math.pi / 2),
+        (0, 2 * math.pi),
+        (0, 2 * math.pi),
+        (0, 2 * math.pi)
+    ]
+
+    XARM_URDF_BOUNDS = [
+        (2*math.pi, math.pi),
+        (2*math.pi, math.pi/2),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+    ]
+
+    bounds = XARM_URDF_BOUNDS
 
     def __init__(self, configuration: List[float]):
         if configuration is None:
@@ -55,31 +71,26 @@ class Node(object):
         else:
             self.angles = configuration
 
-        self.joint_positions = self.forward_kinematics(xarm_joint_names, xarm_link_names)
+        self.joint_positions = self.forward_kinematics()
         self.end_effector_pos = self.joint_positions[-1]
         self.optimistic_cost = 0
         self.fail_count = 0
 
-    def forward_kinematics(self, joint_names, link_names):
+    def forward_kinematics(self):
         """Computes forward kinematics of the arm given the joint angles.
 
         Returns:
             An array of the [x, y, z] of each joint of the arm based on the node's angle configuration.
         """
-        th = {}
-        for i in range(len(joint_names)):
-            th[joint_names[i]] = self.angles[i]
-
-        ret = chain.forward_kinematics(th)
-
-        angles = [ret[name].pos for name in link_names]
-        return angles
+        matrices = arm_chain.forward_kinematics(self.angles, full_kinematics=True)
+        position = [[matrix[i][3] for i in range(3)] for matrix in matrices]
+        return position
 
     def get_link_lengths(self):
         """ Computes the link lengths of each link in the arm. """
         lengths = []
-        for i in range(0, len(self.joint_positions)-1):
-            lengths.append(np.linalg.norm(self.joint_positions[i+1] - self.joint_positions[i]))
+        for i in range(0, len(self.joint_positions) - 1):
+            lengths.append(np.linalg.norm(self.joint_positions[i + 1] - self.joint_positions[i]))
         return lengths
 
     def inc_fail_count(self):
@@ -96,9 +107,9 @@ class Node(object):
 
     def random_angle_config(self):
         """ Returns a set of random angles within the bounds of the arm."""
-        rand_angles = [0, 0, 0, 0, 0]
+        rand_angles = [0, 0, 0, 0, 0, 0]
 
-        for a in range(0, 5):
+        for a in range(len(rand_angles)):
             rand_angles[a] = random_angle(self.bounds[a][0], self.bounds[a][1])
 
         return rand_angles
@@ -110,7 +121,6 @@ class Node(object):
          """
         for i in range(1, len(self.joint_positions)):
             if self.joint_positions[i][1] < self.joint_positions[0][1]:
-                # print("joint positions not in bounds")
                 return False
 
         if not self.angles_within_bounds(self.angles):
@@ -118,12 +128,15 @@ class Node(object):
         return True
 
     @classmethod
-    def from_point(cls, point, start_config=[0, 0, 0, 0, 0]):
-        """ Uses inverse kinematics to calculate a node given its cartesian coordinates. """
-        angle_config = kp.ik.inverse_kinematics(serial_chain, kp.Transform(pos=[point[0], point[1], point[2]]),
-                                                initial_state=start_config)
+    def from_point(cls, end_point, start_config=[0, 0, 0, 0, 0]):
+        """Computes Inverse Kinematics from the given point either using IKPY or Kinpy
+        :param end_point: the target point from which kinematics will be calculated,
+                      formatted as (x,y,z)
+        :return: the inverse kinematic angles
+        """
+        angles = arm_chain.inverse_kinematics(end_point)
 
-        return Node(angle_config)
+        return Node(angles)
 
     @classmethod
     def distance(cls, node1, node2):
@@ -139,3 +152,48 @@ def random_angle(left_bound, right_bound):
         return random.uniform(left_bound, math.pi * 2)
     else:
         return random.uniform(0, right_bound)
+
+
+if __name__ == '__main__':
+    start_point = [0, 0, 0]
+    sucess = 0
+    tests = 100
+    start_time = time.time()
+    for i in range(tests):
+        fail = False
+        randomX = random.uniform(-.08,.08)
+        randomY = random.uniform(-.08,.08)
+        randomZ = random.uniform(0,.105)
+        end_point = [randomX, randomY, randomZ]
+        angles = arm_chain.inverse_kinematics(end_point)
+        matrices = arm_chain.forward_kinematics(angles, full_kinematics=True)
+
+        joint_positions = [[matrix[i][3] for i in range(3)] for matrix in matrices]
+
+        dist = np.linalg.norm(np.array(joint_positions[-1]) - np.array(end_point))
+        if dist > .001:
+            fail = True
+
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    # Set the limits for the range of plotted values
+    lim = .6
+    plt.xlim(-lim, lim)
+    plt.ylim(-lim, lim)
+    ax.set_zlim(-lim, lim)
+    # create the prism to be avoided (hard coded)
+    lim = .3
+    run_time = time.time() - start_time
+    print("Successes: ", sucess)
+    print("Failures: ", tests - sucess)
+    print("Rate: ", sucess/tests)
+    print("Total Run Time: ", run_time)
+    print("Average Run Time: ", run_time/tests)
+
+
+
+# you put in angle configs to forward kinematics and get out an ending point
+# you put in an ending point to inverse kinematics and get angle configs
