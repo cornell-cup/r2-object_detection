@@ -165,6 +165,6 @@ if __name__ == '__main__':
 	    #kmeans
 	    
             bounds = get_image_bounds(color_img, depth_img)
-            collision_coords = bound_to_coor(cam.depth_scale, depth_img, depth_img, bounds)
+            collision_coords = bound_to_coor(cam.depth_scale, depth_img, depth_img, bounds, cam)
             print(collision_coords)
 
