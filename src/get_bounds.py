@@ -22,6 +22,7 @@ def find_rectangle(vertices):
     return rect_params_lst
 
 def get_rect_params(img):
+    """ """
     img, vertices = approx_shape(img)
     rect_params = find_rectangle(vertices)
     return rect_params

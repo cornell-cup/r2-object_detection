@@ -155,17 +155,18 @@ def get_image_bounds(color_img, depth_img):
 def main():
     #org_image, depth_img, rgbd = df.get_depth_frame()
     org_img, depth_img = get_depth_images("23-04-14:42:35")
-    cv2.imshow("org", org_img)
-    rgbd = create_rgbd(org_img, depth_img)
+    get_image_bounds(org_img, depth_img)
+    # cv2.imshow("org", org_img)
+    # rgbd = create_rgbd(org_img, depth_img)
 
-    preprocessed_rgbd = preprocess_data(depth_img,rgbd)
-    result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape)
+    # preprocessed_rgbd = preprocess_data(depth_img,rgbd)
+    # result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape)
     
-    result_img = postprocess_im(depth_img, result_img, labels)
+    # result_img = postprocess_im(depth_img, result_img, labels)
     
-    bound.get_bound(result_img, True)
+    # bound.get_bound(result_img, True)
     
-    viz_image([org_img, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
+    # viz_image([org_img, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
 
 
 
