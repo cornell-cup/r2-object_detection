@@ -265,7 +265,7 @@ def create_tf_record(output_filename,
         logging.warning('Invalid example: %s, ignoring.', xml_path)
 
 
-# TODO(derekjchow): Add kinematics_test for pet/PASCAL main files.
+# TODO(derekjchow): Add test for pet/PASCAL main files.
 def main(_):
   data_dir = FLAGS.data_dir
   label_map_dict = label_map_util.get_label_map_dict(FLAGS.label_map_path)

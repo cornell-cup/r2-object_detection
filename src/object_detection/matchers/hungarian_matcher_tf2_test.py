@@ -25,7 +25,7 @@ if tf_version.is_tf2():
   from object_detection.matchers import hungarian_matcher  # pylint: disable=g-import-not-at-top
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class HungarianBipartiteMatcherTest(test_case.TestCase):
 
   def test_get_expected_matches_when_all_rows_are_valid(self):

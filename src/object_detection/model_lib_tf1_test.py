@@ -120,7 +120,7 @@ def _make_initializable_iterator(dataset):
   return iterator
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class ModelLibTest(tf.test.TestCase):
 
   @classmethod
@@ -404,7 +404,7 @@ class ModelLibTest(tf.test.TestCase):
     self.assertEqual(None, experiment.eval_steps)
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class UnbatchTensorsTest(tf.test.TestCase):
 
   def test_unbatch_without_unpadding(self):

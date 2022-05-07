@@ -94,7 +94,7 @@ SPLITS = {
         'excluded-csv': ''
     },
     # Test doesn't have ground truth, so TF Records can't be created
-    'kinematics_test': {
+    'test': {
         'shards': 100,
         'examples': 0,
         'csv': '',
@@ -119,7 +119,7 @@ class Ava(object):
     self.path_to_output_dir = path_to_output_dir
 
   def generate_and_write_records(self,
-                                 splits_to_process='train,val,kinematics_test',
+                                 splits_to_process='train,val,test',
                                  video_path_format_string=None,
                                  seconds_per_sequence=10,
                                  hop_between_sequences=10,
@@ -464,7 +464,7 @@ class Ava(object):
     urlretrieve(ANNOTATION_URL, zip_path)
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
       zip_ref.extractall(self.path_to_data_download)
-    for split in ['train', 'kinematics_test', 'val']:
+    for split in ['train', 'test', 'val']:
       csv_path = os.path.join(self.path_to_data_download,
                               'ava_%s_v2.2.csv' % split)
       excl_name = 'ava_%s_excluded_timestamps_v2.2.csv' % split

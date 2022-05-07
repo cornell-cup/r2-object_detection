@@ -283,22 +283,22 @@ class ConfigUtilTest(tf.test.TestCase):
     self.assertAlmostEqual(hparams.learning_rate * warmup_scale_factor,
                            cosine_lr.warmup_learning_rate)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testRMSPropWithNewLearingRate(self):
     """Tests new learning rates for RMSProp Optimizer."""
     self._assertOptimizerWithNewLearningRate("rms_prop_optimizer")
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testMomentumOptimizerWithNewLearningRate(self):
     """Tests new learning rates for Momentum Optimizer."""
     self._assertOptimizerWithNewLearningRate("momentum_optimizer")
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testAdamOptimizerWithNewLearningRate(self):
     """Tests new learning rates for Adam Optimizer."""
     self._assertOptimizerWithNewLearningRate("adam_optimizer")
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testGenericConfigOverride(self):
     """Tests generic config overrides for all top-level configs."""
     # Set one parameter for each of the top-level pipeline configs:
@@ -334,7 +334,7 @@ class ConfigUtilTest(tf.test.TestCase):
     self.assertEqual(2,
                      configs["graph_rewriter_config"].quantization.weight_bits)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testNewBatchSize(self):
     """Tests that batch size is updated appropriately."""
     original_batch_size = 2
@@ -350,7 +350,7 @@ class ConfigUtilTest(tf.test.TestCase):
     new_batch_size = configs["train_config"].batch_size
     self.assertEqual(16, new_batch_size)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testNewBatchSizeWithClipping(self):
     """Tests that batch size is clipped to 1 from below."""
     original_batch_size = 2
@@ -366,7 +366,7 @@ class ConfigUtilTest(tf.test.TestCase):
     new_batch_size = configs["train_config"].batch_size
     self.assertEqual(1, new_batch_size)  # Clipped to 1.0.
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testOverwriteBatchSizeWithKeyValue(self):
     """Tests that batch size is overwritten based on key/value."""
     pipeline_config = pipeline_pb2.TrainEvalPipelineConfig()
@@ -377,7 +377,7 @@ class ConfigUtilTest(tf.test.TestCase):
     new_batch_size = configs["train_config"].batch_size
     self.assertEqual(10, new_batch_size)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testOverwriteSampleFromDatasetWeights(self):
     """Tests config override for sample_from_datasets_weights."""
     pipeline_config = pipeline_pb2.TrainEvalPipelineConfig()
@@ -396,7 +396,7 @@ class ConfigUtilTest(tf.test.TestCase):
         [0.5, 0.5],
         list(configs["train_input_config"].sample_from_datasets_weights))
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testOverwriteSampleFromDatasetWeightsWrongLength(self):
     """Tests config override for sample_from_datasets_weights."""
     pipeline_config = pipeline_pb2.TrainEvalPipelineConfig()
@@ -416,7 +416,7 @@ class ConfigUtilTest(tf.test.TestCase):
     ):
       config_util.merge_external_params_with_configs(configs, hparams)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testKeyValueOverrideBadKey(self):
     """Tests that overwriting with a bad key causes an exception."""
     pipeline_config = pipeline_pb2.TrainEvalPipelineConfig()
@@ -425,7 +425,7 @@ class ConfigUtilTest(tf.test.TestCase):
     with self.assertRaises(ValueError):
       config_util.merge_external_params_with_configs(configs, hparams)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testOverwriteBatchSizeWithBadValueType(self):
     """Tests that overwriting with a bad valuye type causes an exception."""
     pipeline_config = pipeline_pb2.TrainEvalPipelineConfig()
@@ -436,7 +436,7 @@ class ConfigUtilTest(tf.test.TestCase):
     with self.assertRaises(TypeError):
       config_util.merge_external_params_with_configs(configs, hparams)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testNewMomentumOptimizerValue(self):
     """Tests that new momentum value is updated appropriately."""
     original_momentum_value = 0.4
@@ -454,7 +454,7 @@ class ConfigUtilTest(tf.test.TestCase):
     new_momentum_value = optimizer_config.momentum_optimizer_value
     self.assertAlmostEqual(1.0, new_momentum_value)  # Clipped to 1.0.
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testNewClassificationLocalizationWeightRatio(self):
     """Tests that the loss weight ratio is updated appropriately."""
     original_localization_weight = 0.1
@@ -477,7 +477,7 @@ class ConfigUtilTest(tf.test.TestCase):
     self.assertAlmostEqual(1.0, loss.localization_weight)
     self.assertAlmostEqual(new_weight_ratio, loss.classification_weight)
 
-  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only kinematics_test.")
+  @unittest.skipIf(tf_version.is_tf2(), "Skipping TF1.X only test.")
   def testNewFocalLossParameters(self):
     """Tests that the loss weight ratio is updated appropriately."""
     original_alpha = 1.0

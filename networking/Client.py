@@ -41,7 +41,7 @@ class Client(Network):
         print(y, type(y['content']))
         return "content: " + str(y['content'])
 
-# kinematics_test to make sure that SensorState object is <= 4096 bytes
+# test to make sure that SensorState object is <= 4096 bytes
 if __name__ == "__main__":
     robot = Client()
     data_packet = SensorState()

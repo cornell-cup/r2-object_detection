@@ -25,7 +25,7 @@ if tf_version.is_tf1():
   from object_detection.matchers import bipartite_matcher  # pylint: disable=g-import-not-at-top
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class GreedyBipartiteMatcherTest(test_case.TestCase):
 
   def test_get_expected_matches_when_all_rows_are_valid(self):

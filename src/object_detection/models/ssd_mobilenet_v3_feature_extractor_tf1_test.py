@@ -61,7 +61,7 @@ class SsdMobilenetV3LargeFeatureExtractorTest(
             use_explicit_padding=use_explicit_padding))
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class SsdMobilenetV3SmallFeatureExtractorTest(
     ssd_mobilenet_v3_feature_extractor_testbase
     ._SsdMobilenetV3FeatureExtractorTestBase):

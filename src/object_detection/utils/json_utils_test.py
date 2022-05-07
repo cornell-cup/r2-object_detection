@@ -23,28 +23,28 @@ from object_detection.utils import json_utils
 class JsonUtilsTest(tf.test.TestCase):
 
   def testDumpReasonablePrecision(self):
-    output_path = os.path.join(tf.test.get_temp_dir(), 'kinematics_test.json')
+    output_path = os.path.join(tf.test.get_temp_dir(), 'test.json')
     with tf.gfile.GFile(output_path, 'w') as f:
       json_utils.Dump(1.0, f, float_digits=2)
     with tf.gfile.GFile(output_path, 'r') as f:
       self.assertEqual(f.read(), '1.00')
 
   def testDumpPassExtraParams(self):
-    output_path = os.path.join(tf.test.get_temp_dir(), 'kinematics_test.json')
+    output_path = os.path.join(tf.test.get_temp_dir(), 'test.json')
     with tf.gfile.GFile(output_path, 'w') as f:
       json_utils.Dump([1.12345], f, float_digits=2, indent=3)
     with tf.gfile.GFile(output_path, 'r') as f:
       self.assertEqual(f.read(), '[\n   1.12\n]')
 
   def testDumpZeroPrecision(self):
-    output_path = os.path.join(tf.test.get_temp_dir(), 'kinematics_test.json')
+    output_path = os.path.join(tf.test.get_temp_dir(), 'test.json')
     with tf.gfile.GFile(output_path, 'w') as f:
       json_utils.Dump(1.0, f, float_digits=0, indent=3)
     with tf.gfile.GFile(output_path, 'r') as f:
       self.assertEqual(f.read(), '1')
 
   def testDumpUnspecifiedPrecision(self):
-    output_path = os.path.join(tf.test.get_temp_dir(), 'kinematics_test.json')
+    output_path = os.path.join(tf.test.get_temp_dir(), 'test.json')
     with tf.gfile.GFile(output_path, 'w') as f:
       json_utils.Dump(1.012345, f)
     with tf.gfile.GFile(output_path, 'r') as f:

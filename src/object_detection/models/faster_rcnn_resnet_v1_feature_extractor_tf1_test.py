@@ -22,7 +22,7 @@ from object_detection.models import faster_rcnn_resnet_v1_feature_extractor as f
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class FasterRcnnResnetV1FeatureExtractorTest(tf.test.TestCase):
 
   def _build_feature_extractor(self,

@@ -28,7 +28,7 @@ from object_detection.utils import tf_version
 from object_detection.utils import variables_helper
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class FilterVariablesTest(test_case.TestCase):
 
   def _create_variables(self):
@@ -70,7 +70,7 @@ class FilterVariablesTest(test_case.TestCase):
     self.assertCountEqual(out_variables, [variables[1], variables[3]])
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class MultiplyGradientsMatchingRegexTest(tf.test.TestCase):
 
   def _create_grads_and_vars(self):
@@ -110,7 +110,7 @@ class MultiplyGradientsMatchingRegexTest(tf.test.TestCase):
       self.assertCountEqual(output, exp_output)
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class FreezeGradientsMatchingRegexTest(test_case.TestCase):
 
   def _create_grads_and_vars(self):
@@ -136,7 +136,7 @@ class FreezeGradientsMatchingRegexTest(test_case.TestCase):
       self.assertCountEqual(output, exp_output)
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class GetVariablesAvailableInCheckpointTest(test_case.TestCase):
 
   def test_return_all_variables_from_checkpoint(self):

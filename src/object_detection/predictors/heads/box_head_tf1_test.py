@@ -25,7 +25,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class MaskRCNNBoxHeadTest(test_case.TestCase):
 
   def _build_arg_scope_with_hyperparams(self,
@@ -62,7 +62,7 @@ class MaskRCNNBoxHeadTest(test_case.TestCase):
     self.assertAllEqual([64, 1, 20, 4], prediction.get_shape().as_list())
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class ConvolutionalBoxPredictorTest(test_case.TestCase):
 
   def _build_arg_scope_with_hyperparams(
@@ -96,7 +96,7 @@ class ConvolutionalBoxPredictorTest(test_case.TestCase):
     self.assertAllEqual([64, 323, 1, 4], box_encodings.get_shape().as_list())
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class WeightSharedConvolutionalBoxPredictorTest(test_case.TestCase):
 
   def _build_arg_scope_with_hyperparams(

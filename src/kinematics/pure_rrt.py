@@ -390,7 +390,7 @@ def multiple_runs():
         plot_3d(G, [start_node, end_node], obstacles, None)
 
 if __name__ == '__main__':
-    #kinematics_test()
+    #test()
     multiple_runs()
     # n_iter = 1000
     # radius = .07

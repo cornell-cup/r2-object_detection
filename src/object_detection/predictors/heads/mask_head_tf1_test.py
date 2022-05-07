@@ -25,7 +25,7 @@ from object_detection.utils import test_case
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class MaskRCNNMaskHeadTest(test_case.TestCase):
 
   def _build_arg_scope_with_hyperparams(self,
@@ -78,7 +78,7 @@ class MaskRCNNMaskHeadTest(test_case.TestCase):
     self.assertAllEqual([64, 1, 1, 28, 28], prediction.get_shape().as_list())
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class ConvolutionalMaskPredictorTest(test_case.TestCase):
 
   def _build_arg_scope_with_hyperparams(
@@ -135,7 +135,7 @@ class ConvolutionalMaskPredictorTest(test_case.TestCase):
                         mask_predictions.get_shape().as_list())
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class WeightSharedConvolutionalMaskPredictorTest(test_case.TestCase):
 
   def _build_arg_scope_with_hyperparams(

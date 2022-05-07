@@ -14,7 +14,7 @@
 # ==============================================================================
 """Tests for resnet_v1.py.
 
-This kinematics_test mainly focuses on comparing slim resnet v1 and Keras resnet v1 for
+This test mainly focuses on comparing slim resnet v1 and Keras resnet v1 for
 object detection. To verify the consistency of the two models, we compare:
   1. Output shape of each layer given different inputs.
   2. Number of global variables.
@@ -67,7 +67,7 @@ _NUM_CHANNELS = 3
 _BATCH_SIZE = 4
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class ResnetV1Test(test_case.TestCase):
 
   def _build_conv_hyperparams(self):
@@ -183,7 +183,7 @@ class ResnetV1Test(test_case.TestCase):
 
 class ResnetShapeTest(test_case.TestCase, parameterized.TestCase):
 
-  @unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+  @unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
   @parameterized.parameters(
       {
           'resnet_type':

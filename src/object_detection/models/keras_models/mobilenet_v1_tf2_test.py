@@ -16,7 +16,7 @@
 
 """Tests for mobilenet_v1.py.
 
-This kinematics_test mainly focuses on comparing slim MobilenetV1 and Keras MobilenetV1 for
+This test mainly focuses on comparing slim MobilenetV1 and Keras MobilenetV1 for
 object detection. To verify the consistency of the two models, we compare:
   1. Output shape of each layer given different inputs
   2. Number of global variables
@@ -65,7 +65,7 @@ _NUM_CHANNELS = 3
 _BATCH_SIZE = 2
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class MobilenetV1Test(test_case.TestCase):
 
   def _build_conv_hyperparams(self):

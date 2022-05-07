@@ -37,7 +37,7 @@ def get_path(path_suffix):
                       path_suffix)
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class ExportSavedModelTPUTest(tf.test.TestCase, parameterized.TestCase):
 
   @parameterized.named_parameters(
