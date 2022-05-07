@@ -257,8 +257,9 @@ def plot_grasp_3D(pt1, pt2, gripper_h):
 def bound_to_coor(depth_scale, depth_frame, depth_img, bounds):
     boxes = []
     for bound in bounds:
-        # x, y gives the left lower
-        (min_x, min_y, max_x, max_y) = bound
+        # ((min x, min y), (max x, max y))
+        min_x, min_y, max_x, max_y = bound[0][0], bound[0][1], bound[1][0], bound[1][1]
+        # x, y gives the left lower and right upper 
         center_depth = depth_img[(min_x+max_x)/2,(min_y+max_y)/2].astype(float)
         distance = center_depth*depth_scale
         x1,y1,z1 = proj_pixel_to_point(min_x, min_y, distance, depth_frame)
