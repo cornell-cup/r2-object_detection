@@ -15,8 +15,8 @@ from typing import List
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 with nostderr():
-    chain = kp.build_chain_from_urdf(open("./kinematics/models/XArm.urdf").read())
-    serial_chain = kp.build_serial_chain_from_urdf(open("./kinematics/models/XArm.urdf").read(), "link5", "base_link")
+    chain = kp.build_chain_from_urdf(open("c1c0_object_detection/kinematics/models/XArm.urdf").read())
+    serial_chain = kp.build_serial_chain_from_urdf(open("c1c0_object_detection/kinematics/models/XArm.urdf").read(), "link5", "base_link")
 
 xarm_joint_names = ['arm1', 'arm2', 'arm3', 'arm4', 'arm5']
 xarm_link_names = ['base_link', 'link1', 'link2', 'link3', 'link4']
