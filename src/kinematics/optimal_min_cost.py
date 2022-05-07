@@ -17,7 +17,7 @@ import collision_detection
 from pure_rrt import dijkstra, nearest
 from arm_plot import plot_3d
 import time
-from test import tpm
+from kinematics_test import tpm
 import random
 from obstacle_generation import random_start_environment
 from collision_detection import arm_is_colliding_prisms
@@ -101,7 +101,8 @@ def find_path(target_end_point, start_angles, obs, n_iter=150, radius=.01, step_
 
         dist_to_goal = line.distance(best_node.end_effector_pos, target_end_point)
         if dist_to_goal < radius:
-            g.end_node = Node.from_point(target_end_point, start_config=best_node.angles)
+            # g.end_node = Node.from_point(target_end_point, start_config=best_node.angles)
+            g.end_node = best_node
             # path_to_end = increment_towards_end(best_node.end_effector_pos, end_node.end_effector_pos, num_steps=5)
             # print("target point:", end_node.end_effector_pos)
             # print("list final point", path_to_end[-1])
@@ -113,11 +114,11 @@ def find_path(target_end_point, start_angles, obs, n_iter=150, radius=.01, step_
             #     g.end_node = closer_node
             #
             # print("obtained point:", g.end_node.end_effector_pos)
-            g.add_vex(g.end_node, best_node)
+            # g.add_vex(g.end_node, best_node)
             g.success = True
             return g
 
-        expand(best_node, 3, step_size, g)
+        expand(best_node, 4, step_size, g)
 
     return g
 
@@ -164,17 +165,17 @@ def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=
 
 if __name__ == "__main__":
     random.seed(8)
-    bounds = [[-.08, .08], [0, .08], [.12, .2]]
+    bounds = [[-.08, .08], [.08, .2], [.12, .2]]
 
     obstacle_bounds = [[-.08, .08], [-.04, .08], [-.08, .08]]
     print("time started")
     start_time = time.time()
-    start_node, end_node, obstacles, target_point = random_start_environment(0, bounds, obstacle_bounds,
-                                                                             obstacle_size=.02)
-    start_angles = start_node.angles
-    end_pos = end_node.end_effector_pos
-
-    # g = find_path(target_point, start_node.angles, obstacles)
+    # start_node, end_node, obstacles, target_point = random_start_environment(0, bounds, obstacle_bounds,
+    #                                                                          obstacle_size=.02)
+    # start_angles = start_node.angles
+    # end_pos = end_node.end_effector_pos
+    #
+    # g = find_path(target_point, start_node.angles, obstacles, n_iter=200)
 
     # start_angles = [1.1136998361065094, 0.6419500776001592, 0.27835556277259427, 5.025295680114656, 2.922418772111144]
     # end_angles = [0.70934974, 2.02103071, 1.49368975, 2.76846449, 5.57383542]

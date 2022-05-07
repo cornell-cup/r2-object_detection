@@ -241,23 +241,4 @@
     </visual>
   </link>
 
-<joint name="arm6" type="revolute">
-    <parent link="link5"/>
-    <child link="link6"/>
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.055"/>
-    <axis xyz="0 0 1"/>
-  </joint>
-
-  <link name="link6">
-    <visual>
-      <origin rpy="0 0 0.0" xyz="0 0 0"/>
-      <geometry>
-        <cylinder length="0.004" radius="0.01"/>
-      </geometry>
-      <material name="black">
-	<color rgba="0.2 0.2 0.2 1.0"/>
-      </material>
-    </visual>
-  </link>
-
 </robot>

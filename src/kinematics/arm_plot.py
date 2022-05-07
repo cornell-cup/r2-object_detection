@@ -42,7 +42,7 @@ def plot_3d(G, path, obstacles, path2=None):
 
     for v in G.nodes:
         end_effector_positions.append(v.end_effector_pos)
-
+    print(end_effector_positions)
     float_vertices = list(map(arr_to_int, end_effector_positions))
 
     plot_edges(ax, G, float_vertices)
@@ -69,21 +69,18 @@ def plot_3d(G, path, obstacles, path2=None):
     plt.show()
 
 
-def plot_nodes(ax, float_vertices):
-    # intermediate_vertices = []
-    # # ignore the start and end nodes
-    # for i in range(1, len(float_vertices) - 1):
-    #     intermediate_vertices.append(float_vertices[i])
+def plot_nodes(ax, nodes):
 
-    xdata = [x for x, y, z in float_vertices]
-    ydata = [y for x, y, z in float_vertices]
-    zdata = [z for x, y, z in float_vertices]
+
+    xdata = [x for x, y, z in nodes]
+    ydata = [y for x, y, z in nodes]
+    zdata = [z for x, y, z in nodes]
 
     ax.scatter3D(xdata, ydata, zdata, c=None)
 
 
-def plot_edges(ax, G, float_vertices):
-    lines = [(float_vertices[edge[0]], float_vertices[edge[1]]) for edge in G.edges]
+def plot_edges(ax, G, nodes):
+    lines = [(nodes[edge[0]], nodes[edge[1]]) for edge in G.edges]
 
     lc = art3d.Line3DCollection(lines, colors='black', linewidths=1)
     ax.add_collection(lc)
@@ -116,11 +113,14 @@ def plot_arm_configs(ax, path, obstacles, color='green'):
             for k in range(len(v)-1):
                 v[k].append([path[i].joint_positions[k][j], path[i].joint_positions[k+1][j]])
 
-        ax.plot(v[0][0], v[0][1], zs=v[0][2], color=color)
-        ax.plot(v[1][0], v[1][1], zs=v[1][2], color=color)
-        ax.plot(v[2][0], v[2][1], zs=v[2][2], color=color)
-        ax.plot(v[3][0], v[3][1], zs=v[3][2], color=color)
-        ax.plot(v[4][0], v[4][1], zs=v[4][2], color=color)
+        for j in range(len(v)-1):
+            ax.plot(v[j][0], v[j][1], zs=v[j][2], color=color)
+
+        # ax.plot(v[0][0], v[0][1], zs=v[0][2], color=color)
+        # ax.plot(v[1][0], v[1][1], zs=v[1][2], color=color)
+        # ax.plot(v[2][0], v[2][1], zs=v[2][2], color=color)
+        # ax.plot(v[3][0], v[3][1], zs=v[3][2], color=color)
+        # ax.plot(v[4][0], v[4][1], zs=v[4][2], color=color)
 
 
 def plot_trial_times(graph_list, times):
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     # print(node.joint_positions)
     # print(node.angles)
     configs = []
-    for i in range(100):
+    for i in range(1):
         node = Node(None)
         configs.append(node)
 

@@ -92,7 +92,9 @@ class Node(object):
             ret = chain.forward_kinematics(th)
             position = [ret[name].pos for name in link_names]
         else:
-            position = amazon_arm_chain.forward_kinematics(angles)
+            matrices = amazon_arm_chain.forward_kinematics(self.angles, full_kinematics=True)
+            # print(matrices)
+            position = [[matrix[i][3] for i in range(3)] for matrix in matrices]
         return position
 
     def get_link_lengths(self):
@@ -116,7 +118,7 @@ class Node(object):
 
     def random_angle_config(self):
         """ Returns a set of random angles within the bounds of the arm."""
-        rand_angles = [0, 0, 0, 0, 0]
+        rand_angles = [0, 0, 0, 0, 0, 0]
 
         for a in range(len(rand_angles)):
             rand_angles[a] = random_angle(self.bounds[a][0], self.bounds[a][1])
@@ -167,17 +169,11 @@ def random_angle(left_bound, right_bound):
     else:
         return random.uniform(0, right_bound)
 
-def thresholdCheck(a, b, threshold):
-    dist = abs(a)-abs(b)
-    if -threshold < dist and dist < threshold:
-        return True
-    #print("Off by", dist)
-    return False
 
 if __name__ == '__main__':
     start_point = [0, 0, 0]
     sucess = 0
-    tests = 1
+    tests = 100
     start_time = time.time()
     for i in range(tests):
         fail = False
@@ -186,18 +182,14 @@ if __name__ == '__main__':
         randomZ = random.uniform(0,.105)
         end_point = [randomX, randomY, randomZ]
         angles = amazon_arm_chain.inverse_kinematics(end_point)
-        final_position = amazon_arm_chain.forward_kinematics(angles)
-        if not thresholdCheck(randomX,final_position[0][3], .001):
+        matrices = amazon_arm_chain.forward_kinematics(angles, full_kinematics=True)
+
+        joint_positions = [[matrix[i][3] for i in range(3)] for matrix in matrices]
+
+        dist = np.linalg.norm(np.array(joint_positions[-1]) - np.array(end_point))
+        if dist > .001:
             fail = True
-            print("Fail in X")
-        if not thresholdCheck(randomY,final_position[1][3], .001):
-            fail = True
-            print("Fail in Y")
-        if not thresholdCheck(randomZ,final_position[2][3], .001):
-            fail = True
-            print("Fail in Z")
-        if not fail:
-            sucess += 1
+
     fig = plt.figure()
     ax = plt.axes(projection="3d")
     ax.set_xlabel('x')
