@@ -138,67 +138,20 @@ def create_rgbd(rgb_img, depth_img):
     d = depth_img.copy().astype('float32')
     r, g, b = r.astype('float32'), g.astype('float32'), b.astype('float32')
     rgbd = cv2.merge([r, g, b, d])
-    
     return rgbd
 
 
-
-def erode_and_dilate(img, debug=False):
-
-    # erosion takes the min and dilation takes the max
-    # since we want to keep white pixels we erode then dilate
-    kernel = np.ones((7,7), np.uint8)
+def get_dilated_image(color_img, depth_img):
+    rgbd = create_rgbd(org_img, depth_img)
+    preprocessed_rgbd = preprocess_data(depth_img,rgbd)
+    result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape)
     
-    img_dilated = cv2.dilate(img, kernel, iterations=4)
-    img_erosion = cv2.erode(img_dilated, kernel, iterations=1)
-    if debug:
-            #viz_image([img_erosion,img_dilated],["eroded", "dilated"])
-            cv2.imshow("eroded", img_erosion)
-            cv2.imshow("dilated", img_dilated)
-            cv2.waitKey()
-    return img_dilated
-
-def get_bound (img, debug=False):
-    # gets xy coordinates of bottom left corner of boudning boxes
-    # returns list of tuples in the form (x,y,w,h)
-    box_coords = []
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    vals = np.unique(gray)
-    for v in vals:
-        if v == 255:
-            continue
-        tmp = gray.copy()
-        #create a mask where all values equal to v are 1 and everything else is 0
-        label_val = 0
-        mask = (tmp == v).astype(int) 
-        tmp[mask==0] = 255
-        tmp[mask==1] = label_val
-        
-        # Re update the mask using the dilated image where all 
-        # desired pixels (white) are set to 1
-        denoised_img = erode_and_dilate(tmp, debug)
-        mask = (denoised_img == label_val).astype(int)
-        #cv2.imshow("denoised image", denoised_img)
-        bound.draw_boxes(denoised_img)
-        box_coords.append(bound.get_rect_params(denoised_img))
-        
-
-        if debug:
-            # draw bounding box rectangle
-            # cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),3)
-            cv2.imshow("org", img)
-            cv2.imshow("tmp", tmp)
-            cv2.waitKey()
-            bound.draw_boxes(tmp)
-    return box_coords
-
-
-
+    return postprocess_im(depth_img, result_img, labels)
 
 
 def main():
     #org_image, depth_img, rgbd = df.get_depth_frame()
-    org_img, depth_img = get_depth_images("04-12-14:44:58")
+    org_img, depth_img = get_depth_images("23-04-14:42:35")
     cv2.imshow("org", org_img)
     rgbd = create_rgbd(org_img, depth_img)
 
@@ -206,9 +159,8 @@ def main():
     result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape)
     
     result_img = postprocess_im(depth_img, result_img, labels)
-    print ("result image is same as rgbd",result_img == rgbd)
     
-    get_bound(result_img, True)
+    bound.get_bound(result_img, True)
     
     viz_image([org_img, result_img, depth_img], ["Orignal", "Result", "Depth Frame"])
 

@@ -8,19 +8,6 @@ from datetime import datetime
 from matplotlib import image
 
 
-
-
-
-
-"""
-Input: vertices 
-Algorithm:
-construct graph G from vertices
-initialize v_0 as the vertex with the smallest node
-traverse through graph. increment count by 1
-If count is 4, then create a rectangle with the existing bounding boxes
-
-"""
 def find_rectangle(vertices):
     """Takes in a list of vertices and finds the bounding rectangle for each
     vertex. Returns a list in the form: 
@@ -41,7 +28,7 @@ def get_rect_params(img):
 
 
 def approx_shape(img):
-    """ """
+    """ Approximates shapes into polygons"""
     # Convert to greyscale
     if len(img.shape) == 3:
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -53,7 +40,6 @@ def approx_shape(img):
     _, threshold = cv2.threshold(img_gray, 245, 255, cv2.THRESH_BINARY_INV)
     # Find the contours
     contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    #print (len(contours))
     # For each contour approximate the curve and
     # detect the shapes.
     vertices = []
@@ -80,6 +66,7 @@ def approx_shape(img):
     return img, vertices
 
 def draw_boxes(img):
+    """ draw boxes for visualization """
     rect_params = get_rect_params(img)
     tmp = img.copy()
     for param in rect_params:
@@ -88,20 +75,20 @@ def draw_boxes(img):
     cv2.waitKey()
 
 def erode_and_dilate(img, debug=False):
-
-    # erosion takes the min and dilation takes the max
-    # since we want to keep white pixels we erode then dilate
+    # erosion takes the min value of the kernel and 
+    # dilation takes the max value of the kernel
     kernel = np.ones((7,7), np.uint8)
-    img_erosion = cv2.erode(img, kernel, iterations=4)
-    img_dilated = cv2.dilate(img_erosion, kernel, iterations=1)
+    
+    img_dilated = cv2.dilate(img, kernel, iterations=4)
+    img_erosion = cv2.erode(img_dilated, kernel, iterations=1)
     if debug:
-            #viz_image([img_erosion,img_dilated],["eroded", "dilated"])
             cv2.imshow("eroded", img_erosion)
             cv2.imshow("dilated", img_dilated)
+            cv2.waitKey()
     return img_dilated
 
 def get_bound (img, debug=False):
-    # gets xy coordinates of bottom left corner of boudning boxes.
+    # gets xy coordinates of bottom left corner of bounding boxes
     # returns list of tuples in the form (x,y,w,h)
     box_coords = []
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -111,28 +98,26 @@ def get_bound (img, debug=False):
             continue
         tmp = gray.copy()
         #create a mask where all values equal to v are 1 and everything else is 0
-        label_val = 150
+        label_val = 0
         mask = (tmp == v).astype(int) 
-        tmp[mask==0] = 0
+        tmp[mask==0] = 255
         tmp[mask==1] = label_val
         
         # Re update the mask using the dilated image where all 
         # desired pixels (white) are set to 1
         denoised_img = erode_and_dilate(tmp, debug)
         mask = (denoised_img == label_val).astype(int)
+        draw_boxes(denoised_img)
+        box_coords.append(get_rect_params(denoised_img))
         
-        
-        active_px = np.argwhere(mask!=0)
-        active_px = active_px[:,[1,0]]
-        x,y,w,h = cv2.boundingRect(active_px)
-        box_coords.append((x,y,w,h))
 
         if debug:
             # draw bounding box rectangle
-            cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),1)
+            # cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),3)
             cv2.imshow("org", img)
             cv2.imshow("tmp", tmp)
             cv2.waitKey()
+            draw_boxes(tmp)
     return box_coords
 
 
