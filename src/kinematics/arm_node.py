@@ -93,7 +93,6 @@ class Node(object):
             position = [ret[name].pos for name in link_names]
         else:
             matrices = amazon_arm_chain.forward_kinematics(self.angles, full_kinematics=True)
-            # print(matrices)
             position = [[matrix[i][3] for i in range(3)] for matrix in matrices]
         return position
 

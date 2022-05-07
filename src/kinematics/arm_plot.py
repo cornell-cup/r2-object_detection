@@ -42,7 +42,7 @@ def plot_3d(G, path, obstacles, path2=None):
 
     for v in G.nodes:
         end_effector_positions.append(v.end_effector_pos)
-    print(end_effector_positions)
+
     float_vertices = list(map(arr_to_int, end_effector_positions))
 
     plot_edges(ax, G, float_vertices)
@@ -104,7 +104,6 @@ def plot_arm_configs(ax, path, obstacles, color='green'):
         if obstacles is not None:
             for obstacle in obstacles:
                 if collision_detection.arm_is_colliding_prism(path[i], obstacle):
-                    print(path[i].angles)
                     color = 'red'
 
         v = [[] for j in range(len(path[i].joint_positions))]
@@ -141,25 +140,9 @@ def plot_ik_trial(target_point, obtained_config):
     ax = plt.axes(projection='3d')
     plot_nodes(ax, [target_point])
     plot_arm_configs(ax, [obtained_config], None)
-    print("Link 1 length:", np.linalg.norm(obtained_config.joint_positions[1] - obtained_config.joint_positions[0]))
-    print("Link 2 length:", np.linalg.norm(obtained_config.joint_positions[2] - obtained_config.joint_positions[1]))
-    print("Link 3 length:", np.linalg.norm(obtained_config.joint_positions[3] - obtained_config.joint_positions[2]))
-    print("Link 4 length:", np.linalg.norm(obtained_config.joint_positions[4] - obtained_config.joint_positions[3]))
-    print("Link 5 length:", np.linalg.norm(obtained_config.joint_positions[5] - obtained_config.joint_positions[4]))
-
 
 
 if __name__ == "__main__":
-    # configs = [Node.from_point([-0.05804748277798497, -0.05042320496342255, 0.01512500676344014])]
-    # node = Node([0, 0, 0, 0, 0, 0])
-    # configs = [Node([0, 0, 0, 0, 0, 0])]
-    #
-    # for i in range(len(node.joint_positions)-1):
-    #     print("Link {} length:".format(i+1), np.linalg.norm(node.joint_positions[i+1] - node.joint_positions[i]))
-    #
-    # print(node.end_effector_pos)
-    # print(node.joint_positions)
-    # print(node.angles)
     configs = []
     for i in range(1):
         node = Node(None)

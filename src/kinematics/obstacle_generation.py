@@ -59,8 +59,7 @@ def random_start_environment(num_obstacles, bounds, obstacle_bounds, obstacle_si
     target_end_pos = [random.uniform(bounds[0][0], bounds[0][1]),
              random.uniform(bounds[1][0], bounds[1][1]),
              random.uniform(bounds[2][0], bounds[2][1])]
-    # print("target point:", target_end_pos)
-    # print("dist from origin", distance([0,0,0], target_end_pos))
+
     random_end_node = Node.from_point(target_end_pos, random_start_node.angles)
 
     while (not random_end_node.valid_configuration()):
@@ -68,9 +67,6 @@ def random_start_environment(num_obstacles, bounds, obstacle_bounds, obstacle_si
                           random.uniform(bounds[1][0], bounds[1][1]),
                           random.uniform(bounds[2][0], bounds[2][1])]
         random_end_node = Node.from_point(target_end_pos, random_start_node.angles)\
-
-        # print("distance:", np.linalg.norm(np.array(random_end_node.end_effector_pos) - np.array(target_end_pos)))
-
 
     current_obstacles = generate_random_obstacles(num_obstacles, obstacle_bounds, max_side_length=obstacle_size)
     while arm_is_colliding_prisms(random_end_node, current_obstacles):
@@ -82,8 +78,6 @@ def random_start_environment(num_obstacles, bounds, obstacle_bounds, obstacle_si
     print("start angles:", random_start_node.angles)
     print("end angles:", random_end_node.angles)
     print("obstacles:", current_obstacles)
-
-    # print(target_end_pos)
 
     return random_start_node, random_end_node, current_obstacles, target_end_pos
 
