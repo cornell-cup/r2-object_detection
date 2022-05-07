@@ -103,12 +103,7 @@ def cv_kmeans(input_img, img_shape, debug=False):
         center = np.uint8(center)
         distortions.append(ret)
 
-    if debug:
-        plt.plot(range(1,K_max), distortions, 'bx-')
-        plt.xlabel('k')
-        plt.ylabel('Distortion')
-        plt.title('The Elbow Method showing the optimal k')
-        plt.show()
+    
     idx = 0
     for i in range(len(distortions)-1):
         if (distortions[i] - distortions[i+1] < (distortions[0]/10)):
@@ -119,8 +114,16 @@ def cv_kmeans(input_img, img_shape, debug=False):
     res = res[:,:3]
     result_image = res.reshape((img_shape))
 
-    cv2.imshow("res", result_image)
-    cv2.waitKey()
+    if debug:
+        plt.plot(range(1,K_max), distortions, 'bx-')
+        plt.xlabel('k')
+        plt.ylabel('Distortion')
+        plt.title('The Elbow Method showing the optimal k')
+        plt.show()
+        cv2.imshow("res", result_image)
+        cv2.waitKey()
+
+    
     return result_image, labels[idx]
 
 
@@ -141,12 +144,12 @@ def create_rgbd(rgb_img, depth_img):
     return rgbd
 
 
-def get_dilated_image(color_img, depth_img):
+def get_image_bounds(color_img, depth_img):
     rgbd = create_rgbd(org_img, depth_img)
     preprocessed_rgbd = preprocess_data(depth_img,rgbd)
     result_img, labels = cv_kmeans(preprocessed_rgbd, org_img.shape)
-    
-    return postprocess_im(depth_img, result_img, labels)
+    result_img = postprocess_im(depth_img, result_img, labels)
+    return bound.get_bound(result_img, False)
 
 
 def main():
