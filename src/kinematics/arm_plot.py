@@ -13,6 +13,18 @@ import math
 from util.line import distance
 
 
+def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.2, .4], [-.2, .4]]):
+    """ Configures axis lengths and names for a matplotlib graph. """
+
+    ax.set_xlabel(axis_labels[0])
+    ax.set_ylabel(axis_labels[1])
+    ax.set_zlabel(axis_labels[2])
+
+    ax.set_xlim3d(axis_limits[0][0], axis_limits[0][1])
+    ax.set_ylim3d(axis_limits[1][0], axis_limits[1][1])
+    ax.set_zlim3d(axis_limits[2][0], axis_limits[2][1])
+
+
 def arr_to_int(arr):
     """ The int array representation of an array of arrays. """
     new_array = []
@@ -30,7 +42,7 @@ def plot_3d(G, path, obstacles, path2=None):
 
     for v in G.nodes:
         end_effector_positions.append(v.end_effector_pos)
-
+    print(end_effector_positions)
     float_vertices = list(map(arr_to_int, end_effector_positions))
 
     plot_edges(ax, G, float_vertices)
@@ -52,33 +64,23 @@ def plot_3d(G, path, obstacles, path2=None):
     for obs in obstacles:
         collision_detection.plot_linear_prism(ax, obs, 'blue')
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    ax.set_xlim3d(-.4, .4)
-    ax.set_ylim3d(-.4, .4)
-    ax.set_zlim3d(-.4, .4)
+    configure_graph(ax)
 
     plt.show()
 
 
+def plot_nodes(ax, nodes):
 
-def plot_nodes(ax, float_vertices):
-    # intermediate_vertices = []
-    # # ignore the start and end nodes
-    # for i in range(1, len(float_vertices) - 1):
-    #     intermediate_vertices.append(float_vertices[i])
 
-    xdata = [x for x, y, z in float_vertices]
-    ydata = [y for x, y, z in float_vertices]
-    zdata = [z for x, y, z in float_vertices]
+    xdata = [x for x, y, z in nodes]
+    ydata = [y for x, y, z in nodes]
+    zdata = [z for x, y, z in nodes]
 
     ax.scatter3D(xdata, ydata, zdata, c=None)
 
 
-def plot_edges(ax, G, float_vertices):
-    lines = [(float_vertices[edge[0]], float_vertices[edge[1]]) for edge in G.edges]
+def plot_edges(ax, G, nodes):
+    lines = [(nodes[edge[0]], nodes[edge[1]]) for edge in G.edges]
 
     lc = art3d.Line3DCollection(lines, colors='black', linewidths=1)
     ax.add_collection(lc)
@@ -104,22 +106,21 @@ def plot_arm_configs(ax, path, obstacles, color='green'):
                 if collision_detection.arm_is_colliding_prism(path[i], obstacle):
                     print(path[i].angles)
                     color = 'red'
-        v1 = []
-        v2 = []
-        v3 = []
-        v4 = []
+
+        v = [[] for j in range(len(path[i].joint_positions))]
+
         for j in range(3):
-            v1.append([path[i].joint_positions[0][j], path[i].joint_positions[1][j]])
-            v2.append([path[i].joint_positions[1][j], path[i].joint_positions[2][j]])
-            v3.append([path[i].joint_positions[2][j], path[i].joint_positions[3][j]])
-            v4.append([path[i].joint_positions[3][j], path[i].joint_positions[4][j]])
+            for k in range(len(v)-1):
+                v[k].append([path[i].joint_positions[k][j], path[i].joint_positions[k+1][j]])
 
-        ax.plot(v1[0], v1[1], zs=v1[2], color=color)
-        ax.plot(v2[0], v2[1], zs=v2[2], color=color)
-        ax.plot(v3[0], v3[1], zs=v3[2], color=color)
-        ax.plot(v4[0], v4[1], zs=v4[2], color=color)
+        for j in range(len(v)-1):
+            ax.plot(v[j][0], v[j][1], zs=v[j][2], color=color)
 
-    #ax.text(-0.3, -0.3, 0.4, "plot text kinematics_test")
+        # ax.plot(v[0][0], v[0][1], zs=v[0][2], color=color)
+        # ax.plot(v[1][0], v[1][1], zs=v[1][2], color=color)
+        # ax.plot(v[2][0], v[2][1], zs=v[2][2], color=color)
+        # ax.plot(v[3][0], v[3][1], zs=v[3][2], color=color)
+        # ax.plot(v[4][0], v[4][1], zs=v[4][2], color=color)
 
 
 def plot_trial_times(graph_list, times):
@@ -140,26 +141,33 @@ def plot_ik_trial(target_point, obtained_config):
     ax = plt.axes(projection='3d')
     plot_nodes(ax, [target_point])
     plot_arm_configs(ax, [obtained_config], None)
-    plt.show()
+    print("Link 1 length:", np.linalg.norm(obtained_config.joint_positions[1] - obtained_config.joint_positions[0]))
+    print("Link 2 length:", np.linalg.norm(obtained_config.joint_positions[2] - obtained_config.joint_positions[1]))
+    print("Link 3 length:", np.linalg.norm(obtained_config.joint_positions[3] - obtained_config.joint_positions[2]))
+    print("Link 4 length:", np.linalg.norm(obtained_config.joint_positions[4] - obtained_config.joint_positions[3]))
+    print("Link 5 length:", np.linalg.norm(obtained_config.joint_positions[5] - obtained_config.joint_positions[4]))
 
 
 
 if __name__ == "__main__":
-    configs = [Node.from_point((.12, .05, .1))]
-    # configs = [Node([math.pi/2, math.pi/2, math.pi/2, math.pi/2, math.pi/2])]
-    print(configs[0].end_effector_pos)
-    print(configs[0].joint_positions)
-    print(distance(configs[0].end_effector_pos, configs[0].joint_positions[0]))
-    # for i in range(100):
-    #     node = Node(None)
-    #     configs.append(node)
+    # configs = [Node.from_point([-0.05804748277798497, -0.05042320496342255, 0.01512500676344014])]
+    # node = Node([0, 0, 0, 0, 0, 0])
+    # configs = [Node([0, 0, 0, 0, 0, 0])]
+    #
+    # for i in range(len(node.joint_positions)-1):
+    #     print("Link {} length:".format(i+1), np.linalg.norm(node.joint_positions[i+1] - node.joint_positions[i]))
+    #
+    # print(node.end_effector_pos)
+    # print(node.joint_positions)
+    # print(node.angles)
+    configs = []
+    for i in range(1):
+        node = Node(None)
+        configs.append(node)
 
     ax = plt.axes(projection='3d')
+    configure_graph(ax)
+
     plot_arm_configs(ax, configs, [])
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.set_xlim3d(-.4, .4)
-    ax.set_ylim3d(-.4, .4)
-    ax.set_zlim3d(-.4, .4)
+
     plt.show()

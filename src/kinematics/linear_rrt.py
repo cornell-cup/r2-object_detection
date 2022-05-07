@@ -352,15 +352,15 @@ def path_optimizer(path, prism):
     #     end_point = [randomX, randomY, randomZ]
     #     #print(end_point)
     #     angles = inverse_kinematics(end_point)
-    #     final_position = forward_kinematics(angles)
+    #     matrices = forward_kinematics(angles)
     #     #print(angles)
-    #     if not thresholdCheck(randomX, final_position[0][3], .001):
+    #     if not thresholdCheck(randomX, matrices[0][3], .001):
     #         fail = True
     #         print("Fail in X")
-    #     if not thresholdCheck(randomY, final_position[1][3], .001):
+    #     if not thresholdCheck(randomY, matrices[1][3], .001):
     #         fail = True
     #         print("Fail in Y")
-    #     if not thresholdCheck(randomZ, final_position[2][3], .001):
+    #     if not thresholdCheck(randomZ, matrices[2][3], .001):
     #         fail = True
     #         print("Fail in Z")
     #     if not fail:

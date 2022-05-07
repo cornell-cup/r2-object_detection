@@ -46,14 +46,27 @@ class Node(object):
         optimistic_cost: A float representing the optimal path cost traveling through this node.
         fail_count: An integer counting the number of times the extension heuristic has failed from this node.
     """
-    a0_bounds = (3 * math.pi / 2, .9 * math.pi / 2)
-    a1_bounds = (3 * math.pi / 2, 1.22173)
-    a2_bounds = (1.7 * math.pi, 2.8 * math.pi / 2)
-    a3_bounds = (0, 2 * math.pi)
-    a4_bounds = (0, 2 * math.pi)
 
     null = (2 * math.pi, 0)
-    bounds = [a0_bounds, a1_bounds, a2_bounds, a3_bounds, a4_bounds]
+    SIMPLE_ARM_BOUNDS = [
+        (3 * math.pi / 2, .9 * math.pi / 2),
+        (3 * math.pi / 2, 1.22173),
+        (1.7 * math.pi, 2.8 * math.pi / 2),
+        (0, 2 * math.pi),
+        (0, 2 * math.pi),
+        (0, 2 * math.pi)
+    ]
+
+    XARM_URDF_BOUNDS = [
+        (2*math.pi, math.pi),
+        (2*math.pi, math.pi/2),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+        (17 * math.pi / 16, 15 * math.pi / 16),
+    ]
+
+    bounds = XARM_URDF_BOUNDS
 
     def __init__(self, configuration: list[float]):
         if configuration is None:
@@ -79,7 +92,9 @@ class Node(object):
             ret = chain.forward_kinematics(th)
             position = [ret[name].pos for name in link_names]
         else:
-            position = amazon_arm_chain.forward_kinematics(angles)
+            matrices = amazon_arm_chain.forward_kinematics(self.angles, full_kinematics=True)
+            # print(matrices)
+            position = [[matrix[i][3] for i in range(3)] for matrix in matrices]
         return position
 
     def get_link_lengths(self):
@@ -103,9 +118,9 @@ class Node(object):
 
     def random_angle_config(self):
         """ Returns a set of random angles within the bounds of the arm."""
-        rand_angles = [0, 0, 0, 0, 0]
+        rand_angles = [0, 0, 0, 0, 0, 0]
 
-        for a in range(0, 5):
+        for a in range(len(rand_angles)):
             rand_angles[a] = random_angle(self.bounds[a][0], self.bounds[a][1])
 
         return rand_angles
@@ -117,7 +132,6 @@ class Node(object):
          """
         for i in range(1, len(self.joint_positions)):
             if self.joint_positions[i][1] < self.joint_positions[0][1]:
-                # print("joint positions not in bounds")
                 return False
 
         if not self.angles_within_bounds(self.angles):
@@ -155,17 +169,11 @@ def random_angle(left_bound, right_bound):
     else:
         return random.uniform(0, right_bound)
 
-def thresholdCheck(a, b, threshold):
-    dist = abs(a)-abs(b)
-    if -threshold < dist and dist < threshold:
-        return True
-    #print("Off by", dist)
-    return False
 
 if __name__ == '__main__':
     start_point = [0, 0, 0]
     sucess = 0
-    tests = 1
+    tests = 100
     start_time = time.time()
     for i in range(tests):
         fail = False
@@ -174,18 +182,14 @@ if __name__ == '__main__':
         randomZ = random.uniform(0,.105)
         end_point = [randomX, randomY, randomZ]
         angles = amazon_arm_chain.inverse_kinematics(end_point)
-        final_position = amazon_arm_chain.forward_kinematics(angles)
-        if not thresholdCheck(randomX,final_position[0][3], .001):
+        matrices = amazon_arm_chain.forward_kinematics(angles, full_kinematics=True)
+
+        joint_positions = [[matrix[i][3] for i in range(3)] for matrix in matrices]
+
+        dist = np.linalg.norm(np.array(joint_positions[-1]) - np.array(end_point))
+        if dist > .001:
             fail = True
-            print("Fail in X")
-        if not thresholdCheck(randomY,final_position[1][3], .001):
-            fail = True
-            print("Fail in Y")
-        if not thresholdCheck(randomZ,final_position[2][3], .001):
-            fail = True
-            print("Fail in Z")
-        if not fail:
-            sucess += 1
+
     fig = plt.figure()
     ax = plt.axes(projection="3d")
     ax.set_xlabel('x')
