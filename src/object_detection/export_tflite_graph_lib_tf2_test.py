@@ -103,7 +103,7 @@ class FakeModel(model.DetectionModel):
     pass
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class ExportTfLiteGraphTest(tf.test.TestCase):
 
   def _save_checkpoint_from_mock_model(self, checkpoint_dir):
@@ -174,7 +174,7 @@ model {
         pipeline_config_text, pipeline_pb2.TrainEvalPipelineConfig())
 
   # The tf.implements signature is important since it ensures MLIR legalization,
-  # so we kinematics_test it here.
+  # so we test it here.
   def test_postprocess_implements_signature(self):
     tmp_dir = self.get_temp_dir()
     self._save_checkpoint_from_mock_model(tmp_dir)

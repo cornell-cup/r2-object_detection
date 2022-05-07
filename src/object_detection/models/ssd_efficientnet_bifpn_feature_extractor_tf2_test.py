@@ -73,7 +73,7 @@ def _count_params(model, trainable_only=True):
      'bifpn_num_iterations': 8,
      'bifpn_num_filters': 384,
      'bifpn_combine_method': 'sum'})
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class SSDEfficientNetBiFPNFeatureExtractorTest(
     test_case.TestCase, parameterized.TestCase):
 

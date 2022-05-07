@@ -2732,7 +2732,7 @@ class PreprocessorTest(test_case.TestCase, parameterized.TestCase):
     # tf 1.14 of 2019/11/01.
     # https://github.com/tensorflow/tensorflow/blob/v1.14.0/tensorflow/python/compat/compat.py#L30
     if not tf.compat.forward_compatible(year=2019, month=12, day=1):
-      self.skipTest('Skipping kinematics_test for future functionality.')
+      self.skipTest('Skipping test for future functionality.')
     preprocessing_options = [(preprocessor.random_jpeg_quality, {
         'min_jpeg_quality': 0,
         'max_jpeg_quality': 100
@@ -2949,7 +2949,7 @@ class PreprocessorTest(test_case.TestCase, parameterized.TestCase):
     self.assertAllEqual(images_shape, patched_images_shape)
     self.assertAllEqual(images, patched_images)
 
-  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+  @unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
   def testAutoAugmentImage(self):
     def graph_fn():
       preprocessing_options = []

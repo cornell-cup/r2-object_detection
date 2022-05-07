@@ -89,7 +89,7 @@ def policy_v1():
 
 
 def policy_vtest():
-  """Autoaugment kinematics_test policy for debugging."""
+  """Autoaugment test policy for debugging."""
   # Each tuple is an augmentation operation of the form
   # (operation, probability, magnitude). Each element in policy is a
   # sub-policy that will be applied sequentially on the image.

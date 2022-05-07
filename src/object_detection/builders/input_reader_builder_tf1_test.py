@@ -37,7 +37,7 @@ def _get_labelmap_path():
                       'pet_label_map.pbtxt')
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class InputReaderBuilderTest(tf.test.TestCase):
 
   def create_tf_record(self):

@@ -33,7 +33,7 @@ from object_detection.utils import config_util
 from object_detection.utils import tf_version
 
 
-# Model for kinematics_test. Options are:
+# Model for test. Options are:
 # 'ssd_inception_v2_pets', 'faster_rcnn_resnet50_pets'
 MODEL_NAME_FOR_TEST = 'ssd_inception_v2_pets'
 

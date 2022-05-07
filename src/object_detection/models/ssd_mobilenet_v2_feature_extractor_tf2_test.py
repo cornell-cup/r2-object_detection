@@ -24,7 +24,7 @@ from object_detection.models import ssd_mobilenet_v2_keras_feature_extractor
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class SsdMobilenetV2FeatureExtractorTest(
     ssd_feature_extractor_test.SsdFeatureExtractorTestBase):
 

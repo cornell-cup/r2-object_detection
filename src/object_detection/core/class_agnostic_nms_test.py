@@ -94,7 +94,7 @@ class ClassAgnosticNonMaxSuppressionTest(test_case.TestCase,
     self.assertAllClose(nms_classes_output, exp_nms_classes)
 
   # Two cases will be tested here: using / not using static shapes.
-  # Named the two kinematics_test cases for easier control during testing, with a flag of
+  # Named the two test cases for easier control during testing, with a flag of
   # '--test_filter=ClassAgnosticNonMaxSuppressionTest.test_batch_classagnostic_nms_with_batch_size_1'
   # or
   # '--test_filter=ClassAgnosticNonMaxSuppressionTest.test_batch_classagnostic_nms_with_batch_size_1_use_static_shapes'.

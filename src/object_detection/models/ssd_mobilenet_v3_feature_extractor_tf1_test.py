@@ -21,7 +21,7 @@ from object_detection.models import ssd_mobilenet_v3_feature_extractor_testbase
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class SsdMobilenetV3LargeFeatureExtractorTest(
     ssd_mobilenet_v3_feature_extractor_testbase
     ._SsdMobilenetV3FeatureExtractorTestBase):

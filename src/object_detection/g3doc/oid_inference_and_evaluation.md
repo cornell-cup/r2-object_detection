@@ -56,7 +56,7 @@ access to the cloud bucket with the images. Then run:
 
 ```bash
 # From tensorflow/models/research/oid
-SPLIT=validation  # Set SPLIT to "kinematics_test" to download the images in the kinematics_test set
+SPLIT=validation  # Set SPLIT to "test" to download the images in the test set
 mkdir raw_images_${SPLIT}
 gsutil -m rsync -r gs://open-images-dataset/$SPLIT raw_images_${SPLIT}
 ```
@@ -88,7 +88,7 @@ Next, package the data into TFRecords of TFExamples by running:
 
 ```bash
 # From tensorflow/models/research/oid
-SPLIT=validation  # Set SPLIT to "kinematics_test" to create TFRecords for the kinematics_test split
+SPLIT=validation  # Set SPLIT to "test" to create TFRecords for the test split
 mkdir ${SPLIT}_tfrecords
 
 PYTHONPATH=$PYTHONPATH:$(readlink -f ..) \
@@ -129,7 +129,7 @@ model. We can run inference using:
 
 ```bash
 # From tensorflow/models/research/oid
-SPLIT=validation  # or kinematics_test
+SPLIT=validation  # or test
 TF_RECORD_FILES=$(ls -1 ${SPLIT}_tfrecords/* | tr '\n' ',')
 
 PYTHONPATH=$PYTHONPATH:$(readlink -f ..) \
@@ -174,7 +174,7 @@ process for each GPU on different partition of the input data.
 
 ```bash
 # From tensorflow/models/research/oid
-SPLIT=validation  # or kinematics_test
+SPLIT=validation  # or test
 NUM_GPUS=4
 NUM_SHARDS=100
 
@@ -205,7 +205,7 @@ create the appropriate configuration files:
 
 ```bash
 # From tensorflow/models/research/oid
-SPLIT=validation  # or kinematics_test
+SPLIT=validation  # or test
 NUM_SHARDS=1  # Set to NUM_GPUS if using the parallel evaluation script above
 
 mkdir -p ${SPLIT}_eval_metrics
@@ -224,7 +224,7 @@ And then run:
 
 ```bash
 # From tensorflow/models/research/oid
-SPLIT=validation  # or kinematics_test
+SPLIT=validation  # or test
 
 PYTHONPATH=$PYTHONPATH:$(readlink -f ..) \
 python -m object_detection/metrics/offline_eval_map_corloc \
