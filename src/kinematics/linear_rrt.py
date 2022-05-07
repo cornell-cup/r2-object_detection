@@ -22,7 +22,6 @@ import time
 from util.angles import true_angle_distances_arm
 from obstacle_generation import random_start_environment
 import optimal_min_cost as opc
-import kinpy as kp
 import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d

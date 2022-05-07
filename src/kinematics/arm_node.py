@@ -13,7 +13,7 @@ from util.error_handling import nostderr
 import numpy as np
 import math
 import random
-import kinpy as kp
+
 import ikpy as IKPY
 from util import line
 from ikpy.chain import Chain
@@ -21,11 +21,7 @@ from ikpy.chain import Chain
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 ik_py = True #boolean flag: True if ik_py, False if Kinpy
 with nostderr():
-    chain = kp.build_chain_from_urdf(open("models/XArm.urdf").read())
-    serial_chain = kp.build_serial_chain_from_urdf(open("models/XArm.urdf").read(), "link5", "base_link")
-    amazon_arm_chain = Chain.from_urdf_file("models/XArm.urdf")
-    xarm_joint_names = ['arm1', 'arm2', 'arm3', 'arm4', 'arm5']
-    xarm_link_names = ['base_link', 'link1', 'link2', 'link3', 'link4']
+    arm_chain = Chain.from_urdf_file("models/XArm.urdf")
 
 
 class Node(object):
@@ -74,26 +70,19 @@ class Node(object):
         else:
             self.angles = configuration
 
-        self.joint_positions = self.forward_kinematics(xarm_joint_names, xarm_link_names)
+        self.joint_positions = self.forward_kinematics()
         self.end_effector_pos = self.joint_positions[-1]
         self.optimistic_cost = 0
         self.fail_count = 0
 
-    def forward_kinematics(self, joint_names, link_names):
+    def forward_kinematics(self):
         """Computes forward kinematics of the arm given the joint angles.
 
         Returns:
             An array of the [x, y, z] of each joint of the arm based on the node's angle configuration.
         """
-        if not ik_py:
-            th = {}
-            for i in range(len(joint_names)):
-                th[joint_names[i]] = self.angles[i]
-            ret = chain.forward_kinematics(th)
-            position = [ret[name].pos for name in link_names]
-        else:
-            matrices = amazon_arm_chain.forward_kinematics(self.angles, full_kinematics=True)
-            position = [[matrix[i][3] for i in range(3)] for matrix in matrices]
+        matrices = arm_chain.forward_kinematics(self.angles, full_kinematics=True)
+        position = [[matrix[i][3] for i in range(3)] for matrix in matrices]
         return position
 
     def get_link_lengths(self):
@@ -144,13 +133,8 @@ class Node(object):
                       formatted as (x,y,z)
         :return: the inverse kinematic angles
         """
-        global ik_py
-        if ik_py:
-            angles = amazon_arm_chain.inverse_kinematics(end_point)
-        else:
-            angles = kp.ik.inverse_kinematics(serial_chain,
-                                          kp.Transform(pos=[end_point[0], end_point[1], end_point[2]]),
-                                          initial_state=start_config)
+        angles = arm_chain.inverse_kinematics(end_point)
+
         return Node(angles)
 
     @classmethod
@@ -180,8 +164,8 @@ if __name__ == '__main__':
         randomY = random.uniform(-.08,.08)
         randomZ = random.uniform(0,.105)
         end_point = [randomX, randomY, randomZ]
-        angles = amazon_arm_chain.inverse_kinematics(end_point)
-        matrices = amazon_arm_chain.forward_kinematics(angles, full_kinematics=True)
+        angles = arm_chain.inverse_kinematics(end_point)
+        matrices = arm_chain.forward_kinematics(angles, full_kinematics=True)
 
         joint_positions = [[matrix[i][3] for i in range(3)] for matrix in matrices]
 

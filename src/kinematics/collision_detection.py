@@ -14,8 +14,7 @@ from matplotlib.widgets import Button
 import random
 from arm_node import Node
 
-# Global arm configuration
-# chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.URDF").read())
+
 global ax
 global arm
 
