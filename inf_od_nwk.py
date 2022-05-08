@@ -2,9 +2,9 @@
 import cv2
 import numpy as np
 
-from .object_detection.camera import Camera
-from .object_detection.inference import Inference
-from .object_detection.grasping import Grasping
+from c1c0_object_detection.object_detection.camera import Camera
+from c1c0_object_detection.object_detection.inference import Inference
+from c1c0_object_detection.object_detection.grasping import Grasping
 import networking # don't directly import Client to avoid namespace conflicts
 
 # for displaying
@@ -75,6 +75,6 @@ def main():
             # arm_config = robot.listen()
 
             # --------- Send Arm Configs to the Arm to move ---------
-            
+
 if __name__ == '__main__':
     main()
