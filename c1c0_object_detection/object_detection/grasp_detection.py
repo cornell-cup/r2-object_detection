@@ -133,19 +133,19 @@ def grab_points(image):
                     val_y2, val_x2 = coords_of_theta[opposite_angle]
                     min_distance = dist
 
-        cv2.circle(original, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
-        cv2.circle(original, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
-        cv2.circle(original, (int(mid_contour[0]), int(
-            mid_contour[1])), 3, (255, 0, 255), -1)
+        # cv2.circle(original, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
+        # cv2.circle(original, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
+        # cv2.circle(original, (int(mid_contour[0]), int(
+        #     mid_contour[1])), 3, (255, 0, 255), -1)
 
-        cv2.circle(edge, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
-        cv2.circle(edge, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
-        cv2.circle(edge, (int(mid_contour[0]), int(
-            mid_contour[1])), 3, (255, 0, 255), -1)
+        # cv2.circle(edge, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
+        # cv2.circle(edge, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
+        # cv2.circle(edge, (int(mid_contour[0]), int(
+        #     mid_contour[1])), 3, (255, 0, 255), -1)
 
-        # Uncomment to see final image/edges/grasping points!
-        cv2.imshow("canny with points", edge)
-        cv2.imshow("points", original)
+        # # Uncomment to see final image/edges/grasping points!
+        # cv2.imshow("canny with points", edge)
+        # cv2.imshow("points", original)
 
         # cv2.waitKey(0)
 
