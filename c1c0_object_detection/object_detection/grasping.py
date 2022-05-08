@@ -59,13 +59,13 @@ class Grasping:
             self.DIFF_X, self.DIFF_Y, self.DIFF_Z, self.THETA_X, self.THETA_Y, self.THETA_Z)
 
         # distance from base of arm to the object is within reach?
-        isReachable = math.dist((0,0,0), gripper_pt1_arm) < self.max_reach
+        # isReachable = math.dist([0,0,0], gripper_pt1_arm) < self.max_reach
         isGrabbable = grabbable(gripper_pt1_arm, gripper_pt2_arm, self.gripper_width)
         
         if display:
             self.display_grasps(dgr_img, (clamp_x1, clamp_y1), (clamp_x2, clamp_y2))
 
-        return isReachable, isGrabbable, gripper_pt1_arm, gripper_pt2_arm
+        return True, isGrabbable, gripper_pt1_arm, gripper_pt2_arm
 
     def display_grasps(self, dgr, img_pt1, img_pt2):
         """Private function. Displays grasping points on a dgr image"""

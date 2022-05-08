@@ -14,8 +14,8 @@ class Inference:
         self.net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
         self.display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
         self.coco_dataset = []
-        with open('./coco.txt', 'r') as coco_file: 
-            coco_dataset=[object.strip('\n') for object in coco_file.readlines()]
+        with open('./c1c0_object_detection/object_detection/coco.txt', 'r') as coco_file: 
+            self.coco_dataset=[object.strip('\n') for object in coco_file.readlines()]
 
     # TODO: currently just takes the first object detected
     def detect_object(self, img, obj_of_interest, display=False):
@@ -37,7 +37,7 @@ class Inference:
         detections = self.net.Detect(color_img_cuda)
         detection = None
 
-        target_id = coco_dataset.index(target_object)
+        target_id = self.coco_dataset.index(obj_of_interest)
         found_target=False
         for obj in detections:
             if obj.ClassID == target_id:
@@ -56,9 +56,9 @@ class Inference:
         
         return True, top, bottom, left, right
     
-    def display_detections(color_img_cuda, WIDTH, HEIGHT):
+    def display_detections(self, color_img_cuda, WIDTH, HEIGHT):
         # display detections
         print ("displaying detections... " )
-        cv2imgRGBA = jetson.utils.cudaToNumpy(color_img_cuda, WIDTH, HEIGHT, 4)
-        cv2img = cv2.cvtColor(cv2imgRGBA, cv2.COLOR_RGBA2BGR)
+
+        cv2img = cv2.cvtColor(color_img_cuda, cv2.COLOR_RGBA2BGR)
         cv2.imshow('detections', cv2img)

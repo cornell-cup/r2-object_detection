@@ -93,7 +93,7 @@ class Camera:
 
     return color_image, depth_colorized, dgr
 
-  def display_images(color_img, depth_img):
+  def display_images(self, color_img, depth_img):
     # colorized depth image
     cv2.imshow("original", cv2.cvtColor(color_img, cv2.COLOR_RGBA2BGR))
     cv2.imshow("white to black depth", depth_img)

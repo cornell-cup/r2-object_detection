@@ -21,7 +21,6 @@ def main():
         # TODO: Do we need context managers for these also?
         inf = Inference()
         grasping = Grasping()
-        robot = networking.Client()
 
         for i in range(5):
             # --------- Get Frames and Numpy Images ---------
@@ -41,7 +40,7 @@ def main():
             
             # --------- Identify if Target Object is in View ---------
             isFound, top, bot, left, right = inf.detect_object(
-                color_img, display=DISPLAY)
+                color_img, "teddy bear", display=DISPLAY)
             if not isFound:
                 print("object not found")
                 continue
