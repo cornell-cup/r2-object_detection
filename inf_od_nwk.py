@@ -5,8 +5,8 @@ import numpy as np
 from c1c0_object_detection.object_detection.camera import Camera
 from c1c0_object_detection.object_detection.inference import Inference
 from c1c0_object_detection.object_detection.grasping import Grasping
-import networking # don't directly import Client to avoid namespace conflicts
-
+import c1c0_object_detection.arm.publish_arm_updates as arm
+import c1c0_object_detection.kinematics.linear_rrt as alr
 # for displaying
 import jetson.utils
 
@@ -75,6 +75,23 @@ def main():
             # arm_config = robot.listen()
 
             # --------- Send Arm Configs to the Arm to move ---------
+            arm.init_serial()
+            print("serial port initialized")
+            startpos = arm.read_encoder_values()
+            print("arm vals read")
+            # inverse kinematics
+            avg = [(coord1[i][0] + coord2[i][0])/2
+                          for i in range(len(gripper_pt1_arm))]
+            print("target calculated", avg)
+            arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+            # send arm_config to the arm to move
+            if success:
+                for config in arm_config:
+                    converted_array = alr.radians_to_degrees(config)
+                    print("WRITING ARM CONFIG", converted_array)
+                    arm.publish_updates(converted_array, 0.5)
+            print("arm config serial written")
+            arm.close_serial()
 
 if __name__ == '__main__':
     main()
