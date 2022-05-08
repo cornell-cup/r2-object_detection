@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import pyrealsense2 as rs
+import pyrealsense2.pyrealsense2 as rs
 #from builtins import int, len, range, list, float, sorted, max, min
 import math
 # import matplotlib.pyplot as plt

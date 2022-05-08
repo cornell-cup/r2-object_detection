@@ -14,7 +14,7 @@ import jetson.utils
 
 WIDTH = 640
 HEIGHT = 480
-DISPLAY = True
+DISPLAY = False
 
 def main():
     with Camera(WIDTH, HEIGHT) as cam:
