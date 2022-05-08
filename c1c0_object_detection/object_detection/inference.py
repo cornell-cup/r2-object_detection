@@ -13,6 +13,9 @@ class Inference:
     def __init__(self):
         self.net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
         self.display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
+        self.coco_dataset = []
+        with open('./coco.txt', 'r') as coco_file: 
+            coco_dataset=[object.strip('\n') for object in coco_file.readlines()]
 
     # TODO: currently just takes the first object detected
     def detect_object(self, img, obj_of_interest, display=False):
@@ -32,12 +35,18 @@ class Inference:
         detections = []
         color_img_cuda = jetson.utils.cudaFromNumpy(img)
         detections = self.net.Detect(color_img_cuda)
+        detection = None
 
-        if not detections:
-            print('Nothing detected')
-            return False, None
+        target_id = coco_dataset.index(target_object)
+        found_target=False
+        for obj in detections:
+            if obj.ClassID == target_id:
+                found_target = True
+                detection = obj
+                break
+        if not detections or not found_target:
+            return False, None, None, None, None
 
-        detection = detections[0]
         top, bottom, left, right = detection.Top, detection.Bottom, detection.Left,detection.Right
         top, bottom, left, right = round(top), round(bottom), round(left), round(right)
         detection_img = jetson.utils.cudaToNumpy(color_img_cuda, WIDTH, HEIGHT, 4)

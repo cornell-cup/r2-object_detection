@@ -5,7 +5,7 @@ import numpy as np
 import sys
 
 import c1c0_object_detection.arm.publish_arm_updates as arm
-import c1c0_object_detection.kinematics.linear_rrt 
+import c1c0_object_detection.kinematics.linear_rrt as alr
 
 WIDTH = 640
 HEIGHT = 480
