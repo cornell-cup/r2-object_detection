@@ -20,4 +20,4 @@ In between each step, scheduler can decide what to do next (eg. if bad camera re
 read again, or ask path planning to move closer)
 """
 
-from . import kinematics, object_detection
+from . import arm, kinematics, object_detection
