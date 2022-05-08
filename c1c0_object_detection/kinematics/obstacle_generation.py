@@ -10,10 +10,10 @@ from .collision_detection import plot_linear_prism, arm_is_colliding_prisms
 from .arm_node import Node
 from .util.line import distance
 import numpy as np
-import typing
+from typing import List
 
 
-def generate_random_obstacles(num: int, axes_limits: list[list[float]], max_side_length=.2, min_side_length = .05):
+def generate_random_obstacles(num: int, axes_limits: List[List[float]], max_side_length=.2, min_side_length = .05):
     """Randomly generates cuboid obstacles for an environment.
 
     Args:

@@ -15,7 +15,7 @@ from .util import angles, line
 from .pure_rrt import dijkstra, nearest
 from .arm_plot import plot_3d
 import time
-from .kinematics_test import tpm
+# from .kinematics_test import tpm
 import random
 from .obstacle_generation import random_start_environment
 from .collision_detection import arm_is_colliding_prisms
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     #     # print(end_node.angles)
     #     print(obstacles)
     #     plot_3d(g, path, obstacles)
-
+    """
     goal_end_effector_bounds = [[-.1, .1], [.05, .15], [.12, .2]]
     trials = 100
     graphs, paths, obstacles = opc_graph_list(trials, n_iter=150, radius=.03, step_size=.1, bounds=goal_end_effector_bounds, num_obstacles=0)
@@ -191,3 +191,4 @@ if __name__ == "__main__":
     print("Average distance traveled:", tpm.avg_distance_traveled_test(paths))
     print("Stack empty error occurrences:", stack_empty_error)
     tpm.print_failed_cases(graphs, obstacles)
+    """

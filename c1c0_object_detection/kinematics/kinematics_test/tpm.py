@@ -13,7 +13,7 @@ import random
 from ..collision_detection import arm_is_colliding_prisms
 from ..obstacle_generation import *
 from ..arm_plot import plot_3d
-
+from typing import List
 
 def avg_nodes_test(graphs: list[Graph]):
     """ The average amount of nodes generated until the end goal is reached. """

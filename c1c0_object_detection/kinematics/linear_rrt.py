@@ -20,7 +20,6 @@ import time
 from ikpy.chain import Chain
 from .optimal_min_cost import find_path
 from .util.angles import true_angle_distances_arm
-from .kinematics_test import tpm
 from .obstacle_generation import random_start_environment
 import random
 import matplotlib.pyplot as plt
@@ -195,7 +194,7 @@ def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=1
     return linear_path, True
 
 
-def degrees_to_radians(angles: list[float]):
+def degrees_to_radians(angles: List[float]):
     """Converts an input array in degrees into an output array in radians."""
     radians = [0 for a in range(6)]
     for ind, val in enumerate(angles):
@@ -214,7 +213,7 @@ def radians_to_degrees(rrtnode):
     return degrees
 
 
-def path_radians_to_degrees(path: list[Node]):
+def path_radians_to_degrees(path: List[Node]):
     """Converts a path of Node instances into a path of degree arrays to be used in arm encoder movements."""
     return list(map(radians_to_degrees, path))
 
