@@ -108,11 +108,10 @@ def proj_grasp_img_to_cam(img_grasp_pt, depth_frame : rs.depth_frame):
 
     return pt_3D
 
-def proj_pixel_to_point(x, y, z, depth_frame, cam):
+def proj_pixel_to_point(x, y, z, depth_frame):
     """Performs pixel to point projections with known x, y pixels and known
     world depth z."""
-#     depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
-    depth_intrinsics = cam.profile.as_video_stream_profile().intrinsics
+    depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
     pt_3D = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], z)
     return pt_3D
 
@@ -265,8 +264,8 @@ def bound_to_coor(depth_scale, depth_frame, depth_img, bounds, cam):
         # x, y gives the left lower and right upper 
         center_depth = depth_img[(min_x+max_x)//2,(min_y+max_y)//2].astype(float)
         distance = center_depth*depth_scale
-        x1,y1,z1 = proj_pixel_to_point(min_x, min_y, distance, depth_frame, cam)
-        x2,y2,z2 = proj_pixel_to_point(max_x, max_y, distance, depth_frame, cam)
+        x1,y1,z1 = proj_pixel_to_point(min_x, min_y, distance, depth_frame)
+        x2,y2,z2 = proj_pixel_to_point(max_x, max_y, distance, depth_frame)
         box = x1,y1,z1,abs(x2-x1),abs(z2-z1),abs(y2-y1)
         boxes.append(box)
     return boxes
