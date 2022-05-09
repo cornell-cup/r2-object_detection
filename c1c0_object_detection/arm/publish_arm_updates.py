@@ -78,12 +78,14 @@ def writeToSerial(writeArray):
     # sum up to the original angle: [angle_1', angle_1'', ..., angle_6', angle_6'']
     split_write_array = []
     for angle in writeArray: 
-        first_half = min(angle, 255)
-        second_half = max(angle-255, 0)
-        split_write_array.append(first_half)
+#         first_half = min(angle, 255)
+#         second_half = max(angle-255, 0)
+        first_half = angle & 255
+        second_half = (angle >> 8) & 255
         split_write_array.append(second_half)
+        split_write_array.append(first_half)
     # cast writeArray from int to byte, encode the array using the R2Protocol
-    write_byte = r2.encode(bytes('PARM','utf-8'), bytearray(split_write_array))
+    write_byte = r2.encode(bytes('PRM','utf-8'), bytearray(split_write_array))
     # send the encoded array across the Jetson Serial lines
     ser.write(write_byte)
 
