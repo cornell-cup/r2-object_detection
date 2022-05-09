@@ -6,7 +6,7 @@ import math
 # import matplotlib.pyplot as plt
 # from mpl_toolkits import mplot3d #import art3d
 from src.grasp_detection import grab_points
-import camera
+import src.camera
 
 """Collection of utility functions for grasp detection, such as getting
 grasp coordinates relative to a given coordinate system, and plotting grasp
