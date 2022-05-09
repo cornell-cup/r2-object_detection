@@ -26,9 +26,13 @@ import cv2
 import numpy as np
 import sys
 
+sys.path.insert(1, '/usr/local/lib/python3.6')
+sys.path.insert(2, '/home/cornellcup-cs/Desktop/c1c0_modules/r2-object_detection/src/kinematics')
+sys.path.insert(3, '/home/cornellcup-cs/Desktop/c1c0_modules/r2-object_detection/src')
+
 from src.camera import Camera
 from src.projections import *
-import src.kinematics.assuming_linearity_rrt as alr 
+#import src.kinematics.linear_rrt as alr 
 from src.kmeans import *
 
 import jetson.inference
@@ -38,11 +42,6 @@ net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
 display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
 print("GOT PAST STARTING VIDEO")
 """Run grasp detection code with the intel realsense camera"""
-
-sys.path.insert(1, '/usr/local/lib/python3.6')
-sys.path.insert(2, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics')
-sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src')
-
 
 
 WIDTH = 640
