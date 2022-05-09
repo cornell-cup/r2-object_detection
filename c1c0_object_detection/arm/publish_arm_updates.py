@@ -42,7 +42,7 @@ def read_encoder_values():
     good_data = False 
     while (not good_data):
         ser_msg = ser.read(28)
-        msgtype, msg, status = r2.decode(ser_msg)
+        msgtype, msg, status = decode(ser_msg)
         # print(msg.hex())
         print(status)
         print(ser_msg)
@@ -85,7 +85,8 @@ def writeToSerial(writeArray):
         split_write_array.append(second_half)
         split_write_array.append(first_half)
     # cast writeArray from int to byte, encode the array using the R2Protocol
-    write_byte = r2.encode(bytes('PRM','utf-8'), bytearray(split_write_array))
+    write_byte = encode(bytes('PRM','utf-8'), bytearray(split_write_array))
+    print(len(write_byte))
     # send the encoded array across the Jetson Serial lines
     ser.write(write_byte)
 
@@ -104,12 +105,12 @@ def publish_updates(update_array, timeout):
     timeout: an integer that represents the time between updates that 
                 the arm is allotted to move to the desired position. 
     '''
-    for index, update_array in enumerate(updates):
-        assert len(update_array) == 6
-        # convert updates to ints
-        update_array = [int(i) for i in update_array]
-        # for index in range(len(update_array)):
-        #     update_array[index] = int(update_array[index])
-        writeToSerial(update_array)
-        print("array {} sent: {}".format(index, update_array))
-        time.sleep(timeout)
+
+    assert len(update_array) == 6
+    # convert updates to ints
+    update_array = [int(i) for i in update_array]
+    # for index in range(len(update_array)):
+    #     update_array[index] = int(update_array[index])
+    writeToSerial(update_array)
+    #print("array {} sent: {}".format(index, update_array))
+    time.sleep(timeout)

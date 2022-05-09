@@ -29,11 +29,12 @@ if __name__ == '__main__':
         # endpos = RRTNode.from_point(avg_target, startpos)
         arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
         # send arm_config to the arm to move
+        print(arm_config)
         if success:
             for config in arm_config:
-                converted_array = alr.radians_to_degrees(config)
+                converted_array = alr.radians_to_degrees(config)[::-1]
                 print("WRITING ARM CONFIG", converted_array)
-                arm.publish_updates(converted_array, 0.5)
+                arm.publish_updates(converted_array, 1)
             print("arm config serial written")
             break
 
