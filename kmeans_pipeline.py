@@ -105,8 +105,8 @@ if __name__ == '__main__':
             # Get 3D camera pts using x,y from grasp prediction and z from
             # clamped points
             #convert grasp coords to cam and arm coords, output is a tuple
-            gripper_pt1_cam = proj_pixel_to_point(img_pt1[0], img_pt1[1], z1, depth_frame)
-            gripper_pt2_cam = proj_pixel_to_point(img_pt2[0], img_pt2[1], z2, depth_frame)
+            gripper_pt1_cam = proj_pixel_to_point(img_pt1[0], img_pt1[1], z1, depth_frame, cam)
+            gripper_pt2_cam = proj_pixel_to_point(img_pt2[0], img_pt2[1], z2, depth_frame, cam)
             print("Grab points at\n\t", gripper_pt1_cam, "and\n\t", gripper_pt2_cam, "\nrelative to the camera")
 
             # output of proj_grasp_cam_to_arm is a numpy array
