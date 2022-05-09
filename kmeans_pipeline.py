@@ -26,6 +26,11 @@ import cv2
 import numpy as np
 import sys
 
+from src.camera import Camera
+from src.projections import *
+import src.kinematics.assuming_linearity_rrt as alr 
+from src.kmeans import *
+
 import jetson.inference
 import jetson.utils
 
@@ -37,11 +42,6 @@ print("GOT PAST STARTING VIDEO")
 sys.path.insert(1, '/usr/local/lib/python3.6')
 sys.path.insert(2, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics')
 sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src')
-
-from src.camera import Camera
-from src.projections import *
-import src.kinematics.assuming_linearity_rrt as alr 
-from src.kmeans import *
 
 
 
