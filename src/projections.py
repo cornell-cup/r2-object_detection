@@ -108,7 +108,7 @@ def proj_grasp_img_to_cam(img_grasp_pt, depth_frame : rs.depth_frame):
 
     return pt_3D
 
-def proj_pixel_to_point(x, y, z, depth_frame, cam):
+def proj_pixel_to_point(x, y, z, depth_frame):
     """Performs pixel to point projections with known x, y pixels and known
     world depth z."""
     depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
