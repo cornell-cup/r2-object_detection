@@ -28,6 +28,7 @@ class Camera:
     config.enable_stream(rs.stream.color, w, h, rs.format.bgr8, 30)
     # Start streaming
     profile = self.pipeline.start(config)
+    self.profile = profile
 
     # Getting the depth sensor's depth scale (see rs-align example for explanation)
     depth_sensor = profile.get_device().first_depth_sensor()
