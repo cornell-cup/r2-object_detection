@@ -34,7 +34,7 @@ if __name__ == '__main__':
             for config in arm_config:
                 converted_array = alr.radians_to_degrees(config)[::-1]
                 print("WRITING ARM CONFIG", converted_array)
-                arm.publish_updates(converted_array, 1)
+                arm.publish_updates(converted_array, 0.5)
             print("arm config serial written")
             break
 

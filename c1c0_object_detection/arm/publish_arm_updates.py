@@ -36,6 +36,7 @@ def read_encoder_values():
     If the value is 1452, then the encoder is not powered or there is 
     a wiring issue. 
     '''
+    global ser
     # initialize the array 
     encoderAngle = [0,0,0,0,0,0]
     # length of message plus 16
@@ -43,16 +44,16 @@ def read_encoder_values():
     while (not good_data):
         ser_msg = ser.read(28)
         msgtype, msg, status = decode(ser_msg)
-        # print(msg.hex())
-        print(status)
-        print(ser_msg)
-        if (status):
+        print("Hex: ", msg.hex())
+        print("status: ", status)
+        print("serial_msg", ser_msg)
+        if (status >= 0):
             good_data = True
         else:
             ser.reset_input_buffer()
     for i in range(0, 12, 2):
         encoderAngle[i//2] = (msg[i]<<8) | msg[i+1]
-    print(encoderAngle)
+    print("encoderAngle: ", encoderAngle)
     return encoderAngle
 
     
