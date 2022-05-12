@@ -636,7 +636,7 @@ class SsdMetaArchTest(ssd_meta_arch_test_lib.SSDMetaArchTestBase,
   def test_load_checkpoint_vars_tf2(self):
 
     if not self.is_tf2():
-      self.skipTest('Not running TF2 checkpoint kinematics_test with TF1.')
+      self.skipTest('Not running TF2 checkpoint test with TF1.')
 
     model, _, _, _ = self._create_model()
     inputs_shape = [2, 2, 2, 3]
@@ -662,7 +662,7 @@ class SsdMetaArchTest(ssd_meta_arch_test_lib.SSDMetaArchTestBase,
 
     exepcted_full_names = ['box_predictor_var:0'] + expected_detection_names
     self.assertEqual(exepcted_full_names, full_var_names)
-    # TODO(vighneshb) Add similar kinematics_test for classification checkpoint type.
+    # TODO(vighneshb) Add similar test for classification checkpoint type.
     # TODO(vighneshb) Test loading a checkpoint from disk to verify that
     # checkpoints are loaded correctly.
 
@@ -692,7 +692,7 @@ class SsdMetaArchTest(ssd_meta_arch_test_lib.SSDMetaArchTestBase,
     groundtruth_classes1 = np.array([[1]], dtype=np.float32)
     groundtruth_classes2 = np.array([[1]], dtype=np.float32)
     expected_localization_loss = 0.0
-    # Among 4 anchors (1 positive, 3 negative) in this kinematics_test, only 2 anchors are
+    # Among 4 anchors (1 positive, 3 negative) in this test, only 2 anchors are
     # selected (1 positive, 1 negative) since random sampler will adjust number
     # of negative examples to make sure positive example fraction in the batch
     # is 0.5.

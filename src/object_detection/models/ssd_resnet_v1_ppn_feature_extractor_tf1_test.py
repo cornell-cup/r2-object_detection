@@ -21,11 +21,11 @@ from object_detection.models import ssd_resnet_v1_ppn_feature_extractor_testbase
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class SSDResnet50V1PpnFeatureExtractorTest(
     ssd_resnet_v1_ppn_feature_extractor_testbase.
     SSDResnetPpnFeatureExtractorTestBase):
-  """SSDResnet50v1 feature extractor kinematics_test."""
+  """SSDResnet50v1 feature extractor test."""
 
   def _create_feature_extractor(self, depth_multiplier, pad_to_multiple,
                                 use_explicit_padding=False):
@@ -43,11 +43,11 @@ class SSDResnet50V1PpnFeatureExtractorTest(
     return 'resnet_v1_50'
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class SSDResnet101V1PpnFeatureExtractorTest(
     ssd_resnet_v1_ppn_feature_extractor_testbase.
     SSDResnetPpnFeatureExtractorTestBase):
-  """SSDResnet101v1 feature extractor kinematics_test."""
+  """SSDResnet101v1 feature extractor test."""
 
   def _create_feature_extractor(self, depth_multiplier, pad_to_multiple,
                                 use_explicit_padding=False):
@@ -66,11 +66,11 @@ class SSDResnet101V1PpnFeatureExtractorTest(
     return 'resnet_v1_101'
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class SSDResnet152V1PpnFeatureExtractorTest(
     ssd_resnet_v1_ppn_feature_extractor_testbase.
     SSDResnetPpnFeatureExtractorTestBase):
-  """SSDResnet152v1 feature extractor kinematics_test."""
+  """SSDResnet152v1 feature extractor test."""
 
   def _create_feature_extractor(self, depth_multiplier, pad_to_multiple,
                                 use_explicit_padding=False):

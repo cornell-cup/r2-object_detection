@@ -2836,7 +2836,7 @@ def autoaugment_image(image, boxes, policy_name='v0'):
            between [0, 1].
            Each row is in the form of [ymin, xmin, ymax, xmax].
     policy_name: The name of the AutoAugment policy to use. The available
-      options are `v0`, `v1`, `v2`, `v3` and `kinematics_test`. `v0` is the policy used for
+      options are `v0`, `v1`, `v2`, `v3` and `test`. `v0` is the policy used for
       all of the results in the paper and was found to achieve the best results
       on the COCO dataset. `v1`, `v2` and `v3` are additional good policies
       found on the COCO dataset that have slight variation in what operations

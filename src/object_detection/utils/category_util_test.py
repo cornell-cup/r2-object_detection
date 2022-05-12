@@ -34,7 +34,7 @@ class EvalUtilTest(tf.test.TestCase):
         1,"dog"
         2,"bird"
     """.strip(' ')
-    csv_path = os.path.join(self.get_temp_dir(), 'kinematics_test.csv')
+    csv_path = os.path.join(self.get_temp_dir(), 'test.csv')
     with tf.gfile.Open(csv_path, 'wb') as f:
       f.write(csv_data)
 
@@ -49,7 +49,7 @@ class EvalUtilTest(tf.test.TestCase):
         {'id': 1, 'name': 'dog'},
         {'id': 2, 'name': 'bird'},
     ]
-    csv_path = os.path.join(self.get_temp_dir(), 'kinematics_test.csv')
+    csv_path = os.path.join(self.get_temp_dir(), 'test.csv')
     category_util.save_categories_to_csv_file(categories, csv_path)
     saved_categories = category_util.load_categories_from_csv_file(csv_path)
     self.assertEqual(saved_categories, categories)

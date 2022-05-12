@@ -55,23 +55,6 @@ def expand(node, directions, step_size, g):
             g.add_vex(node_neg, node)
 
 
-def increment_towards_end(point_1, point_2, num_steps):
-    print("point 2", point_2)
-    print("point 1", point_1)
-    print("num steps", num_steps)
-
-    dirn = np.subtract(point_2, point_1) / num_steps
-
-    cur_point = point_1
-
-    points = []
-    for i in range(num_steps):
-        points.append(np.add(cur_point, dirn))
-        cur_point = points[-1]
-
-    return points
-
-
 def find_path(target_end_point, start_angles, obs, n_iter=150, radius=.01, step_size=.1):
     """Executes the Optimistic Predictive Cost algorithm to find a collision-free path between two configurations.
     Arguments:
@@ -88,6 +71,8 @@ def find_path(target_end_point, start_angles, obs, n_iter=150, radius=.01, step_
     g.ranking.append(g.start_node)
     g.end_node = Node.from_point(target_end_point)
 
+    close_to_end = False
+
     for i in range(n_iter):
         try:
             best_node = g.ranking.pop(0)
@@ -101,22 +86,13 @@ def find_path(target_end_point, start_angles, obs, n_iter=150, radius=.01, step_
 
         dist_to_goal = line.distance(best_node.end_effector_pos, target_end_point)
         if dist_to_goal < radius:
-            # g.end_node = Node.from_point(target_end_point, start_config=best_node.angles)
             g.end_node = best_node
-            # path_to_end = increment_towards_end(best_node.end_effector_pos, end_node.end_effector_pos, num_steps=5)
-            # print("target point:", end_node.end_effector_pos)
-            # print("list final point", path_to_end[-1])
-            # prev_node = best_node
-            # for point in path_to_end:
-            #     closer_node = Node.from_point(point, start_config=prev_node.angles)
-            #     g.add_vex(closer_node, best_node)
-            #     prev_node = closer_node
-            #     g.end_node = closer_node
-            #
-            # print("obtained point:", g.end_node.end_effector_pos)
-            # g.add_vex(g.end_node, best_node)
             g.success = True
             return g
+
+        # if dist_to_goal < 10 * radius and not close_to_end:
+        #     step_size /= 10
+        #     close_to_end = True
 
         expand(best_node, 4, step_size, g)
 

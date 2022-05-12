@@ -4,6 +4,8 @@ Generates a linear path from the current position of the arm to a desired positi
 of this path, maneuvers around the obstacle with RRT. For details on the RRT algorithm, see pure_rrt.py.
 
 Written by Simon Kapen '24 and Raj Sinha '25, Fall 2021.
+
+TODO: Refactor the names of the functions in this file, as we use Optimistic Predictive Cost instead of RRT
 """
 
 import math
@@ -18,17 +20,19 @@ import collision_detection as cd
 import arm_plot
 import time
 from util.angles import true_angle_distances_arm
-from kinematics_test import tpm
 from obstacle_generation import random_start_environment
-import kinpy as kp
+import optimal_min_cost as opc
 import random
 import matplotlib.pyplot as plt
-from arm_node import thresholdCheck
 from mpl_toolkits.mplot3d import art3d
+from typing import List
 
+<<<<<<< HEAD
 
 # Variable the represents whether we are using IKPY or Kinpy for
 # Inverse Kinematics calculations. (True = IKPY, False = Kinpy)
+=======
+>>>>>>> 80392fe568570a0ce5e4748bdcc9accd08b0bcee
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
@@ -174,40 +178,6 @@ def path_is_colliding(path, obstacles):
     return False
 
 
-def linear_rrt(start_angles, end_angles, obstacles, num_iter=15):
-    """Generates a linear path, and maneuvers around obstacles with RRT if necessary.
-
-    Args:
-        start_angles: The initial angles of the arm.
-        end_angles: The desired angles of the arm.
-        num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
-        obstacles: An array of float arrays representing cube obstacles.
-        degrees: Whether to convert to and from degrees for motor output.
-
-    Returns:
-        An array of Node instances or float arrays representing a valid path between the start and end configurations
-    """
-
-    g = generate_linear_path(start_angles, end_angles, num_iter)
-    linear_path = g[0].nodes
-
-    if path_is_colliding(linear_path, obstacles):
-        # new_path_hd, new_path_tl = rrt_hd_tl(linear_path, obstacles)
-        # linear_path = replace_with_rrt(new_path_hd, new_path_tl, obstacles)
-        g = rrt.rrt(start_angles, end_angles, obstacles, n_iter=500, radius=.07, stepSize=.3)
-        if g.success:
-            linear_path = rrt.dijkstra(g)
-        else:
-            # path = [Node(start_angles), Node(end_angles)]
-            # arm_plot.plot_3d(g, path, obstacles)
-            linear_path = None
-
-    if linear_path is None:
-        return linear_path, False
-
-    return linear_path, True
-
-
 def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=15):
     """Generates a linear path to a desired end effector position, and maneuvers around obstacles with RRT if necessary.
 
@@ -222,7 +192,21 @@ def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=1
         An array of Node instances or float arrays representing a valid path between the start and end configurations
     """
     end_angles = Node.from_point((end_x, end_y, end_z)).angles
-    return linear_rrt(start_angles, end_angles, obstacles, num_iter)
+    g = generate_linear_path(start_angles, end_angles, num_iter)
+
+    linear_path = g[0].nodes
+    if path_is_colliding(linear_path, obstacles):
+        print("Finding OPC path")
+        g = opc.find_path((end_x, end_y, end_z), start_angles, obstacles)
+        if g.success:
+            linear_path = rrt.dijkstra(g)
+        else:
+            linear_path = None
+
+    if linear_path is None:
+        return linear_path, False
+
+    return linear_path, True
 
 
 def degrees_to_radians(angles: list[float]):
@@ -272,7 +256,7 @@ def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
         if cd.arm_is_colliding_prisms(end_node, obstacles):
             raise Exception("Approved a colliding node")
 
-        _, success = linear_rrt(start_node.angles, end_node.angles, obstacles, iter_per_path)
+        _, success = linear_rrt_to_point(start_node.angles, end_node.end_effector_pos, obstacles, iter_per_path)
 
         if success:
             s_count = s_count + 1
@@ -293,8 +277,9 @@ def plot_random_path(iterations, num_obstacles):
         arm: A precision_arm.PrecisionArm instance, containing the bounds for arm angles.
     """
 
-    start_node, end_node, obstacles = tpm.random_start_environment(num_obstacles, [[-.4, .4], [-.2, .4], [-.4, .4]],
-                                                                   [[-.4, .4], [-.2, .4], [-.4, .4]])
+    start_node, end_node, obstacles, _ = random_start_environment(num_obstacles, [[-.08, .08], [.08, .2], [.12, .2]],
+                                                                   [[-.2, .2], [-.04, .2], [-.2, .2]],
+                                                                  obstacle_size=.1)
 
     plot_path(start_node.angles, end_node.angles, iterations, obstacles)
 
@@ -307,13 +292,21 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
     if (not valid_path_configuration(start_node, obstacles)) or (not valid_path_configuration(end_node, obstacles)):
         raise Exception("Invalid configuration")
 
-    path, _ = linear_rrt(start_node.angles, end_node.angles, obstacles, iterations)
+    pos = end_node.end_effector_pos
+    path, _ = linear_rrt_to_point(start_node.angles, pos[0], pos[1], pos[2], obstacles, iterations)
 
     g = Graph(start_node.angles, end_node.angles)
+
     if path is not None:
-        for node in path:
-            g.add_vex(node)
+        g.add_vex(path[0], g.start_node)
+        for i in range(len(path)):
+            try:
+                g.add_vex(path[i], path[i-1])
+            except IndexError:
+                pass
         arm_plot.plot_3d(g, path, obstacles)
+    else:
+        print("No Path Found :(")
 
 
 # Constants for quick testing of certain cases
@@ -392,6 +385,7 @@ def path_optimizer(path, prism):
     # print("Total Run Time: ", run_time)
     # print("Average Run Time: ", run_time / tests)
     # plt.show()
+<<<<<<< HEAD
 # start_point = [0, 0, 0]
 # sucess = 0
 # tests = 10
@@ -437,3 +431,15 @@ def path_optimizer(path, prism):
 # print("Total Run Time: ", run_time)
 # print("Average Run Time: ", run_time / tests)
 # plt.show()
+=======
+
+
+if __name__ == '__main__':
+    # random.seed(a=RRT_JUMP_SEED)
+    np.set_printoptions(precision=20)
+    trials = 100
+    iterations = 10
+    num_obstacles = 3
+
+    plot_random_path(iterations, num_obstacles)
+>>>>>>> 80392fe568570a0ce5e4748bdcc9accd08b0bcee

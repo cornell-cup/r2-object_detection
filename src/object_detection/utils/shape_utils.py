@@ -75,7 +75,7 @@ def pad_tensor(t, length):
   paddings = [[0 for _ in range(2)] for _ in range(rank)]
   t_d0 = tf.shape(t)[0]
 
-  if isinstance(length, int) or len(length.get_shape()) == 0:  # pylint:disable=g-explicit-length-kinematics_test
+  if isinstance(length, int) or len(length.get_shape()) == 0:  # pylint:disable=g-explicit-length-test
     paddings[0][1] = length - t_d0
   else:
     paddings[0][1] = length[0] - t_d0

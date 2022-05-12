@@ -21,7 +21,7 @@ from object_detection.models import faster_rcnn_pnas_feature_extractor as frcnn_
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class FasterRcnnPNASFeatureExtractorTest(tf.test.TestCase):
 
   def _build_feature_extractor(self, first_stage_features_stride):

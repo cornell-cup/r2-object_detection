@@ -118,7 +118,7 @@ class FakeModel(model.DetectionModel):
     pass
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class ExportInferenceGraphTest(tf.test.TestCase):
 
   def _save_checkpoint_from_mock_model(self,

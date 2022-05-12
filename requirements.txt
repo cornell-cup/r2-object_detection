@@ -1,4 +1,3 @@
-pyrealsense2
 numpy
 six
 tensorflow

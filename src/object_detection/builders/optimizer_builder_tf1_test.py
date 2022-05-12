@@ -36,7 +36,7 @@ if tf_version.is_tf1():
 # pylint: enable=g-import-not-at-top
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class LearningRateBuilderTest(tf.test.TestCase):
 
   def testBuildConstantLearningRate(self):
@@ -118,7 +118,7 @@ class LearningRateBuilderTest(tf.test.TestCase):
       optimizer_builder._create_learning_rate(learning_rate_proto)
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class OptimizerBuilderTest(tf.test.TestCase):
 
   def testBuildRMSPropOptimizer(self):

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A convenience wrapper around tf.kinematics_test.TestCase to kinematics_test with TPU, TF1, TF2."""
+"""A convenience wrapper around tf.test.TestCase to test with TPU, TF1, TF2."""
 
 from __future__ import absolute_import
 from __future__ import division

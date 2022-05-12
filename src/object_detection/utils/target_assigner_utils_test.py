@@ -40,7 +40,7 @@ class TargetUtilTest(parameterized.TestCase, test_case.TestCase):
   @parameterized.parameters((False,), (True,))
   def test_coordinates_to_heatmap(self, sparse):
     if not hasattr(tf, 'tensor_scatter_nd_max'):
-      self.skipTest('Cannot kinematics_test function due to old TF version.')
+      self.skipTest('Cannot test function due to old TF version.')
 
     def graph_fn():
       (y_grid, x_grid) = ta_utils.image_shape_to_grids(height=3, width=5)

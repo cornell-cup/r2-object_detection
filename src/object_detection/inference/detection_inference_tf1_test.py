@@ -75,7 +75,7 @@ def create_mock_graph():
     fl.write(graph_def.SerializeToString())
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class InferDetectionsTests(tf.test.TestCase):
 
   def test_simple(self):

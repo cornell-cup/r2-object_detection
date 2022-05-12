@@ -30,7 +30,7 @@ from object_detection.protos import model_pb2
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class ModelBuilderTF2Test(model_builder_test.ModelBuilderTest):
 
   def default_ssd_feature_extractor(self):

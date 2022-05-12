@@ -33,7 +33,7 @@ from object_detection.utils import config_util
 from object_detection.utils import tf_version
 
 
-# Model for kinematics_test. Options are:
+# Model for test. Options are:
 # 'ssd_inception_v2_pets', 'faster_rcnn_resnet50_pets'
 MODEL_NAME_FOR_TEST = 'ssd_inception_v2_pets'
 
@@ -120,7 +120,7 @@ def _make_initializable_iterator(dataset):
   return iterator
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class ModelLibTest(tf.test.TestCase):
 
   @classmethod
@@ -404,7 +404,7 @@ class ModelLibTest(tf.test.TestCase):
     self.assertEqual(None, experiment.eval_steps)
 
 
-@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf2(), 'Skipping TF1.X only test.')
 class UnbatchTensorsTest(tf.test.TestCase):
 
   def test_unbatch_without_unpadding(self):

@@ -26,7 +26,7 @@ from object_detection.utils import model_util
 from object_detection.utils import tf_version
 
 
-@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only kinematics_test.')
+@unittest.skipIf(tf_version.is_tf1(), 'Skipping TF2.X only test.')
 class ExtractSubmodelUtilTest(tf.test.TestCase):
 
   def test_simple_model(self):

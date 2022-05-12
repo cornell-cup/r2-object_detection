@@ -103,16 +103,13 @@ def extend_heuristic(g: Graph, rand_node: Node, step_size: float, threshold: int
 # Possibly archive/delete. This is unused right now
 def valid_configuration(angles):
     """ Returns true if the given angle configuration is a valid one. """
-    print(angles)
     link_lengths = [.222, .3]
     #  for a given a1, an a2 is always valid. However, the a3 is not necessarily valid:
     #  use spherical coordinates for validity
     if link_lengths[0] * math.cos(angles[1]) < 0:
-        print('invalid condition 1')
         return False
 
     if link_lengths[1] * math.cos(angles[2]) + link_lengths[0] * math.cos(angles[1]) < 0:
-        print('invalid condition 2')
         return False
 
     return True, [(angles[0] + math.pi) % math.pi, (angles[1] + math.pi) % math.pi, \
@@ -393,7 +390,7 @@ def multiple_runs():
         plot_3d(G, [start_node, end_node], obstacles, None)
 
 if __name__ == '__main__':
-    #kinematics_test()
+    #test()
     multiple_runs()
     # n_iter = 1000
     # radius = .07
