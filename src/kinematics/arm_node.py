@@ -9,6 +9,8 @@ import time
 
 import numpy
 import matplotlib.pyplot as plt
+from matplotlib import animation
+from matplotlib.animation import FuncAnimation
 from util.error_handling import nostderr
 import numpy as np
 import math
@@ -20,6 +22,7 @@ from ikpy.chain import Chain
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 ik_py = True #boolean flag: True if ik_py, False if Kinpy
+yes = True
 with nostderr():
     chain = kp.build_chain_from_urdf(open("models/XArm.urdf").read())
     serial_chain = kp.build_serial_chain_from_urdf(open("models/XArm.urdf").read(), "link5", "base_link")
@@ -95,6 +98,7 @@ class Node(object):
             matrices = amazon_arm_chain.forward_kinematics(self.angles, full_kinematics=True)
             # print(matrices)
             position = [[matrix[i][3] for i in range(3)] for matrix in matrices]
+            position = amazon_arm_chain.forward_kinematics(self.angles)
         return position
 
     def get_link_lengths(self):
@@ -170,17 +174,22 @@ def random_angle(left_bound, right_bound):
         return random.uniform(0, right_bound)
 
 
-if __name__ == '__main__':
+def test():
     start_point = [0, 0, 0]
     sucess = 0
-    tests = 100
+    tests = 1
+
     start_time = time.time()
     for i in range(tests):
         fail = False
-        randomX = random.uniform(-.08,.08)
-        randomY = random.uniform(-.08,.08)
-        randomZ = random.uniform(0,.105)
+        randomX = random.uniform(0, .08)
+        randomY = random.uniform(0, .08)
+        randomZ = random.uniform(0, .105)
+        randomX2 = random.uniform(-.08, 0)
+        randomY2 = random.uniform(-.08, 0)
+        randomZ2 = random.uniform(0, .105)
         end_point = [randomX, randomY, randomZ]
+        end_point2 = [randomX2,randomY,randomZ2]
         angles = amazon_arm_chain.inverse_kinematics(end_point)
         matrices = amazon_arm_chain.forward_kinematics(angles, full_kinematics=True)
 
@@ -189,6 +198,11 @@ if __name__ == '__main__':
         dist = np.linalg.norm(np.array(joint_positions[-1]) - np.array(end_point))
         if dist > .001:
             fail = True
+        angles2 = amazon_arm_chain.inverse_kinematics(end_point2)
+        final_position = amazon_arm_chain.forward_kinematics(angles, full_kinematics=False)
+        final_position2 = amazon_arm_chain.forward_kinematics(angles2,full_kinematics=False)
+        print(final_position)
+        print(final_position2)
 
     fig = plt.figure()
     ax = plt.axes(projection="3d")
@@ -205,11 +219,86 @@ if __name__ == '__main__':
     run_time = time.time() - start_time
     print("Successes: ", sucess)
     print("Failures: ", tests - sucess)
-    print("Rate: ", sucess/tests)
+    print("Rate: ", sucess / tests)
     print("Total Run Time: ", run_time)
-    print("Average Run Time: ", run_time/tests)
+    print("Average Run Time: ", run_time / tests)
 
+    def test_run():
+        global yes
+        if(yes):
+            amazon_arm_chain.plot(angles,ax,show=True)
+            amazon_arm_chain.plot(angles2, ax, show=False)
+            yes = False
+        else:
+            amazon_arm_chain.plot(angles, ax, show=False)
+            amazon_arm_chain.plot(angles2, ax, show=True)
 
+    anim = animation.FuncAnimation(fig, test_run(), 25,
+                                   interval=1000, blit=False)
+    plt.show()
 
-# you put in angle configs to forward kinematics and get out an ending point
-# you put in an ending point to inverse kinematics and get angle configs
+if __name__ == '__main__':
+    #Constants for both IKPY and Kinpy
+    start_point = [0, 0, 0]
+    #fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    # Set the limits for the range of plotted values
+    lim = .6
+    plt.xlim(-lim, lim)
+    plt.ylim(-lim, lim)
+    ax.set_zlim(-lim, lim)
+
+    tests = 10
+
+    IKPY_successes = 0
+    start_time_IKPY = time.time()
+    for i in range(tests):
+        fail = False
+        randomX = random.uniform(-.08,.08)
+        randomY = random.uniform(-.08,.08)
+        randomZ = random.uniform(0,.105)
+        end_point = [randomX, randomY, randomZ]
+        angles = amazon_arm_chain.inverse_kinematics(end_point)
+        final_position = amazon_arm_chain.forward_kinematics(angles,full_kinematics=False)
+        dist = np.linalg.norm(end_point - final_position[0][3])
+        #print(dist)
+        if dist > .2:
+            fail = True
+        if not fail:
+            IKPY_successes += 1
+
+    IKPY_run_time = time.time() - start_time_IKPY
+    print("IKPY Successes: ", IKPY_successes)
+    print("IKPY Failures: ", tests - IKPY_successes)
+    print("IKPY Rate: ", IKPY_successes/tests)
+    print("IKPY Total Run Time: ", IKPY_run_time)
+    print("IKPY Average Run Time: ", IKPY_run_time/tests)
+
+    ik_py = False
+
+    Kinpy_successes = 0
+    start_time_Kinpy = time.time()
+    for i in range(tests):
+        fail = False
+        randomX = random.uniform(-.08, .08)
+        randomY = random.uniform(-.08, .08)
+        randomZ = random.uniform(0, .105)
+        end_point = [randomX, randomY, randomZ]
+        arm = Node(None)
+        angles = arm.from_point(end_point)
+        final_position = arm.forward_kinematics(xarm_joint_names, xarm_link_names)
+        dist = np.linalg.norm(end_point - final_position[-1])
+        if dist > .2:
+             fail = True
+        if not fail:
+             Kinpy_successes += 1
+
+    Kinpy_run_time = time.time() - start_time_Kinpy
+    print("Kinpy Successes: ", Kinpy_successes)
+    print("Kinpy Failures: ", tests - Kinpy_successes)
+    print("Kinpy Rate: ", Kinpy_successes / tests)
+    print("Kinpy Total Run Time: ", Kinpy_run_time)
+    print("Kinpy Average Run Time: ", Kinpy_run_time / tests)

@@ -344,7 +344,6 @@ def newLineCollider(line_seg, prism):
 
 
 def checkCollision(prism, rrtNode):
-    collision = False
     for i in range(len(rrtNode.joint_positions) - 1):
         p1 = ([rrtNode.joint_positions[i]])
         p2 = ([rrtNode.joint_positions[i + 1]])
@@ -439,25 +438,3 @@ def main():
         plt.title("Wow no Collision")
     plt.show()
 
-
-if __name__ == "__main__":
-    main()
-    # Broken, uses deprecated class NLinkArm
-    # fig = plt.figure()
-    # ax = plt.axes(projection="3d")
-    # cube = [-0.1, 0.1, 0.15, 0.15]
-    # plot_linear_cube(ax, cube)
-    # arm = NLinkArm(2, np.array([0.222, 0.3]))
-    # print("points, ", len(arm.get_points()))
-    # if len(sys.argv) == 2 and sys.argv[1] == "rand":
-    #     arm.update_pitch(
-    #         [arm.get_pitches()[j] + np.random.randint(-50, 50)/100 for j in range(arm.get_dof())])
-    #     arm.update_yaw(
-    #         [arm.get_yaws()[j] + np.random.randint(-50, 50)/100 for j in range(arm.get_dof())])
-    #
-    #     plot_arm(ax, arm, "arm")
-    #     print("Arm is colliding:", arm_is_colliding(arm, cube))
-    # else:
-    #     plot_arm(ax, arm, "arm")
-    # plt.legend()
-    # plt.show()
