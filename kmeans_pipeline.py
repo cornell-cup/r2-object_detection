@@ -159,11 +159,15 @@ if __name__ == '__main__':
                 arm.close_serial() 
 
 
+
             """
 	    
 	    #kmeans
-	    
+            depth_img = np.asanyarray(depth_frame.get_data())
+            color_img = np.asanyarray(color_frame.get_data())
+
             bounds = get_image_bounds(color_img, depth_img)
+            # list of bounding boxes, each bounding box has bottom left coordinate, lwh
             collision_coords = bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)
             print(collision_coords)
 

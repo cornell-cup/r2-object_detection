@@ -145,8 +145,12 @@ def create_rgbd(rgb_img, depth_img):
 
 
 def get_image_bounds(color_img, depth_img):
+    cv2.imshow("color image", color_img)
+    cv2.imshow("depth image", depth_img)
+    cv2.waitKey()
     rgbd = create_rgbd(color_img, depth_img)
     preprocessed_rgbd = preprocess_data(depth_img,rgbd)
+    print ("max of depth image",np.max(depth_img))
     result_img, labels = cv_kmeans(preprocessed_rgbd, color_img.shape)
     result_img = postprocess_im(depth_img, result_img, labels)
     return bound.get_bound(result_img, False)
@@ -154,6 +158,7 @@ def get_image_bounds(color_img, depth_img):
 
 def main():
     #org_image, depth_img, rgbd = df.get_depth_frame()
+    
     org_img, depth_img = get_depth_images("23-04-14:42:35")
     get_image_bounds(org_img, depth_img)
     # cv2.imshow("org", org_img)
