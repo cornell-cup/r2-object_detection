@@ -100,7 +100,6 @@ def generate_linear_path(start_angles, end_angles, num_iter):
     g = Graph(start_angles, end_angles)
 
     current_angles = start_angles
-    current_idx = 0
     current_node = g.nodes[0]
     for i in range(num_iter):
         new_angles = np.add(current_angles, step_sizes)
@@ -110,10 +109,7 @@ def generate_linear_path(start_angles, end_angles, num_iter):
 
         new_idx = g.add_vex(new_node, current_node)
 
-        dist = line.distance(new_node.end_effector_pos, current_node.end_effector_pos)
-
         current_angles = new_angles
-        current_idx = new_idx
         current_node = new_node
 
         if i == num_iter - 1:

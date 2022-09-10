@@ -130,7 +130,7 @@ class Node(object):
     @classmethod
     def from_point(cls, end_point, start_config=[0, 0, 0, 0, 0]):
         """Computes Inverse Kinematics from the given point either using IKPY or Kinpy
-        :param end_point: the target point from which kinematics will be calculated,
+        :param end_point: the target point from which Xkinematics will be calculated,
                       formatted as (x,y,z)
         :return: the inverse kinematic angles
         """
