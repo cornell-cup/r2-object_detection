@@ -27,12 +27,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 from typing import List
 
-<<<<<<< HEAD
 
 # Variable the represents whether we are using IKPY or Kinpy for
 # Inverse Kinematics calculations. (True = IKPY, False = Kinpy)
-=======
->>>>>>> 80392fe568570a0ce5e4748bdcc9accd08b0bcee
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
@@ -381,7 +378,6 @@ def path_optimizer(path, prism):
     # print("Total Run Time: ", run_time)
     # print("Average Run Time: ", run_time / tests)
     # plt.show()
-<<<<<<< HEAD
 # start_point = [0, 0, 0]
 # sucess = 0
 # tests = 10
@@ -427,7 +423,6 @@ def path_optimizer(path, prism):
 # print("Total Run Time: ", run_time)
 # print("Average Run Time: ", run_time / tests)
 # plt.show()
-=======
 
 
 if __name__ == '__main__':
@@ -438,4 +433,3 @@ if __name__ == '__main__':
     num_obstacles = 3
 
     plot_random_path(iterations, num_obstacles)
->>>>>>> 80392fe568570a0ce5e4748bdcc9accd08b0bcee
