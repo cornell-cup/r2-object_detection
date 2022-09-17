@@ -168,6 +168,37 @@ def path_is_colliding(path, obstacles):
     return False
 
 
+def linear_path_to_angles(start_angles, end_angles, obstacles, num_iter=15):
+    """Generates a linear path to a desired end effector position, and maneuvers around obstacles with OPC if necessary.
+
+        Args:
+            start_angles: The initial angles of the arm.
+            end_angles: The desired end angles of the arm.
+            obstacles: An array of float arrays representing cube obstacles.
+            num_iter: The number of angle configurations to be generated on the path in between the start and end positions.
+            degrees: Whether to convert to and from degrees for motor output.
+
+        Returns:
+            An array of Node instances or float arrays representing a valid path between the start and end configurations
+        """
+    g = generate_linear_path(start_angles, end_angles, num_iter)
+
+    point = Node(end_angles).end_effector_pos
+    linear_path = g[0].nodes
+    if path_is_colliding(linear_path, obstacles):
+        print("Finding OPC path")
+        g = opc.find_path((point[0], point[1], point[2]), start_angles, obstacles)
+        if g.success:
+            linear_path = rrt.dijkstra(g)
+        else:
+            linear_path = None
+
+    if linear_path is None:
+        return linear_path, False
+
+    return linear_path, True
+
+
 def linear_path_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=15):
     """Generates a linear path to a desired end effector position, and maneuvers around obstacles with OPC if necessary.
 
@@ -182,21 +213,7 @@ def linear_path_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=
         An array of Node instances or float arrays representing a valid path between the start and end configurations
     """
     end_angles = Node.from_point((end_x, end_y, end_z)).angles
-    g = generate_linear_path(start_angles, end_angles, num_iter)
-
-    linear_path = g[0].nodes
-    if path_is_colliding(linear_path, obstacles):
-        print("Finding OPC path")
-        g = opc.find_path((end_x, end_y, end_z), start_angles, obstacles)
-        if g.success:
-            linear_path = rrt.dijkstra(g)
-        else:
-            linear_path = None
-
-    if linear_path is None:
-        return linear_path, False
-
-    return linear_path, True
+    return linear_path_to_angles(start_angles, end_angles, obstacles, num_iter)
 
 
 def degrees_to_radians(angles: list[float]):
