@@ -26,6 +26,18 @@ def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.
     ax.set_zlim3d(axis_limits[2][0], axis_limits[2][1])
 
 
+def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.2, .4], [-.2, .4]]):
+    """ Configures axis lengths and names for a matplotlib graph. """
+
+    ax.set_xlabel(axis_labels[0])
+    ax.set_ylabel(axis_labels[1])
+    ax.set_zlabel(axis_labels[2])
+
+    ax.set_xlim3d(axis_limits[0][0], axis_limits[0][1])
+    ax.set_ylim3d(axis_limits[1][0], axis_limits[1][1])
+    ax.set_zlim3d(axis_limits[2][0], axis_limits[2][1])
+
+
 def arr_to_int(arr):
     """ The int array representation of an array of arrays. """
     new_array = []
@@ -112,6 +124,9 @@ def plot_arm_configs(ax, path, obstacles, color='green'):
         for j in range(3):
             for k in range(len(v)-1):
                 v[k].append([path[i].joint_positions[k][j], path[i].joint_positions[k+1][j]])
+
+        for j in range(len(v)-1):
+            ax.plot(v[j][0], v[j][1], zs=v[j][2], color=color)
 
         for j in range(len(v)-1):
             ax.plot(v[j][0], v[j][1], zs=v[j][2], color=color)

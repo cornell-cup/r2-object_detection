@@ -4,6 +4,8 @@ Generates a linear path from the current position of the arm to a desired positi
 of this path, maneuvers around the obstacle with OPC. For details on the OPC algorithm, see optimal_min_cost.py.
 
 Written by Simon Kapen '24 and Raj Sinha '25, Fall 2021.
+
+TODO: Refactor the names of the functions in this file, as we use Optimistic Predictive Cost instead of RRT
 """
 
 import math
