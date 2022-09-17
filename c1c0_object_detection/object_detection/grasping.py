@@ -17,9 +17,9 @@ class Grasping:
     """
 
     def __init__(self, max_reach=1, gripper_width=.5,
-        DIFF_X=0.0, DIFF_Y=0.0, DIFF_Z=0.24,
-        THETA_X=(115*np.pi/180), THETA_Y=(0*np.pi/180), THETA_Z=(0*np.pi/180)):
-
+        DIFF_X=0.12, DIFF_Y=0.0, DIFF_Z=0.1,
+        # THETA_X=(115*np.pi/180), THETA_Y=(0*np.pi/180), THETA_Z=(0*np.pi/180)):
+	THETA_X=0.0, THETA_Y=0.0, THETA_Z=0.0):
         # constants
         self.max_reach = max_reach
         self.gripper_width = gripper_width

@@ -9,6 +9,7 @@ import c1c0_object_detection.arm.publish_arm_updates as arm
 import c1c0_object_detection.kinematics.linear_rrt as alr
 # for displaying
 import jetson.utils
+import math
 
 """Run object detection pipeline with the intel realsense camera"""
 
@@ -40,7 +41,7 @@ def main():
             
             # --------- Identify if Target Object is in View ---------
             isFound, top, bot, left, right = inf.detect_object(
-                color_img, "teddy bear", display=DISPLAY)
+                color_img, "bottle", display=DISPLAY)
             if not isFound:
                 print("object not found")
                 continue
@@ -50,7 +51,7 @@ def main():
             
             # --------- Locate where to Grab the Target Object ---------
             isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
-                dgr, bbox, depth_frame, display=DISPLAY)
+                dgr, bbox, depth_frame, display=True)
             if not isReachable:
                 print("object not reachable")
                 continue
@@ -77,20 +78,39 @@ def main():
             arm.init_serial()
             print("serial port initialized")
             startpos = arm.read_encoder_values()
+            startpos = [i*math.pi/180 for i in startpos]
             print("arm vals read")
             # inverse kinematics
             avg = [(coord1[i][0] + coord2[i][0])/2
-                          for i in range(len(gripper_pt1_arm))]
+                          for i in range(len(coord1))]
             print("target calculated", avg)
-            arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+            arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
+            print("converted config: ", avg) 
+            print(arm_config[0].angles)
+            print(arm_config[-1].angles)
             # send arm_config to the arm to move
             if success:
-                for config in arm_config:
-                    converted_array = alr.radians_to_degrees(config)
+                for config in arm_config[2:]:
+                    converted_array = alr.radians_to_degrees(config)[::-1]
                     print("WRITING ARM CONFIG", converted_array)
-                    arm.publish_updates(converted_array, 0.5)
+                    converted_array[0] = 10
+                    converted_array[1] = 0
+                    arm.publish_updates(converted_array, 1)
+                c = arm_config[-1]
+                conv = alr.radians_to_degrees(c)[::-1]
+                conv[0] = 110
+                conv[1] = 0
+                arm.publish_updates(conv, 1)
+                for config in arm_config[::-1][:-2]:
+                    converted_array = alr.radians_to_degrees(config)[::-1]
+                    print("WRITING ARM CONFIG", converted_array)
+                    converted_array[0] = 110
+
+                    converted_array[1] = 0
+                    arm.publish_updates(converted_array, 1)
             print("arm config serial written")
             arm.close_serial()
+            break
 
 if __name__ == '__main__':
     main()

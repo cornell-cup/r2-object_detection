@@ -54,7 +54,9 @@ class Node(object):
         (0, 2 * math.pi)
     ]
 
-    XARM_URDF_BOUNDS = [
+    XARM_URDF_BOUNDS = [(0, math.pi),(0, math.pi), (0, math.pi), (0, 150*math.pi/180), (0, math.pi), (math.pi/9, 8*math.pi/9)]
+    """
+    [
         (2*math.pi, math.pi),
         (2*math.pi, math.pi/2),
         (17 * math.pi / 16, 15 * math.pi / 16),
@@ -62,7 +64,7 @@ class Node(object):
         (17 * math.pi / 16, 15 * math.pi / 16),
         (17 * math.pi / 16, 15 * math.pi / 16),
     ]
-
+    """
     bounds = XARM_URDF_BOUNDS
 
     def __init__(self, configuration: List[float]):
