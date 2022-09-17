@@ -156,7 +156,7 @@ if __name__ == '__main__':
             avg = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
                           for i in range(len(gripper_pt1_arm))]
             print("target calculated", avg)
-            arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+            arm_config, success = alr.linear_path_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
             # send arm_config to the arm to move
             if success:
                 for config in arm_config:

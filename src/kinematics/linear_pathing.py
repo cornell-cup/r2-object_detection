@@ -1,11 +1,9 @@
-"""Implementation of a linear arm pathing algorithm that uses RRT to avoid obstacles.
+"""Implementation of a linear arm pathing algorithm that uses Optimistic Predictive Cost to avoid obstacles.
 
 Generates a linear path from the current position of the arm to a desired position. If there is an obstacle in the way
-of this path, maneuvers around the obstacle with RRT. For details on the RRT algorithm, see pure_rrt.py.
+of this path, maneuvers around the obstacle with OPC. For details on the OPC algorithm, see optimal_min_cost.py.
 
 Written by Simon Kapen '24 and Raj Sinha '25, Fall 2021.
-
-TODO: Refactor the names of the functions in this file, as we use Optimistic Predictive Cost instead of RRT
 """
 
 import math
@@ -27,9 +25,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
 from typing import List
 
-
-# Variable the represents whether we are using IKPY or Kinpy for
-# Inverse Kinematics calculations. (True = IKPY, False = Kinpy)
 
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
@@ -171,8 +166,8 @@ def path_is_colliding(path, obstacles):
     return False
 
 
-def linear_rrt_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=15):
-    """Generates a linear path to a desired end effector position, and maneuvers around obstacles with RRT if necessary.
+def linear_path_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=15):
+    """Generates a linear path to a desired end effector position, and maneuvers around obstacles with OPC if necessary.
 
     Args:
         start_angles: The initial angles of the arm.
@@ -210,13 +205,13 @@ def degrees_to_radians(angles: list[float]):
     return radians
 
 
-def radians_to_degrees(rrtnode):
+def radians_to_degrees(node):
     """Converts an Node instance into a degree array to be used in arm encoder movements.
 
        Returns: An array consisting of 6 degree measurements representing the node. """
 
     degrees = [0 for a in range(6)]
-    for ind, val in enumerate(rrtnode.angles):
+    for ind, val in enumerate(node.angles):
         degrees[ind] = (val * 180) / math.pi
     return degrees
 
@@ -226,10 +221,10 @@ def path_radians_to_degrees(path: list[Node]):
     return list(map(radians_to_degrees, path))
 
 
-def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
-    """Runs num_trials of a linear rrt pathing approach.
+def linear_path_test(num_trials, obstacles, iter_per_path=10):
+    """Runs num_trials of a linear pathing approach.
 
-    Success is defined as converging to the desired end position, and any intermediate RRT converging to the desired end
+    Success is defined as converging to the desired end position, and any intermediate OPC converging to the desired end
     position.
     """
 
@@ -249,7 +244,7 @@ def linear_rrt_test(num_trials, obstacles, iter_per_path=10):
         if cd.arm_is_colliding_prisms(end_node, obstacles):
             raise Exception("Approved a colliding node")
 
-        _, success = linear_rrt_to_point(start_node.angles, end_node.end_effector_pos, obstacles, iter_per_path)
+        _, success = linear_path_to_point(start_node.angles, end_node.end_effector_pos, obstacles, iter_per_path)
 
         if success:
             s_count = s_count + 1
@@ -286,7 +281,7 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
         raise Exception("Invalid configuration")
 
     pos = end_node.end_effector_pos
-    path, _ = linear_rrt_to_point(start_node.angles, pos[0], pos[1], pos[2], obstacles, iterations)
+    path, _ = linear_path_to_point(start_node.angles, pos[0], pos[1], pos[2], obstacles, iterations)
 
     g = Graph(start_node.angles, end_node.angles)
 
@@ -314,12 +309,12 @@ def path_optimizer(path, prism):
 
     Args:
         path: refers to the output of dijkstra method from pure_rrt_angles,
-              a list of rrtnodes
+              a list of nodes
         prism: the object to be avoided, given in the form
                [<x coord.>, <y coord.>, <z coord.>, <length.>, <width.>, <height.>].
 
     Returns:
-        A new list with some rrtnodes removed where linear paths can be created.
+        A new list with some nodes removed where linear paths can be created.
         list length <= path length
 
     """
