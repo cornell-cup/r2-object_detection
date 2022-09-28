@@ -42,7 +42,7 @@ from src.camera import Camera
 from src.projections import *
 from networking.Client import Client
 import src.arm.publish_arm_updates as arm 
-import src.kinematics.assuming_linearity_rrt as alr 
+import src.kinematics.linear_pathing as alr
 
 
 

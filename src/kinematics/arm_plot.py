@@ -12,18 +12,7 @@ from matplotlib.animation import FuncAnimation
 import math
 from util.line import distance
 import random
-
-
-def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.2, .4], [-.2, .4]]):
-    """ Configures axis lengths and names for a matplotlib graph. """
-
-    ax.set_xlabel(axis_labels[0])
-    ax.set_ylabel(axis_labels[1])
-    ax.set_zlabel(axis_labels[2])
-
-    ax.set_xlim3d(axis_limits[0][0], axis_limits[0][1])
-    ax.set_ylim3d(axis_limits[1][0], axis_limits[1][1])
-    ax.set_zlim3d(axis_limits[2][0], axis_limits[2][1])
+from os import getenv
 
 
 def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.2, .4], [-.2, .4]]):
@@ -152,29 +141,42 @@ def plot_ik_trial(target_point, obtained_config):
     plot_arm_configs(ax, [obtained_config], None)
 
 
-if __name__ == "__main__":
+def plot_config_at_point():
     configs = []
     points = []
-    ax = plt.axes(projection='3d')
-    # bounds = [[-.08, .08], [.08, .2], [.12, .2]]
-    # random_point = [random.uniform(bounds[0][0], bounds[0][1]),
-    #                 random.uniform(bounds[1][0], bounds[1][1]),
-    #                 random.uniform(bounds[2][0], bounds[2][1])]
-    # for i in range(1):
-    #     random_point = [random.uniform(bounds[0][0], bounds[0][1]),
-    #          random.uniform(bounds[1][0], bounds[1][1]),
-    #          random.uniform(bounds[2][0], bounds[2][1])]
-    #     points.append(random_point)
-    #     node = Node.from_point(random_point)
-    #     configs.append(node)
-    #
-    # ax = plt.axes(projection='3d')
-    # configure_graph(ax)
-    #
-    # plot_arm_configs(ax, configs, [])
-    # ax.scatter3D([random_point[0]], [random_point[1]], [random_point[2]])
+
+    bounds = [[-.08, .08], [.08, .2], [.12, .2]]
+    random_point = [random.uniform(bounds[0][0], bounds[0][1]),
+                    random.uniform(bounds[1][0], bounds[1][1]),
+                    random.uniform(bounds[2][0], bounds[2][1])]
+    for i in range(1):
+        random_point = [random.uniform(bounds[0][0], bounds[0][1]),
+                        random.uniform(bounds[1][0], bounds[1][1]),
+                        random.uniform(bounds[2][0], bounds[2][1])]
+        points.append(random_point)
+        node = Node.from_point(random_point)
+        configs.append(node)
+
+    plot_arm_configs(ax, configs, [])
+    ax.scatter3D([random_point[0]], [random_point[1]], [random_point[2]])
+    plt.show()
+
+
+def plot_configs_with_obstacle():
     configs = [Node(None) for i in range(10)]
-    obstacles = [[.01,.01,.02,.1,.1,.1]]
+    obstacles = [[.01, .01, .02, .1, .1, .1]]
     plot_arm_configs(ax, configs, obstacles)
     collision_detection.plot_linear_prism(ax, obstacles[0], 'blue')
+
+
+if __name__ == "__main__":
+    ax = plt.axes(projection='3d')
+    configure_graph(ax)
+
+    func = getenv('FUNCTION')
+    if func == 'PLOT_WITH_OBSTACLE':
+        plot_configs_with_obstacle()
+    elif func == 'PLOT_AT_POINT':
+        plot_config_at_point()
+
     plt.show()
