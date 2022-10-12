@@ -1,4 +1,7 @@
 """
+As of Fall 2022, this algorithm is deprecated. We are currently using the Optimistic Predictive Cost algorithm described
+in optimal_min_cost.py.
+
 Implementation of the Rapidly-Exploring Random Tree algorithm using precision arm configurations as nodes.
 
 Given a start configuration and end configuration received from the ECE subteam, and a set of obstacles received from
@@ -17,14 +20,13 @@ from collections import deque
 import time
 import random
 from collision_detection import arm_is_colliding_prisms, arm_is_colliding
-from optimizers import path_optimizer_two, path_optimizer_four, checkPath
-from src.kinematics import obstacle_generation
+from optimizers import path_optimizer_two, path_optimizer_four, checkPath, optimize
+import obstacle_generation
 from util import line
 from arm_node import Node
 from arm_graph import Graph
 from matplotlib.widgets import Button
 from arm_plot import plot_3d
-from obstacle_generation import random_start_environment
 from util.angles import true_angle_distances_arm
 import sys
 
@@ -104,16 +106,13 @@ def extend_heuristic(g: Graph, rand_node: Node, step_size: float, threshold: int
 # Possibly archive/delete. This is unused right now
 def valid_configuration(angles):
     """ Returns true if the given angle configuration is a valid one. """
-    print(angles)
     link_lengths = [.222, .3]
     #  for a given a1, an a2 is always valid. However, the a3 is not necessarily valid:
     #  use spherical coordinates for validity
     if link_lengths[0] * math.cos(angles[1]) < 0:
-        print('invalid condition 1')
         return False
 
     if link_lengths[1] * math.cos(angles[2]) + link_lengths[0] * math.cos(angles[1]) < 0:
-        print('invalid condition 2')
         return False
 
     return True, [(angles[0] + math.pi) % math.pi, (angles[1] + math.pi) % math.pi, \
@@ -255,11 +254,11 @@ def random_start_environment(num_obstacles, bounds, obstacle_size=.2):
 
     current_obstacles = obstacle_generation.generate_random_obstacles(num_obstacles, bounds,
                                                                       max_side_length=obstacle_size)
-    while arm_is_colliding(random_end_node, current_obstacles):
+    while arm_is_colliding_prisms(random_end_node, current_obstacles):
         current_obstacles = obstacle_generation.generate_random_obstacles(num_obstacles, bounds,
                                                                           max_side_length=obstacle_size)
 
-    while arm_is_colliding(random_start_node, current_obstacles) or not random_start_node.valid_configuration():
+    while arm_is_colliding_prisms(random_start_node, current_obstacles) or not random_start_node.valid_configuration():
         random_start_node = Node(None)
 
     #print("start angles:", random_start_node.angles)
@@ -359,16 +358,6 @@ def test():
     print("time per run for 4s", total_time_four/runs)
     print("full run time:", full_runtime)
 
-def optimize(path,prism):
-    collision = False
-    lastPath = path
-    newPath = None
-    while not collision:
-        newPath = path_optimizer_two(lastPath, prism)
-        if newPath == lastPath:
-            break
-        lastPath = newPath
-    return newPath
 
 def multiple_runs():
     n_iter = 1000
@@ -380,24 +369,23 @@ def multiple_runs():
     # start_node = RRTNode([7.4883959080999105, -0.9802836168249124, 2.7119532197892307, 2.690692578970348, 1.4327288698060625])
     # end_node = RRTNode([0.80873032,  0.58529255 , 1.57082885 , 2.15507481 ,-0.80873048])
     start_node, end_node, obstacles = random_start_environment(num_obstacles, bounds)
+    print("Start:", start_node.angles)
+    print("End:", end_node.angles)
+    print("Obstacles:", obstacles)
     location = random.uniform(.1, .1)
     prism = [location, location, location, .2, .2, .2]
     obstacles = [prism]
-    start_time = time.time()
-    print("RRT started")
-
     G = rrt(start_node.angles,
             end_node.angles,
             obstacles,
             n_iter, radius, stepSize=stepSize)
     size1 = 0
     if G.success:
-        collision = False
         path = dijkstra(G)
         size1 = len(path)
         print("Original Path Size:", size1)
         plot_3d(G,path,obstacles,None)
-        bestPath = optimize(path, prism)
+        bestPath = optimize(path, obstacles)
         print("Optimal Path Size:", len(bestPath))
         plot_3d(G,bestPath,obstacles,None)
     else:

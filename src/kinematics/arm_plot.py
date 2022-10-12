@@ -11,6 +11,20 @@ from arm_node import Node
 from matplotlib.animation import FuncAnimation
 import math
 from util.line import distance
+import random
+from os import getenv
+
+
+def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.2, .4], [-.2, .4]]):
+    """ Configures axis lengths and names for a matplotlib graph. """
+
+    ax.set_xlabel(axis_labels[0])
+    ax.set_ylabel(axis_labels[1])
+    ax.set_zlabel(axis_labels[2])
+
+    ax.set_xlim3d(axis_limits[0][0], axis_limits[0][1])
+    ax.set_ylim3d(axis_limits[1][0], axis_limits[1][1])
+    ax.set_zlim3d(axis_limits[2][0], axis_limits[2][1])
 
 
 def arr_to_int(arr):
@@ -23,7 +37,6 @@ def arr_to_int(arr):
 
 
 def plot_3d(G, path, obstacles, path2=None):
-    fig = plt.figure(figsize=(6, 6))
     ax = plt.axes(projection='3d')
 
     end_effector_positions = []
@@ -47,38 +60,27 @@ def plot_3d(G, path, obstacles, path2=None):
     ax.scatter3D(G.start_node.end_effector_pos[0], G.start_node.end_effector_pos[1], G.start_node.end_effector_pos[2], c='red')
     ax.scatter3D(G.end_node.end_effector_pos[0], G.end_node.end_effector_pos[1], G.end_node.end_effector_pos[2], c='purple')
 
-    # collision_detection.plot_linear_prism(ax, (0, 0, 0, .01, .3, .01), "blue")
 
     for obs in obstacles:
         collision_detection.plot_linear_prism(ax, obs, 'blue')
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    ax.set_xlim3d(-.4, .4)
-    ax.set_ylim3d(-.4, .4)
-    ax.set_zlim3d(-.4, .4)
+    configure_graph(ax)
 
     plt.show()
 
 
+def plot_nodes(ax, nodes):
 
-def plot_nodes(ax, float_vertices):
-    # intermediate_vertices = []
-    # # ignore the start and end nodes
-    # for i in range(1, len(float_vertices) - 1):
-    #     intermediate_vertices.append(float_vertices[i])
 
-    xdata = [x for x, y, z in float_vertices]
-    ydata = [y for x, y, z in float_vertices]
-    zdata = [z for x, y, z in float_vertices]
+    xdata = [x for x, y, z in nodes]
+    ydata = [y for x, y, z in nodes]
+    zdata = [z for x, y, z in nodes]
 
     ax.scatter3D(xdata, ydata, zdata, c=None)
 
 
-def plot_edges(ax, G, float_vertices):
-    lines = [(float_vertices[edge[0]], float_vertices[edge[1]]) for edge in G.edges]
+def plot_edges(ax, G, nodes):
+    lines = [(nodes[edge[0]], nodes[edge[1]]) for edge in G.edges]
 
     lc = art3d.Line3DCollection(lines, colors='black', linewidths=1)
     ax.add_collection(lc)
@@ -102,24 +104,21 @@ def plot_arm_configs(ax, path, obstacles, color='green'):
         if obstacles is not None:
             for obstacle in obstacles:
                 if collision_detection.arm_is_colliding_prism(path[i], obstacle):
-                    print(path[i].angles)
                     color = 'red'
-        v1 = []
-        v2 = []
-        v3 = []
-        v4 = []
+                else:
+                    color = 'green'
+
+        v = [[] for j in range(len(path[i].joint_positions))]
+
         for j in range(3):
-            v1.append([path[i].joint_positions[0][j], path[i].joint_positions[1][j]])
-            v2.append([path[i].joint_positions[1][j], path[i].joint_positions[2][j]])
-            v3.append([path[i].joint_positions[2][j], path[i].joint_positions[3][j]])
-            v4.append([path[i].joint_positions[3][j], path[i].joint_positions[4][j]])
+            for k in range(len(v)-1):
+                v[k].append([path[i].joint_positions[k][j], path[i].joint_positions[k+1][j]])
 
-        ax.plot(v1[0], v1[1], zs=v1[2], color=color)
-        ax.plot(v2[0], v2[1], zs=v2[2], color=color)
-        ax.plot(v3[0], v3[1], zs=v3[2], color=color)
-        ax.plot(v4[0], v4[1], zs=v4[2], color=color)
+        for j in range(len(v)-1):
+            ax.plot(v[j][0], v[j][1], zs=v[j][2], color=color)
 
-    #ax.text(-0.3, -0.3, 0.4, "plot text test")
+        for j in range(len(v)-1):
+            ax.plot(v[j][0], v[j][1], zs=v[j][2], color=color)
 
 
 def plot_trial_times(graph_list, times):
@@ -140,26 +139,44 @@ def plot_ik_trial(target_point, obtained_config):
     ax = plt.axes(projection='3d')
     plot_nodes(ax, [target_point])
     plot_arm_configs(ax, [obtained_config], None)
+
+
+def plot_config_at_point():
+    configs = []
+    points = []
+
+    bounds = [[-.08, .08], [.08, .2], [.12, .2]]
+    random_point = [random.uniform(bounds[0][0], bounds[0][1]),
+                    random.uniform(bounds[1][0], bounds[1][1]),
+                    random.uniform(bounds[2][0], bounds[2][1])]
+    for i in range(1):
+        random_point = [random.uniform(bounds[0][0], bounds[0][1]),
+                        random.uniform(bounds[1][0], bounds[1][1]),
+                        random.uniform(bounds[2][0], bounds[2][1])]
+        points.append(random_point)
+        node = Node.from_point(random_point)
+        configs.append(node)
+
+    plot_arm_configs(ax, configs, [])
+    ax.scatter3D([random_point[0]], [random_point[1]], [random_point[2]])
     plt.show()
 
 
+def plot_configs_with_obstacle():
+    configs = [Node(None) for i in range(10)]
+    obstacles = [[.01, .01, .02, .1, .1, .1]]
+    plot_arm_configs(ax, configs, obstacles)
+    collision_detection.plot_linear_prism(ax, obstacles[0], 'blue')
+
 
 if __name__ == "__main__":
-    configs = [Node.from_point((.12, .05, .1))]
-    # configs = [Node([math.pi/2, math.pi/2, math.pi/2, math.pi/2, math.pi/2])]
-    print(configs[0].end_effector_pos)
-    print(configs[0].joint_positions)
-    print(distance(configs[0].end_effector_pos, configs[0].joint_positions[0]))
-    # for i in range(100):
-    #     node = Node(None)
-    #     configs.append(node)
-
     ax = plt.axes(projection='3d')
-    plot_arm_configs(ax, configs, [])
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.set_xlim3d(-.4, .4)
-    ax.set_ylim3d(-.4, .4)
-    ax.set_zlim3d(-.4, .4)
+    configure_graph(ax)
+
+    func = getenv('FUNCTION')
+    if func == 'PLOT_WITH_OBSTACLE':
+        plot_configs_with_obstacle()
+    elif func == 'PLOT_AT_POINT':
+        plot_config_at_point()
+
     plt.show()

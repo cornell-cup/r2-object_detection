@@ -2,7 +2,7 @@
 
 Written by Simon Kapen, Fall 2021.
 """
-# import linear_rrt as lrrt
+# import linear_pathing as lrrt
 # import pure_rrt as rrt
 import math
 import numpy as np
@@ -43,7 +43,7 @@ def test_answer():
     print("ALL TESTS PASS")
 
 
-def inverse_kinematics_test(threshold, num_trials, bounds):
+def inverse_test(threshold, num_trials, bounds):
     error_count = 0
     for i in range(num_trials):
         print("Trial:", i)
@@ -69,4 +69,4 @@ def inverse_kinematics_test(threshold, num_trials, bounds):
 
 if __name__ == "__main__":
     bounds = [[-.1, .1], [-.1, .1], [-1, .1]]
-    inverse_kinematics_test(.03, 100, bounds)
+    inverse_test(.03, 100, bounds)
