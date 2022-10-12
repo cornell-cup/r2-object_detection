@@ -50,6 +50,9 @@ class Camera:
     self.hole_fill_filter = rs.hole_filling_filter() #default is fill according to neighboring pixel farthest from sensor
 
   def get_frames(self):
+    """
+    Gets the color and depth frames. Both of which are  pyrealsense objects. 
+    """
     # Get frameset of color and depth
     frames = self.pipeline.wait_for_frames()
 

@@ -21,6 +21,20 @@
 # DEALINGS IN THE SOFTWARE.
 #
 
+import math
+import cv2
+import numpy as np
+import sys
+
+sys.path.insert(1, '/usr/local/lib/python3.6')
+sys.path.insert(2, '/home/cornellcup-cs/Desktop/c1c0_modules/r2-object_detection/src/kinematics')
+sys.path.insert(3, '/home/cornellcup-cs/Desktop/c1c0_modules/r2-object_detection/src')
+
+from src.camera import Camera
+from src.projections import *
+#import src.kinematics.linear_rrt as alr 
+from src.kmeans import *
+
 import jetson.inference
 import jetson.utils
 
@@ -28,22 +42,6 @@ net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
 display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
 print("GOT PAST STARTING VIDEO")
 """Run grasp detection code with the intel realsense camera"""
-
-import math
-import cv2
-import numpy as np
-import sys
-
-sys.path.insert(1, '/usr/local/lib/python3.6')
-sys.path.insert(2, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics')
-sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src')
-
-from src.camera import Camera
-from src.projections import *
-from networking.Client import Client
-import src.arm.publish_arm_updates as arm 
-import src.kinematics.linear_pathing as alr
-
 
 
 WIDTH = 640
@@ -147,23 +145,6 @@ if __name__ == '__main__':
 	        # send grasp coordinates to external server for processing
             # request should return an arm configuration
             # TODO: make sure that this startpos works
-            arm.init_serial()
-            print("serial port initialized")
-            startpos = arm.read_encoder_values()
-            print("arm vals read")
-            # inverse kinematics
-            avg = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
-                          for i in range(len(gripper_pt1_arm))]
-            print("target calculated", avg)
-            arm_config, success = alr.linear_path_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
-            # send arm_config to the arm to move
-            if success:
-                for config in arm_config:
-                    converted_array = alr.radians_to_degrees(config)
-                    print("WRITING ARM CONFIG", converted_array)
-                    arm.publish_updates(converted_array, 0.5)
-            print("arm config serial written")
-            arm.close_serial()
             """
             try:
                 if success:
@@ -178,5 +159,15 @@ if __name__ == '__main__':
                 arm.close_serial() 
 
 
+
             """
+	    
+	    #kmeans
+            depth_img = np.asanyarray(depth_frame.get_data())
+            color_img = np.asanyarray(color_frame.get_data())
+
+            bounds = get_image_bounds(color_img, depth_img)
+            # list of bounding boxes, each bounding box has bottom left coordinate, lwh
+            collision_coords = bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)
+            print(collision_coords)
 

@@ -5,7 +5,8 @@ import pyrealsense2 as rs
 import math
 # import matplotlib.pyplot as plt
 # from mpl_toolkits import mplot3d #import art3d
-from .grasp_detection import grab_points
+from grasp_detection import grab_points
+import camera
 
 """Collection of utility functions for grasp detection, such as getting
 grasp coordinates relative to a given coordinate system, and plotting grasp
@@ -253,5 +254,20 @@ def plot_grasp_3D(pt1, pt2, gripper_h):
     the camera, and the two grasp points"""
     pass
 
+def bound_to_coor(depth_scale, depth_frame, depth_img, bounds, cam):
+    boxes = []
+    for bound in bounds:
+        # ((min x, min y), (max x, max y))
+        print(bound)
+        print(bound[0])
+        min_x, min_y, max_x, max_y = bound[0][0][0], bound[0][0][1], bound[0][1][0], bound[0][1][1]
+        # x, y gives the left lower and right upper 
+        center_depth = depth_img[(max_x-max_x)//2+min_x,(max_y-min_y)//2+min_y].astype(float)
+        distance = center_depth*depth_scale
+        x1,y1,z1 = proj_pixel_to_point(min_x, min_y, distance, depth_frame)
+        x2,y2,z2 = proj_pixel_to_point(max_x, max_y, distance, depth_frame)
+        box = x1,y1,z1,abs(x2-x1),abs(z2-z1),abs(y2-y1)
+        boxes.append(box)
+    return boxes
     
 
