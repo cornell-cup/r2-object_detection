@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import pyrealsense2.pyrealsense2 as rs
+import time
 #from builtins import int, len, range, list, float, sorted, max, min
 import math
 # import matplotlib.pyplot as plt
@@ -35,9 +36,7 @@ def clamp_z(img_pt1, img_pt2, depth_frame):
     # depth distance between the center and edge are 1 inch or less
     w = depth_frame.get_width()
     h = depth_frame.get_height()
-    # initialize points
     temp_x1, temp_y1 = img_pt1
-    temp_x2, temp_y2 = img_pt2
     # find center point
     ctr_x_img = (temp_x1 + temp_x2) / 2
     ctr_y_img = (temp_y1 + temp_y2) / 2
@@ -58,6 +57,8 @@ def clamp_z(img_pt1, img_pt2, depth_frame):
     # edge points on the image closer to the center
     # TODO: will probably be buggy on edge cases
     scale=5
+    
+    
     while (abs(depth_disparity_1) > .02 or abs(depth_disparity_2) > .02) and iters < 10:
         # move in direction of the unit vector
         if abs(depth_disparity_1) > .02:
@@ -72,7 +73,7 @@ def clamp_z(img_pt1, img_pt2, depth_frame):
         depth_disparity_1 = depth_frame.get_distance(int(temp_x1), int(temp_y1)) - depth_frame.get_distance(int(ctr_x_img), int(ctr_y_img))
         depth_disparity_2 = depth_frame.get_distance(int(temp_x2), int(temp_y2)) - depth_frame.get_distance(int(ctr_x_img), int(ctr_y_img))
         iters += 1
-        
+    
     return temp_x1, temp_y1, temp_x2, temp_y2, depth_frame.get_distance(int(temp_x1), int(temp_y1)), depth_frame.get_distance(int(temp_x2), int(temp_y2))
 
 def grabbable(pt1, pt2, gripper_max_w):

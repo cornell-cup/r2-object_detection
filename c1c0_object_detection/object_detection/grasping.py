@@ -1,10 +1,15 @@
 import numpy as np
 import math
 import cv2
+import time
 
 from .projections import proj_pixel_to_point, proj_grasp_cam_to_arm
 from .grasping_utility import (grasp_coords_rel_img, clamp_z, grabbable, 
     calc_pred_rect, plot_pred_rect)
+
+def print_time(msg, start):
+    print(msg, time.time()-start," s")
+    return time.time()
 
 class Grasping:
     """
@@ -44,23 +49,29 @@ class Grasping:
         """
         # TODO: how to go about displaying results?
         # Have a function to draw points on the original image?
+        start_time = time.time()
         img_pt1, img_pt2 = grasp_coords_rel_img(dgr_img, bbox)
+        start_time = print_time("grasp coords rel image", start_time)
 
         clamp_x1, clamp_y1, clamp_x2, clamp_y2, z1, z2 = clamp_z(img_pt1, img_pt2, depth_frame)
+        start_time = print_time("clamp z", start_time)
         
         # TODO: Should we change grasp representation to midpoint, 
         # gripper_opening, and gripper_closing instead?
         gripper_pt1_cam = proj_pixel_to_point(img_pt1[0], img_pt1[1], z1, depth_frame)
+        start_time = print_time("pixel to point", start_time)
         gripper_pt2_cam = proj_pixel_to_point(img_pt2[0], img_pt2[1], z2, depth_frame)
         
         gripper_pt1_arm = proj_grasp_cam_to_arm(gripper_pt1_cam,
             self.DIFF_X, self.DIFF_Y, self.DIFF_Z, self.THETA_X, self.THETA_Y, self.THETA_Z)
+        start_time = print_time("grasp cam to arm", start_time)
         gripper_pt2_arm = proj_grasp_cam_to_arm(gripper_pt2_cam,
             self.DIFF_X, self.DIFF_Y, self.DIFF_Z, self.THETA_X, self.THETA_Y, self.THETA_Z)
 
         # distance from base of arm to the object is within reach?
         # isReachable = math.dist([0,0,0], gripper_pt1_arm) < self.max_reach
         isGrabbable = grabbable(gripper_pt1_arm, gripper_pt2_arm, self.gripper_width)
+        start_time = print_time("grababble", start_time)
         
         if display:
             self.display_grasps(dgr_img, (clamp_x1, clamp_y1), (clamp_x2, clamp_y2))
