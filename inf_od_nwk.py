@@ -49,7 +49,7 @@ def main():
             
             # --------- Identify if Target Object is in View ---------
             isFound, top, bot, left, right = inf.detect_object(
-                color_img, "bottle", display=DISPLAY)
+                color_img, "teddy bear", display=DISPLAY)
             if not isFound:
                 print("object not found")
                 continue
@@ -60,7 +60,7 @@ def main():
             start_time = print_time("Detections: ", start_time)
             # --------- Locate where to Grab the Target Object ---------
             isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
-                dgr, bbox, depth_frame, display=True)
+                dgr, bbox, depth_frame, display=False)
             if not isReachable:
                 print("object not reachable")
                 continue
@@ -68,15 +68,25 @@ def main():
                 print("object too large to grasp")
                 continue
             print("Grasp coordinates in meters (X, Y, Z): ", coord1, coord2)
+	    
+            start_time = print_time("Calculated Grasps: ", start_time)
+            cum = 0
 
-            start_time = print_time("Calculated Grasps: ", start)
-            key = cv2.waitKey(0) # display results
+            # mean profile
+            for i in range(1):
+                s_t = time.time()
+                isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
+                dgr, bbox, depth_frame, display=False)
+                cum += (s_t - time.time())/100
+            print ("average time for grasp detection",cum)
+
+            #key = cv2.waitKey(0) # display results
             # TODO: should this be moved after all the rest of the code?
-            if key & 0xFF == ord('q') or key == 27:
-                cv2.destroyAllWindows()
-                continue
-            if key & 0xFF == ord('r'):
-                cv2.destroyAllWindows()
+            #if key & 0xFF == ord('q') or key == 27:
+            #    cv2.destroyAllWindows()
+            #    continue
+            #if key & 0xFF == ord('r'):
+            #    cv2.destroyAllWindows()
 
             start_time = print_time("Displayed Grasps: ", start_time)
             # Identify Obstacles?
@@ -86,6 +96,7 @@ def main():
             # arm_config = robot.listen()
 
             # --------- Send Arm Configs to the Arm to move ---------
+            print ("Starting arm...")
             arm.init_serial()
             startpos = arm.read_encoder_values()
 

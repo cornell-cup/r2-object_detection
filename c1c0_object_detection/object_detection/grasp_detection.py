@@ -1,7 +1,7 @@
 import cv2
 import imutils
 import numpy as np
-
+import time
 """
 returns the grasping coordinates on the passed in image
 """
@@ -91,7 +91,7 @@ def grab_points(image):
     Returns
     - coordinates of two grasp points and the distance
     """
-    def shortest_path(original, edge, mid_contour):
+    def shortest_path(original, edge, mid_contour, visualize=False):
         g = edge[:, :, 1]
 
         # array of row indices and array of col indices of contour points
@@ -132,29 +132,31 @@ def grab_points(image):
                     val_y1, val_x1 = coords_of_theta[angle]
                     val_y2, val_x2 = coords_of_theta[opposite_angle]
                     min_distance = dist
+        if visualize:
+            cv2.circle(original, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
+            cv2.circle(original, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
+            cv2.circle(original, (int(mid_contour[0]), int(
+            mid_contour[1])), 3, (255, 0, 255), -1)
 
-        # cv2.circle(original, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
-        # cv2.circle(original, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
-        # cv2.circle(original, (int(mid_contour[0]), int(
-        #     mid_contour[1])), 3, (255, 0, 255), -1)
+            cv2.circle(edge, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
+            cv2.circle(edge, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
+            cv2.circle(edge, (int(mid_contour[0]), int(
+                mid_contour[1])), 3, (255, 0, 255), -1)
 
-        # cv2.circle(edge, (int(val_x1), int(val_y1)), 3, (255, 0, 255), -1)
-        # cv2.circle(edge, (int(val_x2), int(val_y2)), 3, (255, 0, 255), -1)
-        # cv2.circle(edge, (int(mid_contour[0]), int(
-        #     mid_contour[1])), 3, (255, 0, 255), -1)
+            # Uncomment to see final image/edges/grasping points!
+            cv2.imshow("canny with points", edge)
+            cv2.imshow("points", original)
 
-        # # Uncomment to see final image/edges/grasping points!
-        # cv2.imshow("canny with points", edge)
-        # cv2.imshow("points", original)
-
-        # cv2.waitKey(0)
+            cv2.waitKey(0)
 
         return val_x1, val_y1, val_x2, val_y2, min_distance
 
-    # canny edge return
+    t_time = time.time()
     ceRet = canny_edge(image)
+    print ("Canny took: ", time.time()-t_time)
     edge_image = ceRet[0]
-
+    t_time = time.time()
     shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist = shortest_path(
         image, edge_image, ceRet[1])
+    print ("shortest path took", time.time()-t_time)
     return shortest_x1, shortest_y1, shortest_x2, shortest_y2, shortest_dist
