@@ -9,11 +9,8 @@ Written by Simon Kapen '24 and Raj Sinha '25, Spring 2022.
 """
 from arm_node import Node
 from arm_graph import Graph
-import arm_plot
-from util.angles import true_angle_distances_arm
 import numpy as np
 from util import angles, line
-import collision_detection
 from pure_rrt import dijkstra, nearest
 from arm_plot import plot_3d
 import time
@@ -21,8 +18,8 @@ from kinematics_test import tpm
 import random
 from obstacle_generation import random_start_environment
 from collision_detection import arm_is_colliding_prisms
-from matplotlib import pyplot as plt
-from util.line import distance
+from optimizers import path_optimizer_two_prismset
+from os import getenv
 
 stack_empty_error = 0
 
@@ -106,6 +103,7 @@ def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=
     graphs = []
     generated_obstacles = []
     paths = []
+    obstacle_bounds = [[-.08, .08], [.08, .2], [.12, .2]]
 
     for i in range(0, num_trials):
         trial_start_time = time.time()
@@ -139,49 +137,52 @@ def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=
     return graphs, paths, generated_obstacles
 
 
-if __name__ == "__main__":
-    random.seed(8)
-    bounds = [[-.08, .08], [.08, .2], [.12, .2]]
+def graph_one_iteration():
+    """ Plots one iteration of OPC, including a path optimizer. """
 
-    obstacle_bounds = [[-.08, .08], [-.04, .08], [-.08, .08]]
+    obstacle_bounds = [[-.08, .08], [.08, .2], [.12, .2]]
     print("time started")
     start_time = time.time()
-    # start_node, end_node, obstacles, target_point = random_start_environment(0, bounds, obstacle_bounds,
-    #                                                                          obstacle_size=.02)
-    # start_angles = start_node.angles
-    # end_pos = end_node.end_effector_pos
-    #
-    # g = find_path(target_point, start_node.angles, obstacles, n_iter=200)
+    start_node, end_node, obstacles, target_point = random_start_environment(2, bounds, obstacle_bounds,
+                                                                             obstacle_size=.07)
+    start_angles = start_node.angles
+    end_angles = end_node.angles
 
-    # start_angles = [1.1136998361065094, 0.6419500776001592, 0.27835556277259427, 5.025295680114656, 2.922418772111144]
-    # end_angles = [0.70934974, 2.02103071, 1.49368975, 2.76846449, 5.57383542]
-    # target_point = [0.0392305850367863, 0.0336901230180235, 0.015662864473418886]
-    # obstacles = [[-0.03732420004414908, 0.007675772640742314, -0.038299019006634294, 0.07463221086743226, 0.11296745073528927, 0.09653149032778706], [-0.03493848468307048, 0.016687302804025365, 0.0243820335494229, 0.06962651433533772, 0.09940347921089933, 0.08401565730712937], [-0.028494022494606204, -0.0035408090873946807, -0.020104139523039175, 0.053669251367284995, 0.1854801243294566, 0.06036271907157065]]
+    end_node = Node(end_angles)
+    print("end valid", end_node.valid_configuration())
+    g = find_path(target_point, start_angles, obstacles)
+    if g.success:
+        path = dijkstra(g)
+        optimized_path = path_optimizer_two_prismset(path, obstacles)
+        print("\nTime taken: ", (time.time() - start_time))
+        plot_3d(Graph(start_angles, g.end_node.angles), path, obstacles)
+        plot_3d(Graph(start_angles, g.end_node.angles), optimized_path, obstacles)
+    else:
+        g.nodes.append(g.end_node)
+        g.node_to_index[g.end_node] = len(g.nodes)
+
+        path = dijkstra(g, target_node=nearest(g, g.end_node.end_effector_pos)[0])
+        # path.append(end_angles)
+        print("\nTime taken: ", (time.time() - start_time))
+        print("Path not found. :(")
+        print(start_angles)
+        # print(end_node.angles)
+        print(obstacles)
+        plot_3d(g, path, obstacles)
 
 
-    # end_node = Node(end_angles)
-    # print("end valid", end_node.valid_configuration())
-    # g = find_path(target_point, start_angles, obstacles)
-    # if g.success:
-    #     path = dijkstra(g)
-    #     print("\nTime taken: ", (time.time() - start_time))
-    #     plot_3d(Graph(start_angles, g.end_node.angles), path, obstacles)
-    # else:
-    #     g.nodes.append(g.end_node)
-    #     g.node_to_index[g.end_node] = len(g.nodes)
-    #
-    #     path = dijkstra(g, target_node=nearest(g, g.end_node.end_effector_pos)[0])
-    #     # path.append(end_angles)
-    #     print("\nTime taken: ", (time.time() - start_time))
-    #     print("Path not found. :(")
-    #     print(start_angles)
-    #     # print(end_node.angles)
-    #     print(obstacles)
-    #     plot_3d(g, path, obstacles)
+def get_tpms(trials):
+    """
+    Obtains and prints Technical Performance Measures (TPMs) for the algorithm over a certain amount of trials.
+    Args:
+        trials: The amount of times OPC will be run.
+
+    """
+    start_time = time.time()
 
     goal_end_effector_bounds = [[-.1, .1], [.05, .15], [.12, .2]]
-    trials = 100
-    graphs, paths, obstacles = opc_graph_list(trials, n_iter=150, radius=.03, step_size=.1, bounds=goal_end_effector_bounds, num_obstacles=0)
+    graphs, paths, obstacles = opc_graph_list(trials, n_iter=150, radius=.03, step_size=.1,
+                                              bounds=goal_end_effector_bounds, num_obstacles=3)
     num_successes = tpm.converge_test(graphs)
     # tpm.print_failed_cases(graphs, failing_obstacles)
     print("Average nodes generated: ", tpm.avg_nodes_test(graphs))
@@ -193,3 +194,16 @@ if __name__ == "__main__":
     print("Average distance traveled:", tpm.avg_distance_traveled_test(paths))
     print("Stack empty error occurrences:", stack_empty_error)
     tpm.print_failed_cases(graphs, obstacles)
+
+
+if __name__ == "__main__":
+    # Environment variable set in script configuration
+    func = getenv("FUNCTION")
+
+    random.seed(8)
+    bounds = [[-.08, .08], [.08, .2], [.12, .2]]
+
+    if func == "GRAPH_ONE":
+        graph_one_iteration()
+    elif func == "GET_TPMS":
+        get_tpms(trials=50)

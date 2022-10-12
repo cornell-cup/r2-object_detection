@@ -2,7 +2,7 @@
 
 Written by Simon Kapen, Fall 2021.
 """
-# import linear_rrt as lrrt
+# import linear_pathing as lrrt
 # import pure_rrt as rrt
 import math
 import numpy as np

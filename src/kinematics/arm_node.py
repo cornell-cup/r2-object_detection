@@ -1,8 +1,7 @@
-"""Representation of a node in an RRT graph, which represents a single arm configuration.
 
+"""Representation of a node in an RRT graph, which represents a single arm configuration.
 Represents a single configuration of the precision arm using the five joint angles. Specifications of the arm itself are
 held in models/SimpleArmModelForURDF.urdf.
-
 Written by Simon Kapen '24, Spring 2021.
 """
 import time
@@ -78,7 +77,6 @@ class Node(object):
 
     def forward_kinematics(self):
         """Computes forward kinematics of the arm given the joint angles.
-
         Returns:
             An array of the [x, y, z] of each joint of the arm based on the node's angle configuration.
         """
@@ -116,7 +114,6 @@ class Node(object):
 
     def valid_configuration(self):
         """Determines if the current arm configuration of the node is a valid one.
-
          Returns True if none of the joints cross into the negative Y-axis.
          """
         for i in range(1, len(self.joint_positions)):

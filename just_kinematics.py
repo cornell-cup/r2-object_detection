@@ -12,7 +12,7 @@ sys.path.insert(3, '../r2-object_detection/src')
 # from src.projections import *
 # from networking.Client import Client
 import src.arm.publish_arm_updates as arm 
-import src.kinematics.linear_rrt as alr 
+import src.kinematics.linear_pathing as alr
 
 WIDTH = 640
 HEIGHT = 480
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         avg = TARGET_POINT
         print("target calculated", avg)
         # endpos = RRTNode.from_point(avg_target, startpos)
-        arm_config, success = alr.linear_rrt_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+        arm_config, success = alr.linear_path_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
         # send arm_config to the arm to move
         if success:
             for config in arm_config:

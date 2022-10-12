@@ -1,4 +1,4 @@
-from kinematics import assuming_linearity_rrt as alr
+from kinematics import linear_pathing as alr
 import arm.publish_arm_updates as arm 
 
 startpos = arm.read_encoder_values()

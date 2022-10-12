@@ -1,4 +1,7 @@
 """
+As of Fall 2022, this algorithm is deprecated. We are currently using the Optimistic Predictive Cost algorithm described
+in optimal_min_cost.py.
+
 Implementation of the Rapidly-Exploring Random Tree algorithm using precision arm configurations as nodes.
 
 Given a start configuration and end configuration received from the ECE subteam, and a set of obstacles received from
