@@ -10,13 +10,7 @@ from .collision_detection import *
 from .arm_node import Node
 from matplotlib.animation import FuncAnimation
 import math
-<<<<<<< HEAD:c1c0_object_detection/kinematics/arm_plot.py
 from .util.line import distance
-=======
-from util.line import distance
-import random
-from os import getenv
->>>>>>> master:src/kinematics/arm_plot.py
 
 
 def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.2, .4], [-.2, .4]]):

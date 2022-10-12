@@ -186,11 +186,7 @@ def linear_path_to_angles(start_angles, end_angles, obstacles, num_iter=15):
     linear_path = g[0].nodes
     if path_is_colliding(linear_path, obstacles):
         print("Finding OPC path")
-<<<<<<< HEAD:c1c0_object_detection/kinematics/linear_rrt.py
-        g = find_path((end_x, end_y, end_z), start_angles, obstacles)
-=======
         g = opc.find_path((point[0], point[1], point[2]), start_angles, obstacles)
->>>>>>> master:c1c0_object_detection/kinematics/util/linear_pathing.py
         if g.success:
             linear_path = dijkstra(g)
         else:
@@ -202,9 +198,6 @@ def linear_path_to_angles(start_angles, end_angles, obstacles, num_iter=15):
     return linear_path, True
 
 
-<<<<<<< HEAD:c1c0_object_detection/kinematics/linear_rrt.py
-def degrees_to_radians(angles: List[float]):
-=======
 def linear_path_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=15):
     """Generates a linear path to a desired end effector position, and maneuvers around obstacles with OPC if necessary.
 
@@ -223,7 +216,6 @@ def linear_path_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=
 
 
 def degrees_to_radians(angles: list[float]):
->>>>>>> master:c1c0_object_detection/kinematics/util/linear_pathing.py
     """Converts an input array in degrees into an output array in radians."""
     radians = [0 for a in range(6)]
     for ind, val in enumerate(angles):
