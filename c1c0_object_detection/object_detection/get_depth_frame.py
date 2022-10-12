@@ -1,5 +1,5 @@
 import numpy as np
-from camera import Camera
+from .camera import Camera
 import cv2
 
 def get_depth_frame():

@@ -1,5 +1,5 @@
 import numpy as np
-import pyrealsense2.pyrealsense2 as rs
+import pyrealsense2 as rs
 
 def get_distance(img_grasp_pt, depth_frame : rs.depth_frame):
     """ get the z distance of a pixel at location x, y

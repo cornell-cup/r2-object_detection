@@ -215,7 +215,7 @@ def linear_path_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=
     return linear_path_to_angles(start_angles, end_angles, obstacles, num_iter)
 
 
-def degrees_to_radians(angles: list[float]):
+def degrees_to_radians(angles: List[float]):
     """Converts an input array in degrees into an output array in radians."""
     radians = [0 for a in range(6)]
     for ind, val in enumerate(angles):
