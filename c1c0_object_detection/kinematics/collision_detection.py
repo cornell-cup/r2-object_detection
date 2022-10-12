@@ -343,7 +343,6 @@ def newLineCollider(line_seg, prism):
 
 
 def checkCollision(prism, rrtNode):
-    collision = False
     for i in range(len(rrtNode.joint_positions) - 1):
         p1 = ([rrtNode.joint_positions[i]])
         p2 = ([rrtNode.joint_positions[i + 1]])

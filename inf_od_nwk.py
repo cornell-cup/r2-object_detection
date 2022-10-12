@@ -96,12 +96,16 @@ def main():
                           for i in range(len(coord1))]
             start_time = print_time("Read Encoder Values: ", start_time)
             print("target calculated", avg)
+<<<<<<< HEAD
             arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
             start_time = print_time("Calculated Kinematics: ", start_time)
             print("converted config: ", avg) 
             print(arm_config[0].angles)
             print(arm_config[-1].angles)
 
+=======
+            arm_config, success = alr.linear_path_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+>>>>>>> master
             # send arm_config to the arm to move
             if success:
                 for config in arm_config[2:]:

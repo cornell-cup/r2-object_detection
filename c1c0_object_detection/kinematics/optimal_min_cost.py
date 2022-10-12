@@ -7,6 +7,7 @@ a set of configurations which is passed to the ECEs.
 
 Written by Simon Kapen '24 and Raj Sinha '25, Spring 2022.
 """
+<<<<<<< HEAD:c1c0_object_detection/kinematics/optimal_min_cost.py
 from .arm_node import Node
 from .arm_graph import Graph
 from .util.angles import true_angle_distances_arm
@@ -14,13 +15,28 @@ import numpy as np
 from .util import angles, line
 from .pure_rrt import dijkstra, nearest
 from .arm_plot import plot_3d
+=======
+from arm_node import Node
+from arm_graph import Graph
+import numpy as np
+from util import angles, line
+from pure_rrt import dijkstra, nearest
+from arm_plot import plot_3d
+>>>>>>> master:src/kinematics/optimal_min_cost.py
 import time
 # from .kinematics_test import tpm
 import random
+<<<<<<< HEAD:c1c0_object_detection/kinematics/optimal_min_cost.py
 from .obstacle_generation import random_start_environment
 from .collision_detection import arm_is_colliding_prisms
 from matplotlib import pyplot as plt
 from .util.line import distance
+=======
+from obstacle_generation import random_start_environment
+from collision_detection import arm_is_colliding_prisms
+from optimizers import path_optimizer_two_prismset
+from os import getenv
+>>>>>>> master:src/kinematics/optimal_min_cost.py
 
 stack_empty_error = 0
 
@@ -104,6 +120,7 @@ def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=
     graphs = []
     generated_obstacles = []
     paths = []
+    obstacle_bounds = [[-.08, .08], [.08, .2], [.12, .2]]
 
     for i in range(0, num_trials):
         trial_start_time = time.time()
@@ -137,13 +154,13 @@ def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=
     return graphs, paths, generated_obstacles
 
 
-if __name__ == "__main__":
-    random.seed(8)
-    bounds = [[-.08, .08], [.08, .2], [.12, .2]]
+def graph_one_iteration():
+    """ Plots one iteration of OPC, including a path optimizer. """
 
-    obstacle_bounds = [[-.08, .08], [-.04, .08], [-.08, .08]]
+    obstacle_bounds = [[-.08, .08], [.08, .2], [.12, .2]]
     print("time started")
     start_time = time.time()
+<<<<<<< HEAD:c1c0_object_detection/kinematics/optimal_min_cost.py
     # start_node, end_node, obstacles, target_point = random_start_environment(0, bounds, obstacle_bounds,
     #                                                                          obstacle_size=.02)
     # start_angles = start_node.angles
@@ -177,9 +194,48 @@ if __name__ == "__main__":
     #     print(obstacles)
     #     plot_3d(g, path, obstacles)
     """
+=======
+    start_node, end_node, obstacles, target_point = random_start_environment(2, bounds, obstacle_bounds,
+                                                                             obstacle_size=.07)
+    start_angles = start_node.angles
+    end_angles = end_node.angles
+
+    end_node = Node(end_angles)
+    print("end valid", end_node.valid_configuration())
+    g = find_path(target_point, start_angles, obstacles)
+    if g.success:
+        path = dijkstra(g)
+        optimized_path = path_optimizer_two_prismset(path, obstacles)
+        print("\nTime taken: ", (time.time() - start_time))
+        plot_3d(Graph(start_angles, g.end_node.angles), path, obstacles)
+        plot_3d(Graph(start_angles, g.end_node.angles), optimized_path, obstacles)
+    else:
+        g.nodes.append(g.end_node)
+        g.node_to_index[g.end_node] = len(g.nodes)
+
+        path = dijkstra(g, target_node=nearest(g, g.end_node.end_effector_pos)[0])
+        # path.append(end_angles)
+        print("\nTime taken: ", (time.time() - start_time))
+        print("Path not found. :(")
+        print(start_angles)
+        # print(end_node.angles)
+        print(obstacles)
+        plot_3d(g, path, obstacles)
+
+
+def get_tpms(trials):
+    """
+    Obtains and prints Technical Performance Measures (TPMs) for the algorithm over a certain amount of trials.
+    Args:
+        trials: The amount of times OPC will be run.
+
+    """
+    start_time = time.time()
+
+>>>>>>> master:src/kinematics/optimal_min_cost.py
     goal_end_effector_bounds = [[-.1, .1], [.05, .15], [.12, .2]]
-    trials = 100
-    graphs, paths, obstacles = opc_graph_list(trials, n_iter=150, radius=.03, step_size=.1, bounds=goal_end_effector_bounds, num_obstacles=0)
+    graphs, paths, obstacles = opc_graph_list(trials, n_iter=150, radius=.03, step_size=.1,
+                                              bounds=goal_end_effector_bounds, num_obstacles=3)
     num_successes = tpm.converge_test(graphs)
     # tpm.print_failed_cases(graphs, failing_obstacles)
     print("Average nodes generated: ", tpm.avg_nodes_test(graphs))
@@ -191,4 +247,20 @@ if __name__ == "__main__":
     print("Average distance traveled:", tpm.avg_distance_traveled_test(paths))
     print("Stack empty error occurrences:", stack_empty_error)
     tpm.print_failed_cases(graphs, obstacles)
+<<<<<<< HEAD:c1c0_object_detection/kinematics/optimal_min_cost.py
     """
+=======
+
+
+if __name__ == "__main__":
+    # Environment variable set in script configuration
+    func = getenv("FUNCTION")
+
+    random.seed(8)
+    bounds = [[-.08, .08], [.08, .2], [.12, .2]]
+
+    if func == "GRAPH_ONE":
+        graph_one_iteration()
+    elif func == "GET_TPMS":
+        get_tpms(trials=50)
+>>>>>>> master:src/kinematics/optimal_min_cost.py
