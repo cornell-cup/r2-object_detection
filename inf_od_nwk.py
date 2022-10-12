@@ -1,60 +1,39 @@
 #!/usr/bin/python3
-#
-# Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-# DEALINGS IN THE SOFTWARE.
-#
-
-import jetson.inference
-import jetson.utils
-
-net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.5)
-display = jetson.utils.videoOutput("my_video.mp4") # 'my_video.mp4' for file
-print("GOT PAST STARTING VIDEO")
-"""Run grasp detection code with the intel realsense camera"""
-
-import math
 import cv2
 import numpy as np
-import sys
+import time
 
-sys.path.insert(1, '/usr/local/lib/python3.6')
-sys.path.insert(2, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src/kinematics')
-sys.path.insert(3, '/home/cornellcup-cs-jetson/Desktop/c1c0-modules/r2-object_detection/src')
+from c1c0_object_detection.object_detection.camera import Camera
+from c1c0_object_detection.object_detection.inference import Inference
+from c1c0_object_detection.object_detection.grasping import Grasping
+import c1c0_object_detection.arm.publish_arm_updates as arm
+import c1c0_object_detection.kinematics.linear_rrt as alr
+# for displaying
+import jetson.utils
+import math
 
-from src.camera import Camera
-from src.projections import *
-from networking.Client import Client
-import src.arm.publish_arm_updates as arm 
-import src.kinematics.linear_pathing as alr
-
-
+"""Run object detection pipeline with the intel realsense camera"""
 
 WIDTH = 640
 HEIGHT = 480
+DISPLAY = False
 
-if __name__ == '__main__':
-    detections = []
+def print_time(msg, start):
+    print(msg, time.time()-start," s")
+    return time.time()
+
+
+def main():
+    start_time = time.time()
     with Camera(WIDTH, HEIGHT) as cam:
-        for i in range(5): 
+        # TODO: Do we need context managers for these also?
+        inf = Inference()
+        grasping = Grasping()
+
+        start_time = print_time("Loaded Cam, Inf, and Grasp Modules: ", start_time)
+        for i in range(5):
+            # --------- Get Frames and Numpy Images ---------
             try:
-                #get frames
                 color_frame, depth_frame = cam.get_frames()
                 # Validate that both frames are not None and depth is not all 0
                 # TODO: figure out why depth is weird sometimes
@@ -64,119 +43,101 @@ if __name__ == '__main__':
             except RuntimeError:
                 print("Couldn't get frames in time")
                 continue
+
+            color_img, depth_img, dgr = cam.get_imgs_from_frames(
+                color_frame, depth_frame, display=DISPLAY)
             
-            color_img, depth_img, dgr = cam.get_imgs_from_frames(color_frame, depth_frame)
-            # color_img: H, W, C
-            # print(color_img.shape)
-            color_img_cuda = jetson.utils.cudaFromNumpy(color_img)
-            detections = net.Detect(color_img_cuda)
-            if not detections:
-                print('Nothing detected')
+            # --------- Identify if Target Object is in View ---------
+            isFound, top, bot, left, right = inf.detect_object(
+                color_img, "teddy bear", display=DISPLAY)
+            if not isFound:
+                print("object not found")
                 continue
-            # For now selecting first detection, later find object asked for
-            detection = detections[0]
-            # Trim image
-            top, bottom, left, right = detection.Top, detection.Bottom, detection.Left,detection.Right
-            top, bottom, left, right = round(top), round(bottom), round(left), round(right)
-            color_img_cropped, depth_img_cropped, dgr_cropped = color_img[top:bottom, left:right], depth_img[top:bottom, left:right], dgr[top:bottom, left:right]
-            print(color_img.shape, depth_img.shape, dgr.shape)
 
-            #display.Render(color_img_cuda)
-            #display.SetStatus("Object Detection | Network {:.0f} FPS".format(net.GetNetworkFPS()))
-            gripper_h = 200
-            width, height = right-left, bottom-top
-            # perform grasp prediction to get 2 grasp points (x,y)
-            # uses bounding box info - top left corner x,y and width/height
-            # from object inference
-            bbox = (max(0, left-20), min(WIDTH-1, right+20), max(0, top), min(HEIGHT-1, bottom))
-            # print(bbox_coords)
-            # print(f'left:{left}, right:{right}, top:{top}, bottom:{bottom}, width:{width}, height:{height}')
-            #bbox = (left, top, round(detection.Width), round(detection.Height))
-            print(bbox)
-            img_pt1, img_pt2 = grasp_coords_rel_img(dgr, bbox)
-            print('img_pt1: ', img_pt1)
-            print('img_pt2: ', img_pt2)
-            print(dgr.shape)
-            print(dgr[img_pt1[1], img_pt1[0]])
-
-            # squeeze the x,y points towards the midpoint until depth at points
-            # is within some distance from the center depth
-            clamp_x1, clamp_y1, clamp_x2, clamp_y2, z1, z2 = clamp_z(img_pt1, img_pt2, depth_frame)
+            bbox = (max(0, left-20), min(WIDTH-1, right+20),
+            max(0, top), min(HEIGHT-1, bot))
             
-            # Get 3D camera pts using x,y from grasp prediction and z from
-            # clamped points
-            #convert grasp coords to cam and arm coords, output is a tuple
-            gripper_pt1_cam = proj_pixel_to_point(img_pt1[0], img_pt1[1], z1, depth_frame)
-            gripper_pt2_cam = proj_pixel_to_point(img_pt2[0], img_pt2[1], z2, depth_frame)
-            print("Grab points at\n\t", gripper_pt1_cam, "and\n\t", gripper_pt2_cam, "\nrelative to the camera")
+            start_time = print_time("Detections: ", start_time)
+            # --------- Locate where to Grab the Target Object ---------
+            isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
+                dgr, bbox, depth_frame, display=False)
+            if not isReachable:
+                print("object not reachable")
+                continue
+            if not isGrabbable:
+                print("object too large to grasp")
+                continue
+            print("Grasp coordinates in meters (X, Y, Z): ", coord1, coord2)
+	    
+            start_time = print_time("Calculated Grasps: ", start_time)
+            cum = 0
 
-            # output of proj_grasp_cam_to_arm is a numpy array
-            gripper_pt1_arm = proj_grasp_cam_to_arm(gripper_pt1_cam)
-            gripper_pt2_arm = proj_grasp_cam_to_arm(gripper_pt2_cam)
-            print("Grab points at\n\t", gripper_pt1_arm, "and\n\t", gripper_pt2_arm, "\nrelative to where the arm is connected to C1C0")
+            # mean profile
+            for i in range(1):
+                s_t = time.time()
+                isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
+                dgr, bbox, depth_frame, display=False)
+                cum += (s_t - time.time())/100
+            print ("average time for grasp detection",cum)
 
-            gripper_w = .1 #10cm
-            grabbable(gripper_pt1_arm, gripper_pt2_arm, gripper_w)
+            #key = cv2.waitKey(0) # display results
+            # TODO: should this be moved after all the rest of the code?
+            #if key & 0xFF == ord('q') or key == 27:
+            #    cv2.destroyAllWindows()
+            #    continue
+            #if key & 0xFF == ord('r'):
+            #    cv2.destroyAllWindows()
 
-            #plot grasp on image
-            rect_points = calc_pred_rect(
-                #grab points will show the canny and dgr with the grasps
-                dgr, img_pt1, img_pt2, gripper_h)
-            plot_pred_rect(dgr, rect_points)
-            cv2.imshow("grasp", dgr)
+            start_time = print_time("Displayed Grasps: ", start_time)
+            # Identify Obstacles?
 
-            # colorized depth image
-            cv2.imshow("original", cv2.cvtColor(color_img, cv2.COLOR_RGBA2BGR))
-            cv2.imshow("white to black depth", depth_img)
-            # display detections
-            print ("displaying detections... " )
-            cv2imgRGBA = jetson.utils.cudaToNumpy(color_img_cuda, WIDTH, HEIGHT, 4)
-            cv2img = cv2.cvtColor(cv2imgRGBA, cv2.COLOR_RGBA2BGR)
-            cv2.imshow('detections', cv2img)
+            # - Send Grasp Coordinates to Base Station to compute Arm Configs -
+            # robot.send_data()
+            # arm_config = robot.listen()
 
-            cv2.circle(depth_img, (int(clamp_x1), int(clamp_y1)), 5, (0, 0, 255), -1)
-            cv2.circle(depth_img, (int(clamp_x2), int(clamp_y2)), 5, (0, 0, 255), -1)
-            cv2.imshow("clamp points", depth_img)
-            key = cv2.waitKey(0)
-            print ("Press q to quit or r to continue")
-            if key & 0xFF == ord('q') or key == 27:
-                cv2.destroyAllWindows()
-                break
-            if key & 0xFF == ord('r'):
-                cv2.destroyAllWindows()
-	        # send grasp coordinates to external server for processing
-            # request should return an arm configuration
-            # TODO: make sure that this startpos works
+            # --------- Send Arm Configs to the Arm to move ---------
+            print ("Starting arm...")
             arm.init_serial()
-            print("serial port initialized")
             startpos = arm.read_encoder_values()
+
+            startpos = [i*math.pi/180 for i in startpos]
             print("arm vals read")
             # inverse kinematics
-            avg = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
-                          for i in range(len(gripper_pt1_arm))]
+            avg = [(coord1[i][0] + coord2[i][0])/2
+                          for i in range(len(coord1))]
+            start_time = print_time("Read Encoder Values: ", start_time)
             print("target calculated", avg)
-            arm_config, success = alr.linear_path_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+            arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
+            start_time = print_time("Calculated Kinematics: ", start_time)
+            print("converted config: ", avg) 
+            print(arm_config[0].angles)
+            print(arm_config[-1].angles)
+
             # send arm_config to the arm to move
             if success:
-                for config in arm_config:
-                    converted_array = alr.radians_to_degrees(config)
+                for config in arm_config[2:]:
+                    converted_array = alr.radians_to_degrees(config)[::-1]
                     print("WRITING ARM CONFIG", converted_array)
-                    arm.publish_updates(converted_array, 0.5)
+                    converted_array[0] = 10
+                    converted_array[1] = 0
+                    arm.publish_updates(converted_array, 1)
+                c = arm_config[-1]
+                conv = alr.radians_to_degrees(c)[::-1]
+                conv[0] = 110
+                conv[1] = 0
+                arm.publish_updates(conv, 1)
+                for config in arm_config[::-1][:-2]:
+                    converted_array = alr.radians_to_degrees(config)[::-1]
+                    print("WRITING ARM CONFIG", converted_array)
+                    converted_array[0] = 110
+
+                    converted_array[1] = 0
+                    arm.publish_updates(converted_array, 1)
             print("arm config serial written")
             arm.close_serial()
-            """
-            try:
-                if success:
-                    for config in arm_config:
-                        print("WRITING ARM CONFIG", config.angles)
-                        arm.writeToSerial(config.angles.astype(int))
-                print("arm config serial written")
-                arm.close_serial()
-            except Exception as e:
-                print("error in writing to arm config")
-                print(e) 
-                arm.close_serial() 
+            start_time = print_time("Arm Finished Moving: ", start_time)
 
+            break
 
-            """
-
+if __name__ == '__main__':
+    main()

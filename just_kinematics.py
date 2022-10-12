@@ -4,20 +4,13 @@ import math
 import numpy as np
 import sys
 
-sys.path.insert(1, '/usr/local/lib/python3.6')
-sys.path.insert(2, '../r2-object_detection/src/kinematics')
-sys.path.insert(3, '../r2-object_detection/src')
-
-# from src.camera import Camera
-# from src.projections import *
-# from networking.Client import Client
-import src.arm.publish_arm_updates as arm 
-import src.kinematics.linear_pathing as alr
-
+import c1c0_object_detection.arm.publish_arm_updates as arm
+import c1c0_object_detection.kinematics.linear_rrt as alr
+import math
 WIDTH = 640
 HEIGHT = 480
 
-TARGET_POINT = [0.1, 0.1, 0.1]
+TARGET_POINT = [0.0, 0.0, 0.5]
 
 if __name__ == '__main__':
     detections = []
@@ -27,6 +20,7 @@ if __name__ == '__main__':
         
         print("serial port initialized")
         startpos = arm.read_encoder_values()
+        startpos = [i*math.pi/180 for i in startpos]
         print("arm vals read")
         # inverse kinematics
         # avg = [(gripper_pt1_arm[i][0] + gripper_pt2_arm[i][0])/2
@@ -34,13 +28,14 @@ if __name__ == '__main__':
         avg = TARGET_POINT
         print("target calculated", avg)
         # endpos = RRTNode.from_point(avg_target, startpos)
-        arm_config, success = alr.linear_path_to_point(startpos, avg[0], avg[1], avg[2], [], 1000)
+        arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
         # send arm_config to the arm to move
+        print(arm_config)
         if success:
             for config in arm_config:
-                converted_array = alr.radians_to_degrees(config)
+                converted_array = alr.radians_to_degrees(config)[::-1]
                 print("WRITING ARM CONFIG", converted_array)
-                arm.publish_updates(converted_array, 0.5)
+                arm.publish_updates(converted_array, 3)
             print("arm config serial written")
             break
 
