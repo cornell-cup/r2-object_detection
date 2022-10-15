@@ -1,1 +1,1 @@
-from . import camera, inference, grasping
+from . import camera, inference, grasping, grasp_detection

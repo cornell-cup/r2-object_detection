@@ -8,6 +8,7 @@ from c1c0_object_detection.object_detection.inference import Inference
 from c1c0_object_detection.object_detection.grasping import Grasping
 import c1c0_object_detection.arm.publish_arm_updates as arm
 import c1c0_object_detection.kinematics.linear_rrt as alr
+import c1c0_object_detection.object_detection.kmeans as kmeans
 # for displaying
 import jetson.utils
 import math
@@ -70,15 +71,15 @@ def main():
             print("Grasp coordinates in meters (X, Y, Z): ", coord1, coord2)
 	    
             start_time = print_time("Calculated Grasps: ", start_time)
-            cum = 0
+            counter = 0
 
             # mean profile
             for i in range(1):
                 s_t = time.time()
                 isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
                 dgr, bbox, depth_frame, display=False)
-                cum += (s_t - time.time())/100
-            print ("average time for grasp detection",cum)
+                counter += (s_t - time.time())/100
+            print ("average time for grasp detection",counter)
 
             #key = cv2.waitKey(0) # display results
             # TODO: should this be moved after all the rest of the code?
@@ -95,6 +96,18 @@ def main():
             # robot.send_data()
             # arm_config = robot.listen()
 
+            # --------- Calculate k-means for the obstacles ---------
+            depth_img = np.asanyarray(depth_frame.get_data())
+            color_img = np.asanyarray(color_frame.get_data())
+            print ("depth image shape", depth_img.shape, "color image shape", color_img.shape)
+            start_time = print_time("Starting kmeans", start_time)
+            bounds = kmeans.get_image_bounds(color_img, depth_img, True)
+            start_time = print_time("kmeans took", start_time)
+            # list of bounding boxes, each bounding box has bottom left coordinate, lwh
+            #collision_coords = kmeans.bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)
+            collision_coords = []
+            print("Collision boxes", collision_coords)
+
             # --------- Send Arm Configs to the Arm to move ---------
             print ("Starting arm...")
             arm.init_serial()
@@ -107,11 +120,13 @@ def main():
                           for i in range(len(coord1))]
             start_time = print_time("Read Encoder Values: ", start_time)
             print("target calculated", avg)
-            arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
+            arm_config, success = alr.linear_path_to_point(startpos, avg[2], avg[1], avg[0], collision_coords, 5)
             start_time = print_time("Calculated Kinematics: ", start_time)
             print("converted config: ", avg) 
             print(arm_config[0].angles)
             print(arm_config[-1].angles)
+            
+            
 
             # send arm_config to the arm to move
             if success:

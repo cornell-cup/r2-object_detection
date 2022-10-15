@@ -9,17 +9,19 @@ import os
 from datetime import datetime
 from matplotlib import image
 from .get_bounds import get_bound
+from .projections import proj_pixel_to_point
 #import get_depth_frame as df
 
 
 def preprocess_data(depth_img, rgbd):
-    norm_matrix = [1,1,1,0.5]
+    print (rgbd)
+    norm_matrix = [1,1,1,2.5]
 
     rgbd = rgbd/norm_matrix
     return np.float32(rgbd)
     
 
-def postprocess_im(depth_img, segmentation, labelled_img):
+def postprocess_im(depth_img, segmentation, labelled_img, debug=False):
     """Identify points that violate the depth image and identify the 
     labels of the pixels. If >prop% of pixels of that label violate the depth 
     threshold then remove it from the image """
@@ -32,7 +34,9 @@ def postprocess_im(depth_img, segmentation, labelled_img):
     """
 
     # Fixed threshold either has 125 or 100 refer to 04-12-14:49:33 and 04-12-13:10:36
-    thresh = max(np.min(depth_img), 125) # set threshold
+    print (np.min(depth_img))
+    #thresh = max(np.min(depth_img), 125) # set threshold
+    thresh = 600
     labels = np.unique(labelled_img)
     labelled_img = labelled_img.reshape(depth_img.shape)
     prop = 0.4
@@ -44,15 +48,15 @@ def postprocess_im(depth_img, segmentation, labelled_img):
     for label in labels:
         coords = np.count_nonzero(labelled_img == label)
         # a pixel violates if it's part of P and depth value is less than thresh
-        violated_px = labelled_img[(labelled_img==label) & (depth_img < thresh)]
+        violated_px = labelled_img[(labelled_img==label) & (depth_img > thresh)]
         if len(violated_px) > prop * coords:
             print ("label", label,"violated")
             # TODO: make it a label of varying length
             print (segmentation.shape)
             segmentation[labelled_img==label] = [255]*segmentation.shape[-1]
-
-    cv2.imshow('new segmentation', segmentation)
-    cv2.waitKey()
+    if debug:
+        cv2.imshow('new segmentation', segmentation)
+        cv2.waitKey(0)
     return segmentation
 
 
@@ -86,7 +90,7 @@ def cv_kmeans(input_img, img_shape, debug=False):
     to have dimension (k, d, c) where k and d are the image dimension and c is 
     the number of channels in the image. img_shape is the desired image shape
     """
-    
+    cv2.imshow("input",input_img[:, :, :3])
     c = input_img.shape[-1]
 
     twoDimg = np.float32(input_img.reshape((-1,c)))
@@ -120,8 +124,10 @@ def cv_kmeans(input_img, img_shape, debug=False):
         plt.ylabel('Distortion')
         plt.title('The Elbow Method showing the optimal k')
         plt.show()
+        print ("result image shape",result_image.shape)
         cv2.imshow("res", result_image)
-        cv2.waitKey()
+        print (result_image)
+        cv2.waitKey(0)
 
     
     return result_image, labels[idx]
@@ -148,14 +154,29 @@ def get_image_bounds(color_img, depth_img, debug=False):
     if debug:
         cv2.imshow("color image", color_img)
         cv2.imshow("depth image", depth_img)
-        cv2.waitKey()
+        cv2.waitKey(0)
     rgbd = create_rgbd(color_img, depth_img)
     preprocessed_rgbd = preprocess_data(depth_img,rgbd)
     print ("max of depth image",np.max(depth_img))
-    result_img, labels = cv_kmeans(preprocessed_rgbd, color_img.shape)
-    result_img = postprocess_im(depth_img, result_img, labels)
+    result_img, labels = cv_kmeans(preprocessed_rgbd, color_img.shape, debug)
+    result_img = postprocess_im(depth_img, result_img, labels, debug)
     return get_bound(result_img, False)
 
+def bound_to_coor(depth_scale, depth_frame, depth_img, bounds, cam):
+    boxes = []
+    for bound in bounds:
+        # ((min x, min y), (max x, max y))
+        print(bound)
+        print(bound[0])
+        min_x, min_y, max_x, max_y = bound[0][0][0], bound[0][0][1], bound[0][1][0], bound[0][1][1]
+        # x, y gives the left lower and right upper 
+        center_depth = depth_img[(max_x-max_x)//2+min_x,(max_y-min_y)//2+min_y].astype(float)
+        distance = center_depth*depth_scale
+        x1,y1,z1 = proj_pixel_to_point(min_x, min_y, distance, depth_frame)
+        x2,y2,z2 = proj_pixel_to_point(max_x, max_y, distance, depth_frame)
+        box = x1,y1,z1,abs(x2-x1),abs(z2-z1),abs(y2-y1)
+        boxes.append(box)
+    return boxes
 
 def main():
     #org_image, depth_img, rgbd = df.get_depth_frame()
