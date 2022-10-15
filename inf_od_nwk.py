@@ -99,10 +99,13 @@ def main():
             # --------- Calculate k-means for the obstacles ---------
             depth_img = np.asanyarray(depth_frame.get_data())
             color_img = np.asanyarray(color_frame.get_data())
-
-            bounds = kmeans.get_image_bounds(color_img, depth_img)
+            print ("depth image shape", depth_img.shape, "color image shape", color_img.shape)
+            start_time = print_time("Starting kmeans", start_time)
+            bounds = kmeans.get_image_bounds(color_img, depth_img, True)
+            start_time = print_time("kmeans took", start_time)
             # list of bounding boxes, each bounding box has bottom left coordinate, lwh
-            collision_coords = kmeans.bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)
+            #collision_coords = kmeans.bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)
+            collision_coords = []
             print("Collision boxes", collision_coords)
 
             # --------- Send Arm Configs to the Arm to move ---------
@@ -117,7 +120,7 @@ def main():
                           for i in range(len(coord1))]
             start_time = print_time("Read Encoder Values: ", start_time)
             print("target calculated", avg)
-            arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], collision_coords, 5)
+            arm_config, success = alr.linear_path_to_point(startpos, avg[2], avg[1], avg[0], collision_coords, 5)
             start_time = print_time("Calculated Kinematics: ", start_time)
             print("converted config: ", avg) 
             print(arm_config[0].angles)

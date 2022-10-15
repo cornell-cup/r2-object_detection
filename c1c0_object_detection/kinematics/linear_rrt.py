@@ -230,7 +230,7 @@ def radians_to_degrees(node):
 
     degrees = [0 for a in range(6)]
     for ind, val in enumerate(node.angles):
-        degrees[ind] = (val * 180) / math.pi
+        degrees[ind] = (val * 180) / math.pi 
     return degrees
 
 

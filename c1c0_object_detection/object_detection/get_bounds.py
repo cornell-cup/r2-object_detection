@@ -36,7 +36,7 @@ def approx_shape(img):
     else:
         img_gray = img
    
-    cv2.imshow('gray', img_gray)
+    #cv2.imshow('gray', img_gray)
     # Convert to binary image by thresholding
     _, threshold = cv2.threshold(img_gray, 245, 255, cv2.THRESH_BINARY_INV)
     # Find the contours
@@ -57,8 +57,8 @@ def approx_shape(img):
             vertices.append(approx)
             
     
-    cv2.imshow("approximated shape", tmp)
-    cv2.waitKey()
+    #cv2.imshow("approximated shape", tmp)
+    #cv2.waitKey()
     #print (vertices)
     for i in range (0, len(vertices)):
         vertices[i] = vertices[i].reshape(len(vertices[i]),2)
@@ -72,8 +72,8 @@ def draw_boxes(img):
     tmp = img.copy()
     for param in rect_params:
         cv2.rectangle(tmp,param[0],param[1],(100,100,100),1)
-    cv2.imshow("boxes", tmp)
-    cv2.waitKey()
+    #cv2.imshow("boxes", tmp)
+    #cv2.waitKey()
 
 def erode_and_dilate(img, debug=False):
     # erosion takes the min value of the kernel and 
