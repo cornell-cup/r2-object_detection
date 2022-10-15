@@ -3,15 +3,11 @@ import cv2
 import numpy as np
 import time
 
-from c1c0_object_detection.object_detection.camera import Camera
-from c1c0_object_detection.object_detection.inference import Inference
 from c1c0_object_detection.object_detection.grasping import Grasping
-import c1c0_object_detection.arm.publish_arm_updates as arm
 import c1c0_object_detection.kinematics.linear_rrt as alr
-import networking.Server as Server
+from networking.Server import Server
 import sys 
 # for displaying
-import jetson.utils
 import math
 
 """Run object detection pipeline with the intel realsense camera"""

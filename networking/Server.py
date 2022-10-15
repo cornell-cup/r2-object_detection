@@ -1,6 +1,6 @@
 import pickle
 import json
-from Network import *
+from networking.Network import *
 
 
 class Server(Network):

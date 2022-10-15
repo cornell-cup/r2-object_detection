@@ -5,7 +5,7 @@ from c1c0_object_detection.object_detection.camera import Camera
 from c1c0_object_detection.object_detection.inference import Inference
 import c1c0_object_detection.arm.publish_arm_updates as arm
 import c1c0_object_detection.kinematics.linear_rrt as alr
-import networking.Client as Client
+from networking.Client import Client
 # for displaying
 import jetson.utils
 import math
