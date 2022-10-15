@@ -28,3 +28,4 @@ for config in arm_config:
 	print("arm config serial written")
 	break
 arm.close_serial()
+
