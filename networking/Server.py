@@ -16,7 +16,8 @@ class Server(Network):
 
     def receive_data(self):
         try:
-            x = self.socket.recvfrom(4096)
+            conn, addr = self.socket.accept()
+            x = conn.recvfrom(4096)
             print("client", x[1])
             self.client = x[1]
             self.socket.settimeout(1)  # interferes with stopping on further calls
