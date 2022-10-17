@@ -9,6 +9,7 @@ import c1c0_object_detection.kinematics.linear_rrt as alr
 from networking.Client import Client
 # for displaying
 import jetson.utils
+import numpy as np
 import math
 
 """Run object detection pipeline with the intel realsense camera"""
