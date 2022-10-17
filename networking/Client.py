@@ -34,7 +34,7 @@ class Client(Network):
             # print(x[1], self.server)
             x = self.socket.recvfrom(4096)
             # print(x[1], self.server)
-        y = pickle.loads(x[0].decode('utf-8'))
+        y = pickle.loads(x[0])
         self.receive_ID, content= y[0], y[1]
         print(y, content)
         print("PREVIOUS RETURN", str(content))

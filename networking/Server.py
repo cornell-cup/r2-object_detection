@@ -23,7 +23,7 @@ class Server(Network):
             self.client = x[1]
             self.socket.settimeout(1)  # interferes with stopping on further calls
 
-            y = pickle.loads(x[0].decode('utf-8'))
+            y = pickle.loads(x[0])
 
             if y[0] != self.send_ID:
                 self.send_update(self.last_sent)  # re-attempt last send operation
@@ -41,7 +41,7 @@ class Server(Network):
     def send_update(self, update):
         self.send_ID += 1
         self.last_sent= update
-        self.socket.sendto(pickle.dumps([self.send_ID,update]).encode('utf-8'), self.client)
+        self.socket.sendto(pickle.dumps([self.send_ID,update]), self.client)
 
 
 # test with Client.py main method
