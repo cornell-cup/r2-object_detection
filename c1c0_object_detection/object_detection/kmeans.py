@@ -36,7 +36,7 @@ def postprocess_im(depth_img, segmentation, labelled_img, debug=False):
     # Fixed threshold either has 125 or 100 refer to 04-12-14:49:33 and 04-12-13:10:36
     print (np.min(depth_img))
     #thresh = max(np.min(depth_img), 125) # set threshold
-    thresh = 600
+    thresh = 500
     labels = np.unique(labelled_img)
     labelled_img = labelled_img.reshape(depth_img.shape)
     prop = 0.4
