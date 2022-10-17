@@ -16,6 +16,7 @@ class Server(Network):
 
     def receive_data(self):
         try:
+            socket.listen(10)
             conn, addr = self.socket.accept()
             x = conn.recvfrom(4096)
             print("client", x[1])
