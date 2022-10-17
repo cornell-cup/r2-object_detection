@@ -13,7 +13,7 @@ def jprint(obj):
 class Client(Network):
     def __init__(self):
         super().__init__()
-        self.socket.bind((self.get_ip(), 4004))
+        self.socket.connect(self.server)
         #self.socket.settimeout(4)  # interferes with stopping
         self.receive_ID= 0
 
@@ -24,7 +24,7 @@ class Client(Network):
         data = [self.receive_ID, color_img,depth_frame,dgr, startpos, bbox, c1, c2]
         pickled_images = pickle.dumps(data)
         print(self.socket)
-        self.socket.sendto(pickled_images, self.server)
+        self.socket.send(pickled_images)
 
     def listen(self):
         x = ["", ("0.0.0.0", 9999)]
