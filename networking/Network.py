@@ -11,7 +11,7 @@ class Network(object):
         """Currently the network is set up with UDP, this means we can only send one message
         at a time, this SHOULD WORK with what we want, if we need to change this we can switch 
         TCP, this would mean switching from socket.SOCK_DGRAM -> socket.STREAM """
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     @staticmethod
     def get_ip() -> str:
