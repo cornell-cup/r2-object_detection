@@ -18,10 +18,11 @@ class Client(Network):
         self.receive_ID= 0
 
 
-    def send_data(self, color_img, depth_frame, dgr, startpos, bbox):
+    def send_data(self, color_img, depth_frame, dgr, startpos, bbox, c1, c2):
         """ sends json-like nested data containing sensor, accelerometer, etc.
         """
-        pickled_images = pickle.dumps([self.receive_ID, color_img,depth_frame,dgr, startpos, bbox])
+        data = [self.receive_ID, color_img,depth_frame,dgr, startpos, bbox, c1, c2]
+        pickled_images = pickle.dumps(data)
         print(self.socket)
         self.socket.sendto(pickled_images, self.server)
 

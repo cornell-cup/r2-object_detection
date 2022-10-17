@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import time
 
-from c1c0_object_detection.object_detection.grasping import Grasping
 import c1c0_object_detection.kinematics.linear_rrt as alr
 from networking.Server import Server
 import sys 
@@ -22,31 +21,12 @@ def print_time(msg, start):
 
 
 def main():
-    grasping = Grasping()
-
     robot = Server()
 
-    color_img, depth_frame, dgr, startpos, bbox = robot.receive_data()
-    depth_img = np.asanyarray(depth_frame.get_data())
+    color_img, depth_img, dgr, startpos, bbox, coord1, coord2 = robot.receive_data()
     
-    start_time = print_time("Detections: ", start_time)
-    # --------- Locate where to Grab the Target Object ---------
-    isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
-        dgr, bbox, depth_frame, display=False)
-    if not isReachable:
-        print("object not reachable")
-        sys.exit(0)
-    if not isGrabbable:
-        print("object too large to grasp")
-        sys.exit(0)
-    print("Grasp coordinates in meters (X, Y, Z): ", coord1, coord2)
+    # Identify Obstacles with K-means
 
-    start_time = print_time("Calculated Grasps: ", start_time)
-    # Identify Obstacles?
-
-    # - Send Grasp Coordinates to Base Station to compute Arm Configs -
-    # robot.send_data()
-    # arm_config = robot.listen()
     bounds = get_image_bounds(color_img, depth_img)
     # list of bounding boxes, each bounding box has bottom left coordinate, lwh
     collision_coords = bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)

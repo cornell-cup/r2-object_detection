@@ -56,6 +56,18 @@ def main():
             
             start_time = print_time("Detections: ", start_time)
 
+            # --------- Locate where to Grab the Target Object ---------
+            isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
+                dgr, bbox, depth_frame, display=False)
+            if not isReachable:
+                continue
+            if not isGrabbable:
+                continue
+
+            print("Grasp coordinates in meters (X, Y, Z): ", coord1, coord2)
+
+            start_time = print_time("Calculated Grasps: ", start_time)
+
             print ("Starting arm...")
             arm.init_serial()
             startpos = arm.read_encoder_values()
@@ -63,7 +75,8 @@ def main():
             startpos = [i*math.pi/180 for i in startpos]
             print("arm vals read")
 
-            robot.send_data(color_img, depth_frame, dgr, startpos, bbox)
+            kmeans_depth = np.asanyarray(depth_frame.get_data())
+            robot.send_data(color_img, kmeans_depth, dgr, startpos, bbox, coord1, coord2)
 
             arm_config, success = robot.listen()
 
@@ -71,7 +84,8 @@ def main():
             if success:
                 for config in arm_config:
                     print("Config: ", config)
-                    # This array was reversed for the blue arm, since it ordered the servos this way
+                    # This array was reversed for the blue arm, 
+                    # since it ordered the servos this way
                     converted_array = alr.radians_to_degrees(config)[::-1]
                     print("WRITING ARM CONFIG", converted_array)
                     # Hard coded end effector for demo purposes
