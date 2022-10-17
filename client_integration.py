@@ -2,6 +2,7 @@
 import time
 
 from c1c0_object_detection.object_detection.camera import Camera
+from c1c0_object_detection.object_detection.grasping import Grasping
 from c1c0_object_detection.object_detection.inference import Inference
 import c1c0_object_detection.arm.publish_arm_updates as arm
 import c1c0_object_detection.kinematics.linear_rrt as alr
@@ -26,6 +27,7 @@ def main():
     with Camera(WIDTH, HEIGHT) as cam:
         # TODO: Do we need context managers for these also?
         inf = Inference()
+        grasping = Grasping()
         robot = Client() 
         start_time = print_time("Loaded Cam, Inf, and Grasp Modules: ", start_time)
         for i in range(5):
