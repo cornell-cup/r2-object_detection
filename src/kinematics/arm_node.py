@@ -8,20 +8,23 @@ import time
 
 import numpy
 import matplotlib.pyplot as plt
-from util.error_handling import nostderr
+from src.kinematics.util.error_handling import nostderr
 import numpy as np
 import math
 import random
 
 import ikpy as IKPY
-from util import line
+from src.kinematics.util import line
 from typing import List
 from ikpy.chain import Chain
+import os
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 ik_py = True #boolean flag: True if ik_py, False if Kinpy
 with nostderr():
-    arm_chain = Chain.from_urdf_file("models/XArm.urdf")
+    arm_chain = Chain.from_urdf_file(ROOT_DIR + "/models/XArm.urdf")
 
 
 class Node(object):

@@ -31,7 +31,7 @@ from typing import List
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
 
-    Depending on whether the anticipated path goes through the no-go zone, switches that path to go the other way
+    Depending on whether the anticipated path goes through an invalid configuration, switches that path to go the other way
     around.
 
     Args:
@@ -120,8 +120,9 @@ def generate_linear_path(start_angles, end_angles, num_iter):
                 return g, False
     return g, True
 
+
 def test_for_alison(start_angles, end_angles, num_iter):
-    g = generate_linear_path(start_angles,end_angles,num_iter)
+    g = generate_linear_path(start_angles, end_angles, num_iter)
     linear_path = rrt.dijkstra(g)
     list_of_angles = []
     for i in range(linear_path):
@@ -285,7 +286,7 @@ def plot_random_path(iterations, num_obstacles):
     """
 
     start_node, end_node, obstacles, _ = random_start_environment(num_obstacles, [[-.08, .08], [.08, .2], [.12, .2]],
-                                                                   [[-.2, .2], [-.04, .2], [-.2, .2]],
+                                                                  [[-.2, .2], [-.04, .2], [-.2, .2]],
                                                                   obstacle_size=.1)
 
     plot_path(start_node.angles, end_node.angles, iterations, obstacles)
@@ -308,7 +309,7 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
         g.add_vex(path[0], g.start_node)
         for i in range(len(path)):
             try:
-                g.add_vex(path[i], path[i-1])
+                g.add_vex(path[i], path[i - 1])
             except IndexError:
                 pass
         arm_plot.plot_3d(g, path, obstacles)
@@ -392,6 +393,8 @@ def path_optimizer(path, prism):
     # print("Total Run Time: ", run_time)
     # print("Average Run Time: ", run_time / tests)
     # plt.show()
+
+
 # start_point = [0, 0, 0]
 # sucess = 0
 # tests = 10
