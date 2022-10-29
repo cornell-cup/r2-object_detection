@@ -13,15 +13,16 @@ class Server(Network):
         self.client = ("", 0)
         self.last_sent= None
         self.send_ID = 0
+        self.conn = None
 
     def receive_data(self):
         try:
             self.socket.listen(10)
             conn, addr = self.socket.accept()
             x = conn.recvfrom(4096)
-            print("client", x[1])
-            self.client = x[1]
-            self.socket.settimeout(1)  # interferes with stopping on further calls
+            self.conn = conn
+            self.client = addr
+            self.socket.settimeout(10)  # interferes with stopping on further calls
 
             y = pickle.loads(x[0])
 
@@ -41,7 +42,7 @@ class Server(Network):
     def send_update(self, update):
         self.send_ID += 1
         self.last_sent= update
-        self.socket.sendto(pickle.dumps([self.send_ID,update]), self.client)
+        self.conn.sendto(pickle.dumps([self.send_ID,update]), self.client)
 
 
 # test with Client.py main method

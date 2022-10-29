@@ -27,14 +27,15 @@ class Client(Network):
         self.socket.send(pickled_images)
 
     def listen(self):
-        x = ["", ("0.0.0.0", 9999)]
-        print("listening")
-        # according to pickle docs you shouldn't unpickle from unknown sources, so we have some validation here
-        while x[1] != self.server:
+        print("listening to ", self.server)
+        # according to pickle docs you shouldn't unpickle from unknown sources, 
+        # so we have some validation here
+        #while x[1] != self.server:
             # print(x[1], self.server)
-            x = self.socket.recvfrom(4096)
+        x = self.socket.recv(4096)
+        print(x)
             # print(x[1], self.server)
-        y = pickle.loads(x[0])
+        y = pickle.loads(x)
         self.receive_ID, content= y[0], y[1]
         print(y, content)
         print("PREVIOUS RETURN", str(content))
