@@ -19,21 +19,28 @@ class Server(Network):
         try:
             self.socket.listen(10)
             conn, addr = self.socket.accept()
-            x = conn.recvfrom(4096)
             self.conn = conn
-            self.client = addr
-            self.socket.settimeout(10)  # interferes with stopping on further calls
+            self.socket.settimeout(1)
+            data = []
+            while True:
+                packet = conn.recv(4096)
+                print("packet", packet)
+                if not packet: break
+                data.append(packet)
 
-            y = pickle.loads(x[0])
+            self.client = addr
+            #self.socket.settimeout(10)  # interferes with stopping on further calls
+
+            y = pickle.loads(b"".join(data))
 
             if y[0] != self.send_ID:
                 self.send_update(self.last_sent)  # re-attempt last send operation
                 self.socket.settimeout(1)  # interferes with stopping on further calls
                 return self.receive_data()
-
+            conn.close()
             return y[1:]
 
-        except socket.timeout:
+        except:
             self.send_update(self.last_sent) # re-attempt last send operation
             self.socket.settimeout(1)  # interferes with stopping on further calls
             return self.receive_data()
