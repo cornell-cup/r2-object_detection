@@ -7,6 +7,7 @@ class Network(object):
         # TODO: HARD CODED SERVER IP!
         # the ip of the server that processes requests from the client (jetson)
         self.server = ('128.253.46.196', 8000)
+        # self.server = ('192.168.0.100', self.port)
         #self.server = (socket.gethostbyname(socket.gethostname()), 4000)
         """Currently the network is set up with UDP, this means we can only send one message
         at a time, this SHOULD WORK with what we want, if we need to change this we can switch 

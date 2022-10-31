@@ -24,7 +24,7 @@ class Client(Network):
         data = [self.receive_ID, color_img,depth_frame,dgr, startpos, bbox, c1, c2]
         pickled_images = pickle.dumps(data)
         print(self.socket)
-        self.socket.send(pickled_images)
+        self.socket.sendall(pickled_images)
 
     def listen(self):
         print("listening to ", self.server)
