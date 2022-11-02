@@ -33,12 +33,12 @@ class Client(Network):
         #while x[1] != self.server:
             # print(x[1], self.server)
         x = self.socket.recv(4096)
-        print(x)
+        #print(x)
             # print(x[1], self.server)
         y = pickle.loads(x)
         self.receive_ID, content= y[0], y[1]
-        print(y, content)
-        print("PREVIOUS RETURN", str(content))
+        # print(y, content)
+        # print("PREVIOUS RETURN", str(content))
         return content
 
 # # test to make sure that SensorState object is <= 4096 bytes

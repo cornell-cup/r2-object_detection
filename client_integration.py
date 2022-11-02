@@ -69,15 +69,6 @@ def main():
 
             print("Grasp coordinates in meters (X, Y, Z): ", coord1, coord2)
 
-            # start_time = print_time("Calculated Grasps: ", start_time)
-
-            # print ("Starting arm...")
-            # arm.init_serial()
-            # startpos = arm.read_encoder_values()
-
-            # startpos = [i*math.pi/180 for i in startpos]
-            # print("arm vals read")
-
             kmeans_depth = np.asanyarray(depth_frame.get_data())
             robot.send_data(color_img, kmeans_depth, dgr, [0, 0, 0, 0, 0, 0], bbox, coord1, coord2)
 

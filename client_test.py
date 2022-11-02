@@ -11,14 +11,13 @@ if __name__ == "__main__":
     depth_img = cv2.imread(dpath, cv2.IMREAD_GRAYSCALE)
 
     try:
-        for i in range(5): 
-            # compute grasp coords and bounding boxes
-            grasp_coords = [[[-.1], [-.2], [.5]], [[0], [-.2], [.5]]]
+        # compute grasp coords and bounding boxes
+        grasp_coords = [[[-.1], [-.2], [.5]], [[0], [-.2], [.5]]]
 
-            # send object containing grasp coords to the computer
-            data_packet = grasp_coords
-            robot.send_data(color_img, depth_img, [.5], [0], [-.2], [.5], 7)
-            response = robot.listen()
-            print(response)
+        # send object containing grasp coords to the computer
+        data_packet = grasp_coords
+        robot.send_data(color_img, depth_img, [.5], [0], [-.2], [.5], 7)
+        response = robot.listen()
+        print("Server Response: ", response)
     except:
         robot.socket.close()
