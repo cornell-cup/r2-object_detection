@@ -6,5 +6,4 @@ matplotlib
 tensorrt
 wheel
 pbr
-kinpy
 scipy
