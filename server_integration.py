@@ -2,7 +2,6 @@
 import time
 
 import c1c0_object_detection.kinematics.linear_rrt as alr
-from c1c0_object_detection.object_detection.camera import Camera
 from networking.Server import Server
 from c1c0_object_detection.object_detection.kmeans import *
 import sys 
