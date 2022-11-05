@@ -3,11 +3,11 @@ import socket
 
 class Network(object):
     def __init__(self):
-        self.port = 4000
+        self.port = 8008
         # TODO: HARD CODED SERVER IP!
         # the ip of the server that processes requests from the client (jetson)
-        self.server = ('128.253.46.196', 4000)
-        # self.server = (socket.gethostbyname(socket.gethostname()), 4000)
+        self.server = ('128.253.46.196', 8000)
+        #self.server = (socket.gethostbyname(socket.gethostname()), 4000)
         """Currently the network is set up with UDP, this means we can only send one message
         at a time, this SHOULD WORK with what we want, if we need to change this we can switch 
         TCP, this would mean switching from socket.SOCK_DGRAM -> socket.STREAM """

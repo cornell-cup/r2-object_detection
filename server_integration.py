@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-import cv2
-import numpy as np
 import time
 
 import c1c0_object_detection.kinematics.linear_rrt as alr
+from c1c0_object_detection.object_detection.camera import Camera
 from networking.Server import Server
+from c1c0_object_detection.object_detection.kmeans import *
 import sys 
 # for displaying
 import math
@@ -39,7 +39,7 @@ def main():
                     for i in range(len(coord1))]
     start_time = print_time("Read Encoder Values: ", start_time)
     print("target calculated", avg)
-    arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
+    arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], collision_coords, 5)
     robot.send_update([arm_config, success])
     start_time = print_time("Calculated Kinematics: ", start_time)
     print("converted config: ", avg) 
