@@ -10,7 +10,7 @@ from .collision_detection import *
 from .arm_node import Node
 from matplotlib.animation import FuncAnimation
 import math
-from util.line import distance
+from .util import line
 import random
 from os import getenv
 

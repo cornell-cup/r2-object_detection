@@ -148,25 +148,6 @@ def valid_path_configuration(pose, obstacles):
     return True
 
 
-def path_is_colliding(path, obstacles):
-    """Determines whether there is at least one node in a path of nodes that collides with an obstacle.
-
-    Args:
-        path: An array of Node instances representing a path from a start node to an end node.
-        obstacles: An array of float arrays representing cube obstacles.
-
-    Returns:
-        True if one or more of the nodes in path collides with an obstacle.
-    """
-
-    for obstacle in obstacles:
-        for node in path:
-            if arm_is_colliding_prism(node, obstacle):
-                return True
-
-    return False
-
-
 def linear_path_to_angles(start_angles, end_angles, obstacles, num_iter=15):
     """Generates a linear path to a desired end effector position, and maneuvers around obstacles with OPC if necessary.
 
@@ -184,9 +165,14 @@ def linear_path_to_angles(start_angles, end_angles, obstacles, num_iter=15):
 
     point = Node(end_angles).end_effector_pos
     linear_path = g[0].nodes
-    if path_is_colliding(linear_path, obstacles):
+
+    # functions for iterating over node list with numpy
+    is_colliding = lambda x: arm_is_colliding_prisms(x, obstacles)
+    is_colliding_vec = np.vectorize(is_colliding)
+
+    if np.any(is_colliding_vec(linear_path)):
         print("Finding OPC path")
-        g = opc.find_path((point[0], point[1], point[2]), start_angles, obstacles)
+        g = find_path((point[0], point[1], point[2]), start_angles, obstacles)
         if g.success:
             linear_path = dijkstra(g)
         else:
@@ -310,7 +296,7 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
                 g.add_vex(path[i], path[i-1])
             except IndexError:
                 pass
-        arm_plot.plot_3d(g, path, obstacles)
+        plot_3d(g, path, obstacles)
     else:
         print("No Path Found :(")
 

@@ -7,6 +7,7 @@ a set of configurations which is passed to the ECEs.
 
 Written by Simon Kapen '24 and Raj Sinha '25, Spring 2022.
 """
+from .optimizers import path_optimizer_two_prismset
 from .arm_node import Node
 from .arm_graph import Graph
 from .util.angles import true_angle_distances_arm
@@ -19,11 +20,10 @@ import time
 import random
 from .obstacle_generation import random_start_environment
 from .collision_detection import arm_is_colliding_prisms
+from .kinematics_test import tpm
+from os import getenv
 from matplotlib import pyplot as plt
 from .util.line import distance
-from optimizers import path_optimizer_two_prismset
-from os import getenv
-from .kinematics_test import tpm
 
 stack_empty_error = 0
 
