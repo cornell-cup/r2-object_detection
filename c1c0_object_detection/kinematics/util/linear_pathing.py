@@ -30,7 +30,7 @@ from typing import List
 def compute_step_sizes(start_angles, end_angles, num_iter):
     """Computes each arm angle's step size based on how long it needs to travel to go from the start to end pose.
 
-    Depending on whether the anticipated path goes through the no-go zone, switches that path to go the other way
+    Depending on whether the anticipated path goes through an invalid configuration, switches that path to go the other way
     around.
 
     Args:
@@ -121,6 +121,15 @@ def generate_linear_path(start_angles, end_angles, num_iter):
 
 def test_for_alison(start_angles, end_angles, num_iter):
     g = generate_linear_path(start_angles,end_angles,num_iter)
+    linear_path = rrt.dijkstra(g)
+    list_of_angles = []
+    for i in range(linear_path):
+        list_of_angles.append(linear_path[i].angles)
+    return list_of_angles
+
+
+def test_for_alison(start_angles, end_angles, num_iter):
+    g = generate_linear_path(start_angles, end_angles, num_iter)
     linear_path = rrt.dijkstra(g)
     list_of_angles = []
     for i in range(linear_path):
@@ -284,7 +293,7 @@ def plot_random_path(iterations, num_obstacles):
     """
 
     start_node, end_node, obstacles, _ = random_start_environment(num_obstacles, [[-.08, .08], [.08, .2], [.12, .2]],
-                                                                   [[-.2, .2], [-.04, .2], [-.2, .2]],
+                                                                  [[-.2, .2], [-.04, .2], [-.2, .2]],
                                                                   obstacle_size=.1)
 
     plot_path(start_node.angles, end_node.angles, iterations, obstacles)
@@ -307,7 +316,7 @@ def plot_path(start_angles, end_angles, iterations, obstacles):
         g.add_vex(path[0], g.start_node)
         for i in range(len(path)):
             try:
-                g.add_vex(path[i], path[i-1])
+                g.add_vex(path[i], path[i - 1])
             except IndexError:
                 pass
         arm_plot.plot_3d(g, path, obstacles)
@@ -391,6 +400,53 @@ def path_optimizer(path, prism):
     # print("Total Run Time: ", run_time)
     # print("Average Run Time: ", run_time / tests)
     # plt.show()
+# start_point = [0, 0, 0]
+# sucess = 0
+# tests = 10
+# start_time = time.time()
+# fig = plt.figure()
+# ax = plt.axes(projection="3d")
+# for i in range(tests):
+#     fail = False
+#     randomX = random.uniform(-.08, .08)
+#     randomY = random.uniform(-.08, .08)
+#     randomZ = random.uniform(0, .105)
+#     end_point = [randomX, randomY, randomZ]
+#     #print(end_point)
+#     angles = inverse_kinematics(end_point)
+#     final_position = forward_kinematics(angles)
+#     #print(angles)
+#     if not thresholdCheck(randomX, final_position[0][3], .001):
+#         fail = True
+#         print("Fail in X")
+#     if not thresholdCheck(randomY, final_position[1][3], .001):
+#         fail = True
+#         print("Fail in Y")
+#     if not thresholdCheck(randomZ, final_position[2][3], .001):
+#         fail = True
+#         print("Fail in Z")
+#     if not fail:
+#         sucess += 1
+#     plt.plot(end_point[0], end_point[1], end_point[2],'bo',markersize=15)
+#     arm_chain.plot(angles, ax, show=False)
+# #arm_plot.plot_nodes(ax, [end_point])
+# ax.set_xlabel('x')
+# ax.set_ylabel('y')
+# ax.set_zlabel('z')
+# # Set the limits for the range of plotted values
+# lim = .12
+# plt.xlim(-lim, lim)
+# plt.ylim(-lim, lim)
+# ax.set_zlim(-.2, .2)
+# run_time = time.time() - start_time
+# print("Successes: ", sucess)
+# print("Failures: ", tests - sucess)
+# print("Rate: ", sucess / tests)
+# print("Total Run Time: ", run_time)
+# print("Average Run Time: ", run_time / tests)
+# plt.show()
+
+
 # start_point = [0, 0, 0]
 # sucess = 0
 # tests = 10

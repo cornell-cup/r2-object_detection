@@ -5,7 +5,7 @@ import numpy as np
 import sys
 
 import c1c0_object_detection.arm.publish_arm_updates as arm
-import c1c0_object_detection.kinematics.linear_rrt as alr
+import c1c0_object_detection.kinematics.linear_pathing as alr
 import math
 WIDTH = 640
 HEIGHT = 480
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         avg = TARGET_POINT
         print("target calculated", avg)
         # endpos = RRTNode.from_point(avg_target, startpos)
-        arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
+        arm_config, success = alr.linear_path_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
         # send arm_config to the arm to move
         print(arm_config)
         if success:

@@ -3,7 +3,6 @@
 Written by Simon Kapen '24, Spring 2022.
 """
 
-
 import random
 import matplotlib.pyplot as plt
 from .collision_detection import plot_linear_prism, arm_is_colliding_prisms
@@ -58,17 +57,16 @@ def random_start_environment(num_obstacles, bounds, obstacle_bounds, obstacle_si
 
     random_start_node = Node(configuration=None)
     target_end_pos = [random.uniform(bounds[0][0], bounds[0][1]),
-             random.uniform(bounds[1][0], bounds[1][1]),
-             random.uniform(bounds[2][0], bounds[2][1])]
+                      random.uniform(bounds[1][0], bounds[1][1]),
+                      random.uniform(bounds[2][0], bounds[2][1])]
 
     random_end_node = Node.from_point(target_end_pos, random_start_node.angles)
 
-    while (not random_end_node.valid_configuration()):
+    while not random_end_node.valid_configuration():
         target_end_pos = [random.uniform(bounds[0][0], bounds[0][1]),
                           random.uniform(bounds[1][0], bounds[1][1]),
                           random.uniform(bounds[2][0], bounds[2][1])]
-        random_end_node = Node.from_point(target_end_pos, random_start_node.angles)\
-
+        random_end_node = Node.from_point(target_end_pos, random_start_node.angles)
     current_obstacles = generate_random_obstacles(num_obstacles, obstacle_bounds, max_side_length=obstacle_size)
     while arm_is_colliding_prisms(random_end_node, current_obstacles):
         current_obstacles = generate_random_obstacles(num_obstacles, obstacle_bounds, max_side_length=obstacle_size)
@@ -81,9 +79,6 @@ def random_start_environment(num_obstacles, bounds, obstacle_bounds, obstacle_si
     print("obstacles:", current_obstacles)
 
     return random_start_node, random_end_node, current_obstacles, target_end_pos
-
-
-
 
 
 if __name__ == "__main__":

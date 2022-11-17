@@ -16,6 +16,9 @@ from .util.error_handling import nostderr
 
 from typing import List
 from ikpy.chain import Chain
+import os
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 ik_py = True #boolean flag: True if ik_py, False if Kinpy

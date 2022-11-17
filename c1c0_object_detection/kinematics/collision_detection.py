@@ -18,6 +18,7 @@ from .arm_node import Node
 global ax
 global arm
 
+
 def plot_linear_cube(ax, cube):
     """
     Plot a cube on an instance of matplotlib.axes.
@@ -359,7 +360,7 @@ def checkCollisionMultiplePrisms(prism_list, rrtNode_list):
     # Returns TRUE if a collision is detected, otherwise FALSE.
     for i in prism_list:
         for j in rrtNode_list:
-            if(checkCollision(prism_list[i],rrtNode_list[j])):
+            if (checkCollision(prism_list[i], rrtNode_list[j])):
                 return True
     return False
 
@@ -369,7 +370,7 @@ def singleNodeCollisionCheck(prism_list, rrtNode):
     # any of the prisms in prism_list.
     # Returns TRUE if a collision is detected, otherwise FALSE.
     for i in prism_list:
-        if(checkCollision(prism_list[i],rrtNode)):
+        if (checkCollision(prism_list[i], rrtNode)):
             return True
     return False
 
@@ -392,9 +393,9 @@ def main():
     ax.set_zlim(-lim, lim)
     # create the prism to be avoided (hard coded)
     lim = .3
-    location = random.uniform(-lim,lim)
-    prism = ([0, 0, 0, .2, .3, .4])
-    exoPrism = ([prism[0]-.05,prism[1]-.05,prism[2]-.05,prism[3]+.1,prism[4]+.1,prism[5]+.1])
+    location = random.uniform(-lim, lim)
+    prism = ([-.1, .1, 0, .2, .3, .4])
+    exoPrism = ([prism[0] - .05, prism[1] - .05, prism[2] - .05, prism[3] + .1, prism[4] + .1, prism[5] + .1])
     plot_linear_prism(ax, prism, 'blue')
     plot_linear_prism(ax, exoPrism, 'red')
     lim = .5
@@ -421,7 +422,11 @@ def main():
     """
     # Create a random arm
     arm = Node(None)
-    plot_arm(ax,arm,None)
+
+    print(list(map(lambda a: round(a, 5), arm.angles)))
+    print(exoPrism)
+    plot_arm(ax, arm, None)
+
     class Index:
         def draw(self, event):
             plt.close()
@@ -431,9 +436,12 @@ def main():
     run = Button(axnext, 'ReRun')
     callback = Index()
     run.on_clicked(callback.draw)
-    if checkCollision(exoPrism,arm):
+    if checkCollision(exoPrism, arm):
         plt.title("Collision Detected!")
     else:
         plt.title("Wow no Collision")
     plt.show()
 
+
+if __name__ == '__main__':
+    main()

@@ -64,7 +64,8 @@ def test_series_optimizer():
     arm = arm_node.Node(None)
     print(arm)
     collision_detection.plot_arm(ax, arm, None)
-    #optimizers.optimize(arm,exoPrism)
+
+    # optimizers.optimize(arm,exoPrism)
     class Index:
         def draw(self, event):
             plt.close()

@@ -10,7 +10,9 @@ from .collision_detection import *
 from .arm_node import Node
 from matplotlib.animation import FuncAnimation
 import math
-from .util.line import distance
+from .util import line
+import random
+from os import getenv
 
 
 def configure_graph(ax, axis_labels=['X', 'Y', 'Z'], axis_limits=[[-.2, .4], [-.2, .4], [-.2, .4]]):
@@ -60,7 +62,7 @@ def plot_3d(G, path, obstacles, path2=None):
 
 
     for obs in obstacles:
-        collision_detection.plot_linear_prism(ax, obs, 'blue')
+        plot_linear_prism(ax, obs, 'blue')
 
     configure_graph(ax)
 
@@ -101,7 +103,7 @@ def plot_arm_configs(ax, path, obstacles, color='green'):
     for i in range(0, len(path)):
         if obstacles is not None:
             for obstacle in obstacles:
-                if collision_detection.arm_is_colliding_prism(path[i], obstacle):
+                if arm_is_colliding_prism(path[i], obstacle):
                     color = 'red'
                 else:
                     color = 'green'
@@ -164,7 +166,7 @@ def plot_configs_with_obstacle():
     configs = [Node(None) for i in range(10)]
     obstacles = [[.01, .01, .02, .1, .1, .1]]
     plot_arm_configs(ax, configs, obstacles)
-    collision_detection.plot_linear_prism(ax, obstacles[0], 'blue')
+    plot_linear_prism(ax, obstacles[0], 'blue')
 
 
 if __name__ == "__main__":

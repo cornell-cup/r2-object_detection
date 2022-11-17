@@ -32,7 +32,7 @@ sys.path.insert(3, '/home/cornellcup-cs/Desktop/c1c0_modules/r2-object_detection
 
 from src.camera import Camera
 from src.projections import *
-#import src.kinematics.linear_rrt as alr 
+#import src.kinematics.linear_pathing as alr 
 from src.kmeans import *
 
 import jetson.inference
