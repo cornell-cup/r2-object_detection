@@ -7,6 +7,7 @@ Initially adapted from Fanjin Zeng on github, 2019 (gist.github.com/Fnjn/58e5eaa
 from .arm_node import Node
 from .util import line
 import numpy as np
+import heapq
 
 
 class Graph:

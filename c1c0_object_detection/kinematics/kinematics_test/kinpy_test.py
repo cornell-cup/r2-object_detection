@@ -3,15 +3,18 @@
 Written by Simon Kapen '24 in Fall 2021.
 """
 
-
+import sys
 import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
-from arm_node import Node
+from src.kinematics.arm_node import Node
 import kinpy as kp
+import os
 
-chain = kp.build_chain_from_urdf(open("models/SimpleArmModelforURDF.URDF").read())
-chain = kp.build_serial_chain_from_urdf(open("models/SimpleArmModelforURDF.URDF").read(), "hand_1", "base_link")
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__)[:-16])
+
+chain = kp.build_chain_from_urdf(open(ROOT_DIR + "/models/SimpleArmModelforURDF.URDF").read())
+chain = kp.build_serial_chain_from_urdf(open(ROOT_DIR + "/models/SimpleArmModelforURDF.URDF").read(), "hand_1", "base_link")
 
 angle_config = kp.ik.inverse_kinematics(chain, kp.Transform(pos=[0.2, 0.2, 0.2]))
 ret = chain.forward_kinematics(angle_config, end_only=False)

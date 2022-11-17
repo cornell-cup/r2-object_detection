@@ -7,7 +7,7 @@ from c1c0_object_detection.object_detection.camera import Camera
 from c1c0_object_detection.object_detection.inference import Inference
 from c1c0_object_detection.object_detection.grasping import Grasping
 import c1c0_object_detection.arm.publish_arm_updates as arm
-import c1c0_object_detection.kinematics.linear_rrt as alr
+import c1c0_object_detection.kinematics.linear_pathing as alr
 import c1c0_object_detection.object_detection.kmeans as kmeans
 # for displaying
 import jetson.utils
@@ -61,7 +61,7 @@ def main():
             start_time = print_time("Detections: ", start_time)
             # --------- Locate where to Grab the Target Object ---------
             isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
-                dgr, bbox, depth_frame, display=False)
+                dgr, bbox, depth_frame, display=True)
             if not isReachable:
                 print("object not reachable")
                 continue
@@ -72,14 +72,6 @@ def main():
 	    
             start_time = print_time("Calculated Grasps: ", start_time)
             counter = 0
-
-            # mean profile
-            for i in range(1):
-                s_t = time.time()
-                isReachable, isGrabbable, coord1, coord2 = grasping.locate_object(
-                dgr, bbox, depth_frame, display=False)
-                counter += (s_t - time.time())/100
-            print ("average time for grasp detection",counter)
 
             #key = cv2.waitKey(0) # display results
             # TODO: should this be moved after all the rest of the code?
