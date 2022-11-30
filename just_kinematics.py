@@ -6,6 +6,8 @@ import sys
 
 import c1c0_object_detection.arm.publish_arm_updates as arm
 import c1c0_object_detection.kinematics.linear_pathing as alr
+from c1c0_object_detection.kinematics import arm_plot
+import matplotlib.pyplot as plt
 import math
 WIDTH = 640
 HEIGHT = 480
@@ -30,6 +32,10 @@ if __name__ == '__main__':
         # endpos = RRTNode.from_point(avg_target, startpos)
         arm_config, success = alr.linear_path_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
         # send arm_config to the arm to move
+        ax = plt.axes(projection='3d')
+        arm_plot.plot_arm_configs(ax, arm_config, [])
+        plt.savefig('arm_path.png')
+        plt.show()
         print(arm_config)
         if success:
             for config in arm_config:
