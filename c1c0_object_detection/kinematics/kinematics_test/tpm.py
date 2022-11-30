@@ -15,7 +15,7 @@ from ..obstacle_generation import *
 from ..arm_plot import plot_3d
 from typing import List
 
-def avg_nodes_test(graphs: list[Graph]):
+def avg_nodes_test(graphs: List[Graph]):
     """ The average amount of nodes generated until the end goal is reached. """
     total_nodes = 0
     for i in range(0, len(graphs)):
@@ -24,7 +24,7 @@ def avg_nodes_test(graphs: list[Graph]):
     return total_nodes / len(graphs)
 
 
-def converge_test(graphs: list[Graph]):
+def converge_test(graphs: List[Graph]):
     """ Counts the amount of successes for a list of RRT graphs. """
     num_success = 0
     for i in range(0, len(graphs)):
