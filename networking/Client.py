@@ -4,6 +4,7 @@ from networking.ObjectDetection import *
 from networking.SensorState import *
 import sys
 import json
+import struct
 
 def jprint(obj):
     # create a formatted string of the Python JSON object
@@ -23,8 +24,8 @@ class Client(Network):
         """
         data = [self.receive_ID, color_img,depth_frame,dgr, startpos, bbox, c1, c2]
         pickled_images = pickle.dumps(data)
-        print(self.socket)
-        self.socket.sendall(pickled_images)
+        size = len(pickled_images)
+        self.socket.sendall(struct.pack(">L", size) + pickled_images)
 
     def listen(self):
         print("listening to ", self.server)

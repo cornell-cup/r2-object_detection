@@ -1,6 +1,7 @@
 import pickle
 import json
 import time
+import struct
 from networking.Network import *
 
 
@@ -18,32 +19,29 @@ class Server(Network):
     def receive_data(self):
         try:
             self.socket.listen(10)
-            conn, addr = self.socket.accept()
-            start_time = time.time()
+            conn, _ = self.socket.accept()
+            self.client = conn
             conn.settimeout(1)
+            payload_size = struct.calcsize(">L")
+            data = b''
+            while len(data) < payload_size:
+                print("Recv: {}".format(len(data)))
+                data += (conn.recv(4096))
+        
+            print("Done Recv: {}".format(len(data)))
+            packed_msg_size = data[:payload_size]
+            data = data[payload_size:]
+            msg_size = struct.unpack(">L", packed_msg_size)[0]
+            print("msg_size: {}".format(msg_size))
+            while len(data) < msg_size:
+                data += conn.recv(4096)
+            frame_data = data[:msg_size]
+            data = data[msg_size:]
 
-            data = []
-            try: 
-                while True:
-                    packet = conn.recv(4096)
-                    print("packet", packet)
-                    if not packet: break
-                    data.append(packet)
-            except:
-                self.client = conn
-                #self.socket.settimeout(10)  # interferes with stopping on further calls
-                y = pickle.loads(b"".join(data))
-
-                if y[0] != self.send_ID:
-                    self.send_update(self.last_sent)  # re-attempt last send operation
-                    conn.settimeout(1)  # interferes with stopping on further calls
-                    return self.receive_data()
-                #self.socket.close()
-                return y[1:]
-
+            frame=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+            return frame
         except:
-            self.send_update(self.last_sent)
-            return self.receive_data()
+            print("Couldn't connect to socket in time")
 
     ##  precondition: must have called receive_data successfully
     def send_update(self, update):
