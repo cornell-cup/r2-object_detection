@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import time
 
-import c1c0_object_detection.kinematics.linear_rrt as alr
+import c1c0_object_detection.kinematics.linear_pathing as alr
 from networking.Server import Server
-from c1c0_object_detection.object_detection.kmeans import *
+# from c1c0_object_detection.object_detection.kmeans import *
 import sys 
 # for displaying
 import math
@@ -26,11 +26,11 @@ def main():
     
     # Identify Obstacles with K-means
 
-    bounds = get_image_bounds(color_img, depth_img)
-    # list of bounding boxes, each bounding box has bottom left coordinate, lwh
-    collision_coords = bound_to_coor(depth_scale, depth_frame, depth_img, bounds)
-    print(collision_coords)
-
+    # bounds = get_image_bounds(color_img, depth_img)
+    # # list of bounding boxes, each bounding box has bottom left coordinate, lwh
+    # collision_coords = bound_to_coor(depth_scale, depth_frame, depth_img, bounds)
+    # print(collision_coords)
+    collision_coords = []
     # --------- Send Arm Configs to the Arm to move ---------
 
     # inverse kinematics
@@ -38,7 +38,7 @@ def main():
                     for i in range(len(coord1))]
     start_time = print_time("Read Encoder Values: ", start_time)
     print("target calculated", avg)
-    arm_config, success = alr.linear_rrt_to_point(startpos, avg[2], avg[1], avg[0], collision_coords, 5)
+    arm_config, success = alr.linear_path_to_point(startpos, avg[2], avg[1], avg[0], collision_coords, 5)
     robot.send_update([arm_config, success])
     start_time = print_time("Calculated Kinematics: ", start_time)
     print("converted config: ", avg) 

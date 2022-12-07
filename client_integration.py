@@ -5,7 +5,7 @@ from c1c0_object_detection.object_detection.camera import Camera
 from c1c0_object_detection.object_detection.grasping import Grasping
 from c1c0_object_detection.object_detection.inference import Inference
 import c1c0_object_detection.arm.publish_arm_updates as arm
-import c1c0_object_detection.kinematics.linear_rrt as alr
+import c1c0_object_detection.kinematics.linear_pathing as alr
 from networking.Client import Client
 # for displaying
 import jetson.utils
@@ -29,7 +29,7 @@ def main():
         # TODO: Do we need context managers for these also?
         inf = Inference()
         grasping = Grasping()
-        robot = Client() 
+        
         start_time = print_time("Loaded Cam, Inf, and Grasp Modules: ", start_time)
         for i in range(5):
             # --------- Get Frames and Numpy Images ---------
@@ -71,7 +71,7 @@ def main():
 
             kmeans_depth = np.asanyarray(depth_frame.get_data())
             robot.send_data(
-                color_img, 
+                [color_img, 
                 depth_img, 
                 kmeans_depth, 
                 dgr, 
@@ -79,8 +79,8 @@ def main():
                 bbox, 
                 coord1, 
                 coord2, 
-                cam.depth_scale)
-
+                cam.depth_scale])
+            robot = Client() 
             arm_config, success = robot.listen()
             print(arm_config, success)
             # --------- Send Arm Configs to the Arm to move ---------
