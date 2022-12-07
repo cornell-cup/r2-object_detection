@@ -70,7 +70,16 @@ def main():
             print("Grasp coordinates in meters (X, Y, Z): ", coord1, coord2)
 
             kmeans_depth = np.asanyarray(depth_frame.get_data())
-            robot.send_data(color_img, kmeans_depth, dgr, [0, 0, 0, 0, 0, 0], bbox, coord1, coord2)
+            robot.send_data(
+                color_img, 
+                depth_img, 
+                kmeans_depth, 
+                dgr, 
+                [0, 0, 0, 0, 0, 0], 
+                bbox, 
+                coord1, 
+                coord2, 
+                cam.depth_scale)
 
             arm_config, success = robot.listen()
             print(arm_config, success)
