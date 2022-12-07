@@ -28,18 +28,28 @@ class Client(Network):
 
     def listen(self):
         print("listening to ", self.server)
-        # according to pickle docs you shouldn't unpickle from unknown sources, 
-        # so we have some validation here
-        #while x[1] != self.server:
-            # print(x[1], self.server)
-        x = self.socket.recv(4096)
-        #print(x)
-            # print(x[1], self.server)
-        y = pickle.loads(x)
-        self.receive_ID, content= y[0], y[1]
-        # print(y, content)
-        # print("PREVIOUS RETURN", str(content))
-        return content
+        try:
+            conn = self.socket
+            payload_size = struct.calcsize(">L")
+            data = b''
+            while len(data) < payload_size:
+                print("Recv: {}".format(len(data)))
+                data += (conn.recv(4096))
+        
+            print("Done Recv: {}".format(len(data)))
+            packed_msg_size = data[:payload_size]
+            data = data[payload_size:]
+            msg_size = struct.unpack(">L", packed_msg_size)[0]
+            print("msg_size: {}".format(msg_size))
+            while len(data) < msg_size:
+                data += conn.recv(4096)
+            frame_data = data[:msg_size]
+            data = data[msg_size:]
+
+            frame=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+            return frame
+        except:
+            print("Couldn't connect to socket in time")
 
 # # test to make sure that SensorState object is <= 4096 bytes
 # if __name__ == "__main__":
