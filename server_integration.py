@@ -21,7 +21,7 @@ def print_time(msg, start):
 
 def main():
     robot = Server()
-
+    start_time = time.time()
     color_img, depth_img, depth_frame, dgr, startpos, bbox, coord1, coord2, depth_scale = robot.receive_data()
     
     # Identify Obstacles with K-means

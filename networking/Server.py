@@ -45,9 +45,9 @@ class Server(Network):
 
     ##  precondition: must have called receive_data successfully
     def send_update(self, update):
-        self.send_ID += 1
-        self.last_sent= update
-        self.client.sendall(pickle.dumps([self.send_ID,update]))
+        data = pickle.dumps(update)
+        size = len(data)
+        self.client.sendall(struct.pack(">L", size) + data)
 
 
 # test with Client.py main method
