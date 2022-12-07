@@ -29,7 +29,7 @@ def main():
         # TODO: Do we need context managers for these also?
         inf = Inference()
         grasping = Grasping()
-        robot = Client() 
+        
         start_time = print_time("Loaded Cam, Inf, and Grasp Modules: ", start_time)
         for i in range(5):
             # --------- Get Frames and Numpy Images ---------
@@ -71,7 +71,7 @@ def main():
 
             kmeans_depth = np.asanyarray(depth_frame.get_data())
             robot.send_data(
-                color_img, 
+                [color_img, 
                 depth_img, 
                 kmeans_depth, 
                 dgr, 
@@ -79,8 +79,8 @@ def main():
                 bbox, 
                 coord1, 
                 coord2, 
-                cam.depth_scale)
-
+                cam.depth_scale])
+            robot = Client() 
             arm_config, success = robot.listen()
             print(arm_config, success)
             # --------- Send Arm Configs to the Arm to move ---------
