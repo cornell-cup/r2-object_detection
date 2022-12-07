@@ -162,7 +162,7 @@ def get_image_bounds(color_img, depth_img, debug=False):
     result_img = postprocess_im(depth_img, result_img, labels, debug)
     return get_bound(result_img, False)
 
-def bound_to_coor(depth_scale, depth_frame, depth_img, bounds, cam):
+def bound_to_coor(depth_scale, depth_frame, depth_img, bounds):
     boxes = []
     for bound in bounds:
         # ((min x, min y), (max x, max y))

@@ -22,13 +22,13 @@ def print_time(msg, start):
 def main():
     robot = Server()
 
-    color_img, depth_img, dgr, startpos, bbox, coord1, coord2 = robot.receive_data()
+    color_img, depth_img, depth_frame, dgr, startpos, bbox, coord1, coord2, depth_scale = robot.receive_data()
     
     # Identify Obstacles with K-means
 
     bounds = get_image_bounds(color_img, depth_img)
     # list of bounding boxes, each bounding box has bottom left coordinate, lwh
-    collision_coords = bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)
+    collision_coords = bound_to_coor(depth_scale, depth_frame, depth_img, bounds)
     print(collision_coords)
 
     # --------- Send Arm Configs to the Arm to move ---------
