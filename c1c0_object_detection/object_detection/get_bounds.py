@@ -68,12 +68,16 @@ def approx_shape(img):
 
 def draw_boxes(img):
     """ draw boxes for visualization """
+    print("DRAWING")
     rect_params = get_rect_params(img)
+    print("1")
     tmp = img.copy()
+    print("1")
     for param in rect_params:
         cv2.rectangle(tmp,param[0],param[1],(100,100,100),1)
-    #cv2.imshow("boxes", tmp)
-    #cv2.waitKey()
+        print("1")
+    cv2.imshow("boxes", tmp)
+    cv2.waitKey()
 
 def erode_and_dilate(img, debug=False):
     # erosion takes the min value of the kernel and 
@@ -117,8 +121,8 @@ def get_bound (img, debug=False):
             # cv2.rectangle(tmp,(x,y),(x+w,y+h),(255,0,0),3)
             cv2.imshow("org", img)
             cv2.imshow("tmp", tmp)
-            cv2.waitKey()
             draw_boxes(tmp)
+            cv2.waitKey()
     return box_coords
 
 

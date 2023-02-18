@@ -151,6 +151,7 @@ def create_rgbd(rgb_img, depth_img):
 
 
 def get_image_bounds(color_img, depth_img, debug=False):
+    depth_img = normalize(depth_img)
     if debug:
         cv2.imshow("color image", color_img)
         cv2.imshow("depth image", depth_img)
@@ -177,6 +178,12 @@ def bound_to_coor(depth_scale, depth_frame, depth_img, bounds):
         box = x1,y1,z1,abs(x2-x1),abs(z2-z1),abs(y2-y1)
         boxes.append(box)
     return boxes
+
+def normalize(depth_array):
+    scaled_array = (depth_array/np.float(np.max(depth_array)))*255
+    scaled_array = scaled_array.astype(int)
+    scaled_array = scaled_array.astype(np.uint8)
+    return scaled_array
 
 def main():
     #org_image, depth_img, rgbd = df.get_depth_frame()

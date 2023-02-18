@@ -8,7 +8,7 @@ from c1c0_object_detection.object_detection.inference import Inference
 from c1c0_object_detection.object_detection.grasping import Grasping
 import c1c0_object_detection.arm.publish_arm_updates as arm
 import c1c0_object_detection.kinematics.linear_pathing as alr
-import c1c0_object_detection.object_detection.kmeans as kmeans
+import c1c0_object_detection.object_detection.newkmeans as kmeans
 # for displaying
 import jetson.utils
 import math
@@ -55,6 +55,8 @@ def main():
                 print("object not found")
                 continue
 
+            bounding = [top, bot, left, right]
+
             bbox = (max(0, left-20), min(WIDTH-1, right+20),
             max(0, top), min(HEIGHT-1, bot))
             
@@ -93,7 +95,7 @@ def main():
             color_img = np.asanyarray(color_frame.get_data())
             print ("depth image shape", depth_img.shape, "color image shape", color_img.shape)
             start_time = print_time("Starting kmeans", start_time)
-            bounds = kmeans.get_image_bounds(color_img, depth_img, True)
+            bounds, labels, object_label = kmeans.get_image_bounds(color_img, depth_img, bounding, True)
             start_time = print_time("kmeans took", start_time)
             # list of bounding boxes, each bounding box has bottom left coordinate, lwh
             #collision_coords = kmeans.bound_to_coor(cam.depth_scale, depth_frame, depth_img, bounds, cam)
