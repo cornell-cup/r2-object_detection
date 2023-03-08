@@ -15,9 +15,9 @@ def preprocess_data(depth_img, rgbd, crop):
     rgbd = np.concatenate((rgbd, xy_matrix), axis=2)
 
     if not crop:
-        norm_matrix = [0.8,0.8,0.8,2.4,0.9,0.9] #rgbdxy for non-cropped
+        norm_matrix = [0.5,0.5,0.5,2.4,0.9,0.9] #rgbdxy for non-cropped
     else:
-        norm_matrix = [0.8,0.8,0.8,2.4,0.9,0.9] #rgbdxy for cropped
+        norm_matrix = [0.5,0.5,0.5,2.4,0.9,0.9] #rgbdxy for cropped
 
     rgbd = rgbd*norm_matrix
     print("rgbd",rgbd)
@@ -116,7 +116,7 @@ def cv_kmeans(input_img, img_shape, crop_add, debug=False):
             idx = i
             break
     
-    res = center[labels[idx-1].flatten()]
+    res = center[labels[idx-2].flatten()]
     res = res[:,:3]
     result_image = res.reshape((img_shape))
 
@@ -137,12 +137,15 @@ def stitch(color_img, depth_img, bounding):
     Given an original color image and depth image, crops both images based on bounding boxes of object. Performs kmeans segmentation on original depth image and cropped depth image. Stitches cropped depth image segmentation on top of original depth image segmentation. Combines labels of both segmentations. Returns one final stitched kmeans segmentation, final labels, and the object label.
     '''
     depth_img = normalize(depth_img)
+    print(depth_img)
+    print(np.min(depth_img))
+    print(np.max(depth_img))
     crop_color_img, crop_depth_img, top, bottom, left, right = crop_images(color_img, depth_img, bounding)
     cv2.imshow("Color Image", color_img)
     cv2.imshow("Depth Image", depth_img)
     cv2.imshow("Cropped Color Image", crop_color_img)
     cv2.imshow("Cropped Depth Image", crop_depth_img)
-    cv2.waitKey()
+    #cv2.waitKey()
 
     result_img, labels = segmentation(color_img, depth_img, 0)
     crop_result_img, crop_labels = segmentation(crop_color_img, crop_depth_img, (np.max(labels)+1))
