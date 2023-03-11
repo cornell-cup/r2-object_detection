@@ -1,7 +1,7 @@
 import pickle
-from networking.Network import *
-from networking.ObjectDetection import *
-from networking.SensorState import *
+from Network import *
+from ObjectDetection import *
+from SensorState import *
 import sys
 import json
 
@@ -13,9 +13,12 @@ def jprint(obj):
 class Client(Network):
     def __init__(self):
         super().__init__()
+        print("Server IP: ", self.server)
         self.socket.connect(self.server)
-        #self.socket.settimeout(4)  # interferes with stopping
+        print("Connect complete")
+        self.socket.settimeout(30)  # interferes with stopping
         self.receive_ID= 0
+        print("INIT complete")
 
 
     def send_data(self, color_img, depth_frame, dgr, startpos, bbox, c1, c2):
@@ -42,8 +45,10 @@ class Client(Network):
         return content
 
 # # test to make sure that SensorState object is <= 4096 bytes
-# if __name__ == "__main__":
-#     robot = Client()
-#     data_packet = SensorState()
-#     robot.send_data(data_packet)
-#     print(robot.listen())
+if __name__ == "__main__":
+    robot = Client()
+    #data_packet = SensorState()
+    data_packet = [None, None, None, None, None, None]
+    robot.send_data(None, None, None, None, None, None, None)
+    #print("data sent to " + robot.get_ip);
+    print(robot.listen())

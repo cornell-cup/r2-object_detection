@@ -1,13 +1,15 @@
-import pickle
 import json
+import pickle
 import time
-from networking.Network import *
+
+from Network import Network
 
 
 class Server(Network):
     def __init__(self):
         super().__init__()
-        print((self.get_ip(), self.port))
+        #print((self.get_ip(), self.port))
+        print("Reading from ip", "128.253.46.196"); 
         # bind the socket to an ip and port
         self.socket.bind((self.get_ip(), self.port))
         print("Server Started")
@@ -21,15 +23,19 @@ class Server(Network):
             conn, addr = self.socket.accept()
             start_time = time.time()
             conn.settimeout(1)
-
+            print("Accepted connection from: ", addr)
             data = []
+            count = 1
             try: 
                 while True:
                     packet = conn.recv(4096)
-                    print("packet", packet)
                     if not packet: break
+                    print("packet received and appended", count)
+                    count += 1
                     data.append(packet)
+                print("broke out of while")
             except:
+                print("hit execpt")
                 self.client = conn
                 #self.socket.settimeout(10)  # interferes with stopping on further calls
                 y = pickle.loads(b"".join(data))
