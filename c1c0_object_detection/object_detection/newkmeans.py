@@ -7,12 +7,36 @@ import os
 from datetime import datetime
 from matplotlib import image
 from .get_bounds import get_bound as bound
-#import get_depth_frame as df
+
+def get_image_bounds(color_img, depth_img, bounding, debug=False):
+    """
+    Given an original color image and depth image, crops both images based on bounding boxes of object. Performs kmeans segmentation on original depth image and cropped depth image. Stitches cropped depth image segmentation on top of original depth image segmentation. Combines labels of both segmentations. Results in one final stitched kmeans segmentation, final labels, and the object label. Returns the bounding coordinates, the labels of clusters from segmentation, and the objects' label.
+    """
+    depth_img = normalize(depth_img)
+    crop_color_img, crop_depth_img, top, bottom, left, right = crop_images(color_img, depth_img, bounding)
+
+    if debug:
+        cv2.imshow("Color Image", color_img)
+        cv2.imshow("Depth Image", depth_img)
+        cv2.imshow("Cropped Color Image", crop_color_img)
+        cv2.imshow("Cropped Depth Image", crop_depth_img)
+        cv2.waitKey()
+
+    result_img, labels = segmentation(color_img, depth_img, 0)
+    crop_result_img, crop_labels = segmentation(crop_color_img, crop_depth_img, (np.max(labels)+1))
+    result_img, labels, object_label = superimpose(result_img, crop_result_img, labels, crop_labels, top, bottom, left, right)
+
+    if debug:
+        cv2.imshow("Result Image", result_img)
+        cv2.waitKey()
+    
+    return bound(result_img, True), labels, object_label
 
 def preprocess_data(depth_img, rgbd, crop):
     width, height = depth_img.shape[0], depth_img.shape[1]
     xy_matrix = np.indices((width, height)).transpose(1,2,0)
     rgbd = np.concatenate((rgbd, xy_matrix), axis=2)
+
 
     if not crop :
         norm_matrix = [0.7,0.7,0.7,4.0,0.5,0.5] #rgbdxy for non-cropped
@@ -20,18 +44,17 @@ def preprocess_data(depth_img, rgbd, crop):
         norm_matrix = [0.1,0.1,0.1,3.5,0.5,0.5] #rgbdxy for cropped
 
     rgbd = rgbd*norm_matrix
-    print("rgbd",rgbd)
     return np.float32(rgbd)
-    
 
 def postprocess_im(depth_img, segmentation, labelled_img, prop=0.4, thresh=110):
-    """Identify points that violate the depth image and identify the 
-    labels of the pixels. If >prop% of pixels of that label violate the depth 
-    threshold then remove it from the image """
     """
-    for each label:
-        get all pixels associated with label. Call this set P
-        for each pixel p in P, check if p's depth value is smaller than the threshold
+    Identify points that violate the depth image and identify the 
+    labels of the pixels. If >prop% of pixels of that label violate the depth 
+    threshold then remove it from the image
+    
+    For each label:
+        Get all pixels associated with label. Call this set P for each pixel p in P.
+        Check if p's depth value is smaller than the threshold
         if the number of violating pixels in P is greater than prop% of |P|,
         white out the segmentation
     """
@@ -63,29 +86,6 @@ def postprocess_im(depth_img, segmentation, labelled_img, prop=0.4, thresh=110):
     cv2.waitKey()
     return segmentation
 
-def viz_image(images, names):
-    """
-    Given a list of images and their corresponding names, display them
-    """
-    for i in range(len(images)):
-        cv2.imshow(names[i], images[i])
-    print("press r to save images, press q to quit, press anything else to load a new image")
-    
-    key = cv2.waitKey(0)
-    if key & 0xFF == ord('r') or key == 27:
-        print ("Saving images")
-        now = datetime.now()
-        dt_str = now.strftime("%d-%m-%H:%M:%S")
-        pth = "kmeans_test_imgs/" + dt_str
-        os.mkdir(pth)
-        for i in range(len(images)):
-            cv2.imwrite(pth + '/' + names[i]+'.jpg', images[i])
-
-        cv2.destroyAllWindows()
-
-    if key & 0xFF == ord('q'):
-        cv2.destroyAllWindows()
-
 def cv_kmeans(input_img, img_shape, crop_add, debug=False):
     """ 
     Performs kmeans clustering on the input matrix. Expect the input_matrix 
@@ -109,14 +109,13 @@ def cv_kmeans(input_img, img_shape, crop_add, debug=False):
         center = np.uint8(center)
         distortions.append(ret)
 
-    
     idx = 0
     for i in range(len(distortions)-1):
         if (distortions[i] - distortions[i+1] < (distortions[0]/10)):
             idx = i
             break
     
-    res = center[labels[idx-2].flatten()]
+    res = center[labels[idx-1].flatten()]
     res = res[:,:3]
     result_image = res.reshape((img_shape))
 
@@ -128,44 +127,8 @@ def cv_kmeans(input_img, img_shape, crop_add, debug=False):
         plt.show()
         cv2.imshow("res", result_image)
         cv2.waitKey()
-
     
     return result_image, labels[idx]
-
-def stitch(color_img, depth_img, bounding):
-    '''
-    Given an original color image and depth image, crops both images based on bounding boxes of object. Performs kmeans segmentation on original depth image and cropped depth image. Stitches cropped depth image segmentation on top of original depth image segmentation. Combines labels of both segmentations. Returns one final stitched kmeans segmentation, final labels, and the object label.
-    '''
-    depth_img = normalize(depth_img)
-    print(depth_img)
-    print(np.min(depth_img))
-    print(np.max(depth_img))
-    crop_color_img, crop_depth_img, top, bottom, left, right = crop_images(color_img, depth_img, bounding)
-    cv2.imshow("Color Image", color_img)
-    cv2.imshow("Depth Image", depth_img)
-    cv2.imshow("Cropped Color Image", crop_color_img)
-    cv2.imshow("Cropped Depth Image", crop_depth_img)
-    cv2.waitKey()
-
-    result_img, labels = segmentation(color_img, depth_img, False, 0)
-    crop_result_img, crop_labels = segmentation(crop_color_img, crop_depth_img, True, (np.max(labels)+1))
-    object_label = labels
-    result_img, labels, object_label = superimpose(result_img, crop_result_img, labels, crop_labels, top, bottom, left, right)
-    print('step8')
-    cv2.imshow("Result Image", result_img)
-    print('step9')
-    cv2.waitKey()
-    
-    return result_img, labels, object_label
-    #return crop_result_img, labels, object_label
-
-def get_depth_images(dir):
-    path = os.path.join(os.getcwd(), "kmeans_test_imgs", dir)
-    org_img = image.imread(path+"/Orignal.jpg")
-    RGB_img = cv2.cvtColor(org_img, cv2.COLOR_BGR2RGB)
-    depth_img = cv2.imread(path+"/Depth Frame.jpg",0)
-    return RGB_img, depth_img
-
 
 def create_rgbd(rgb_img, depth_img):
     b, g, r = cv2.split(rgb_img)
@@ -182,48 +145,18 @@ def segmentation(color_img, depth_img, crop, crop_add):
     return result_img, labels
 
 def superimpose(result_img, crop_result_img, labels, crop_labels, top, bottom, left, right): 
-    print('SUPERIMPOSINGGGGGGGGGGGGGGGGGGGGG\n\n\n\n\n\n')
+    """
+    Superimposes cropped segmentation image onto original segmentation image. 
+    Labels of segmentation remain distinct values for each cluster.
+    """
     result_img[top:bottom, left:right] = crop_result_img
-    print('step1')
-    print(crop_labels)
-    print(labels)
-    print(np.min(labels))
-    print(np.max(labels))
-    print(np.min(crop_labels))
-    print(np.max(crop_labels))
-    print(len(labels))
-    print(len(crop_labels))
-    #for x in crop_labels:
-    #    x[0] += np.max(labels)
-    print('step2')
     labels = labels.reshape((result_img.shape[0], result_img.shape[1], 1))
-    print('step3')
     crop_labels = crop_labels.reshape((crop_result_img.shape[0], crop_result_img.shape[1], 1))
-    print('step4')
     object_label = np.max(crop_labels)
-    print('step5')
     labels[top:bottom, left:right] = crop_labels
-    print('step6')
     labels = labels.reshape((result_img.shape[0]*result_img.shape[1], 1))
-    print('step7')
 
     return result_img, labels, object_label
-
-def get_image_bounds(color_img, depth_img, bounding, debug=False):
-    '''
-    cv2.imshow('color_img', color_img)
-    cv2.imshow('depth_img', depth_img)
-    cv2.waitKey()
-    rgbd = create_rgbd(color_img, depth_img)
-    preprocessed_rgbd = preprocess_data(depth_img,rgbd)
-    print ("max of depth image",np.max(depth_img))
-    result_img, labels = cv_kmeans(preprocessed_rgbd, color_img.shape)
-    result_img = postprocess_im(depth_img, result_img, labels)
-    '''
-    result_img, labels, object_label = stitch(color_img, depth_img, bounding)
-    
-    
-    return bound(result_img, True)
 
 def crop_images(color_img, depth_img, bounding):
     return color_img[bounding[0]:bounding[1], bounding[2]:bounding[3]], depth_img[bounding[0]:bounding[1], bounding[2]:bounding[3]], bounding[0], bounding[1], bounding[2], bounding[3]
@@ -234,16 +167,31 @@ def normalize(depth_array):
     scaled_array = scaled_array.astype(np.uint8)
     return scaled_array
 
+def viz_image(images, names):
+    """
+    Given a list of images and their corresponding names, display them
+    """
+    for i in range(len(images)):
+        cv2.imshow(names[i], images[i])
+    print("press r to save images, press q to quit, press anything else to load a new image")
+    
+    key = cv2.waitKey(0)
+    if key & 0xFF == ord('r') or key == 27:
+        print ("Saving images")
+        now = datetime.now()
+        dt_str = now.strftime("%d-%m-%H:%M:%S")
+        pth = "kmeans_test_imgs/" + dt_str
+        os.mkdir(pth)
+        for i in range(len(images)):
+            cv2.imwrite(pth + '/' + names[i]+'.jpg', images[i])
+
+        cv2.destroyAllWindows()
+
+    if key & 0xFF == ord('q'):
+        cv2.destroyAllWindows()
+
 def main():
-    color_img, depth_img = get_depth_images("04-12-13:10:36")
-    #org_img, depth_img = get_depth_images("04-12-14:44:58")
-    #org_img, depth_img = get_depth_images("04-12-14:49:33")
-    #color_img, depth_img = get_depth_images("04-12-15:25:03")
-
-    result_img, labels, object_label = stitch(color_img, depth_img)
-    print(object_label)
-
-    # GET IMAGE BOUNDS OF STITCHED
+    print("MAIN")
 
 if __name__ == "__main__":
     main()
