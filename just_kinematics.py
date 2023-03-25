@@ -35,7 +35,9 @@ if __name__ == '__main__':
         # endpos = RRTNode.from_point(avg_target, startpos)
         # print("endpos:", end_angles)
         # arm_config, success = alr.linear_path_to_point(startpos, avg[2], avg[1], avg[0], [], 5)
-        arm_config, success = alr.linear_path_to_angles([0,0,0,0,0,0], [0,0,0,0,0,0], [], 2)
+
+
+        arm_config, success = alr.linear_path_to_angles([0,0,0,0,0,0], [0,1,0,0,0,0], [], 2)
         print([node.angles for node in arm_config])
         print("success:", success)
         # send arm_config to the arm to move
@@ -43,13 +45,21 @@ if __name__ == '__main__':
         arm_plot.configure_graph(ax)
         arm_plot.plot_arm_configs(ax, arm_config, [])
         plt.savefig('arm_path.png')
-        # plt.show()
+        plt.show()
         print(arm_config)
         if success:
             for config in arm_config:
+                # Must reverse array to match arm coords in code with blue arm coords
+                # BLUE ARM ARRAY POSITIONS (positions in code are other way around)
+                # 0: nothing?
+                # 1: nothing?
+                # 2: lift wrist
+                # 3: lift elbow
+                # 4: lift shoulder
+                # 5: nothing?
                 converted_array = alr.radians_to_degrees(config)[::-1]
                 print("WRITING ARM CONFIG", converted_array)
-                arm.publish_updates([0] + converted_array[:-1], 3)
+                arm.publish_updates(converted_array, 3)
             print("arm config serial written")
             break
 
