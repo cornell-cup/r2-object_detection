@@ -97,12 +97,18 @@ class Node(object):
         return lengths
 
     def inc_fail_count(self):
+        """Increase the node's failure count.
+
+        NOTE: This function is deprecated, as it is only used in RRT, which has been replaced by OPC.
+        """
         self.fail_count = self.fail_count + 1
 
     def angle_within_bounds(self, angle, joint):
+        """Determine whether the given angle is within the bounds of its corresponding joint."""
         return (0 < angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi)
 
     def angles_within_bounds(self, angles):
+        """Determine whether all angles of the arm are within bounds of their corresponding joints."""
         for i, angle in enumerate(angles):
             if not self.angle_within_bounds(angle, i):
                 return False

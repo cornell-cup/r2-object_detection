@@ -50,7 +50,7 @@ def main():
             
             # --------- Identify if Target Object is in View ---------
             isFound, top, bot, left, right = inf.detect_object(
-                color_img, "teddy bear", display=DISPLAY)
+                color_img, "teddy bear", display=True)
             if not isFound:
                 print("object not found")
                 continue

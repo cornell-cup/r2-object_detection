@@ -37,10 +37,11 @@ def preprocess_data(depth_img, rgbd, crop):
     xy_matrix = np.indices((width, height)).transpose(1,2,0)
     rgbd = np.concatenate((rgbd, xy_matrix), axis=2)
 
-    if not crop:
-        norm_matrix = [0.8,0.8,0.8,2.4,0.9,0.9] #rgbdxy for non-cropped
+
+    if not crop :
+        norm_matrix = [0.7,0.7,0.7,4.0,0.5,0.5] #rgbdxy for non-cropped
     else:
-        norm_matrix = [0.8,0.8,0.8,2.4,0.9,0.9] #rgbdxy for cropped
+        norm_matrix = [0.1,0.1,0.1,3.5,0.5,0.5] #rgbdxy for cropped
 
     rgbd = rgbd*norm_matrix
     return np.float32(rgbd)
@@ -136,9 +137,9 @@ def create_rgbd(rgb_img, depth_img):
     rgbd = cv2.merge([r, g, b, d])
     return rgbd
 
-def segmentation(color_img, depth_img, crop_add):
+def segmentation(color_img, depth_img, crop, crop_add):
     rgbd = create_rgbd(color_img, depth_img)
-    preprocessed_rgbd = preprocess_data(depth_img,rgbd, False)
+    preprocessed_rgbd = preprocess_data(depth_img,rgbd, crop)
     result_img, labels = cv_kmeans(preprocessed_rgbd, color_img.shape, crop_add)
     result_img = postprocess_im(depth_img, result_img, labels)
     return result_img, labels
