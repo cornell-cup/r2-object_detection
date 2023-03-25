@@ -17,8 +17,9 @@ def generate_random_obstacles(num: int, axes_limits: List[List[float]], max_side
 
     Args:
         num: The number of obstacles to be generated.
-        axes_limits: The [x, y, z] limits of the environment.
+        axes_limits: The bounds of each coordinate of the obstacle.
         max_side_length: The maximum side length of an obstacle.
+        min_side_length: The minimum side length of an obstacle.
 
     Returns:
         An array of arrays of floats [x, y, z, l, w, h] representing cuboid obstacles.
@@ -49,7 +50,13 @@ def generate_random_obstacles(num: int, axes_limits: List[List[float]], max_side
 def random_start_environment(num_obstacles, bounds, obstacle_bounds, obstacle_size=.2):
     """Generates a start environment for a run of RRT.
 
-     Returns:
+    Arguments:
+        num_obstacles: The number of obstacles to generate.
+        bounds: The (x, y, z) bounds for each coordinate of the goal position.
+        obstacle_bounds: The bounds of each coordinate of the obstacle.
+        obstacle_size: The maximum length of an obstacle.
+
+    Returns:
          A Node representing a valid start configuration.
          A Node representing a valid end configuration.
          A set of [num_obstacles] obstacles that do not collide with the start or end configurations.

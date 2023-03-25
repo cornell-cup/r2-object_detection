@@ -101,7 +101,22 @@ def find_path(target_end_point, start_angles, obs, n_iter=150, radius=.01, step_
 
 
 def opc_graph_list(num_trials, n_iter, radius, step_size, bounds, num_obstacles=1):
-    """ Generates a list of Optimistic Predictive Cost graphs. """
+    """ Generates a list of Optimistic Predictive Cost graphs.
+
+    Arguments:
+        num_trials: The amount of times to run OPC.
+        n_iter: The maximum amount of iterations to find a path.
+        radius: The maximum distance from the target end effector position needed to converge.
+        step_size: The distance, in radians, between each edge in the graph.
+        bounds: The (x, y, z) bounds for each coordinate of the goal position.
+        num_obstacles: The number of obstacles to generate each trial.
+
+    Returns:
+        For each trial:
+        -a list of Graph objects
+        -a list representing the path the arm took
+        -a list of the obstacles
+     """
 
     print("RUNNING {t} TRIALS OF OPC WITH {o} OBSTACLES\n".format(t=num_trials, o=num_obstacles))
     graphs = []
@@ -180,7 +195,6 @@ def get_tpms(trials):
     Obtains and prints Technical Performance Measures (TPMs) for the algorithm over a certain amount of trials.
     Args:
         trials: The amount of times OPC will be run.
-
     """
     start_time = time.time()
 

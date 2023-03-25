@@ -48,6 +48,14 @@ class Graph:
         self.end_effectors = np.array([self.start_node.end_effector_pos])
 
     def add_vex(self, node, parent):
+        """Add a new node to the graph.
+        Args:
+            node: The node to be added.
+            parent: The parent of [node].
+
+        Returns:
+            The index of the new node.
+        """
         try:
             idx = self.node_to_index[node]
         except KeyError:
@@ -69,14 +77,22 @@ class Graph:
         return idx
 
     def add_edge(self, idx1, idx2, cost):
+        """Add an edge between two nodes.
+        Args:
+            idx1: The index of the first node.
+            idx2: The index of the second node.
+            cost: The cost associated with this edge.
+        """
         self.edges.append((idx1, idx2))
         self.neighbors[idx1].append((idx2, cost))
         self.neighbors[idx2].append((idx1, cost))
 
     def dist_to_end(self, node):
+        """Get the distance from a node's end effector to the target end effector position."""
         return line.distance(node.end_effector_pos, self.end_node.end_effector_pos)
 
     def get_parent(self, idx):
+        """Return the parent of the node with the given index."""
         near_neighbors = self.neighbors[idx]
         parent_idx = near_neighbors[0][0]
         node_list = list(self.node_to_index.keys())

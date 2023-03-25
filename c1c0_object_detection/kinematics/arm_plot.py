@@ -37,6 +37,13 @@ def arr_to_int(arr):
 
 
 def plot_3d(G, path, obstacles, path2=None):
+    """Plot the nodes, edges, and path for a generated graph.
+    Args:
+        G: A Graph object obtained from executing a pathing algortihm.
+        path: The path of arm configurations taken.
+        obstacles: The cuboid obstacles.
+        path2: The second path (if any) to graph following the first.
+    """
     ax = plt.axes(projection='3d')
 
     end_effector_positions = []
@@ -70,7 +77,7 @@ def plot_3d(G, path, obstacles, path2=None):
 
 
 def plot_nodes(ax, nodes):
-
+    """Plot points in 3D."""
 
     xdata = [x for x, y, z in nodes]
     ydata = [y for x, y, z in nodes]
@@ -80,6 +87,7 @@ def plot_nodes(ax, nodes):
 
 
 def plot_edges(ax, G, nodes):
+    """Draw edges in between nodes in a graph."""
     lines = [(nodes[edge[0]], nodes[edge[1]]) for edge in G.edges]
 
     lc = art3d.Line3DCollection(lines, colors='black', linewidths=1)
@@ -87,6 +95,7 @@ def plot_edges(ax, G, nodes):
 
 
 def plot_path(ax, path,color='green'):
+    """Draw a line in between the end effector positions along the arm path."""
     path_vertices = []
     for i in range(0, len(path)):
         path_vertices.append(path[i].end_effector_pos)
@@ -100,6 +109,7 @@ def plot_path(ax, path,color='green'):
 
 
 def plot_arm_configs(ax, path, obstacles, color='green'):
+    """Plot the arm configs on a path."""
     for i in range(0, len(path)):
         if obstacles is not None:
             for obstacle in obstacles:
@@ -142,6 +152,9 @@ def plot_ik_trial(target_point, obtained_config):
 
 
 def plot_config_at_point():
+    """Plot a certain amount of arm configurations using inverse kinematics."""
+    num_configs = 1
+
     configs = []
     points = []
 
@@ -149,7 +162,7 @@ def plot_config_at_point():
     random_point = [random.uniform(bounds[0][0], bounds[0][1]),
                     random.uniform(bounds[1][0], bounds[1][1]),
                     random.uniform(bounds[2][0], bounds[2][1])]
-    for i in range(1):
+    for i in range(num_configs):
         random_point = [random.uniform(bounds[0][0], bounds[0][1]),
                         random.uniform(bounds[1][0], bounds[1][1]),
                         random.uniform(bounds[2][0], bounds[2][1])]
@@ -163,6 +176,7 @@ def plot_config_at_point():
 
 
 def plot_configs_with_obstacle():
+    """Plot a certain amount of arm configurations with an obstacle, in order to test collision detection."""
     configs = [Node(None) for i in range(10)]
     obstacles = [[.01, .01, .02, .1, .1, .1]]
     plot_arm_configs(ax, configs, obstacles)
