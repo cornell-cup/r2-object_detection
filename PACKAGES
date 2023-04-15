@@ -1,0 +1,7 @@
+{
+	"packages": [
+		"r2_object_detection",
+		"r2_object_detection.kinematics"
+	]
+}
+

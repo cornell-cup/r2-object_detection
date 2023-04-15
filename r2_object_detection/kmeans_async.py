@@ -1,7 +1,7 @@
 from multiprocessing import Pool
 from typing import TYPE_CHECKING, Iterable
 
-from kmeans import cv_kmeans, viz_image
+from .kmeans import cv_kmeans, viz_image
 
 
 if TYPE_CHECKING:
