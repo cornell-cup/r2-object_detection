@@ -1,6 +1,6 @@
 # Kinematics
 
-##Overview
+## Overview
 The kinematics section of the pipeline aims to find an obstacle-free
 path from the arm's current configuration to a configuration that allows it
 to grab a target object. It takes as input the current angle configuration of the arm,
