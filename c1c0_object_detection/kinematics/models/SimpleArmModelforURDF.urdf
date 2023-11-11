@@ -216,30 +216,35 @@
     <origin rpy="0 0 0" xyz="0.072326 -0.050475 0.065748"/>
     <parent link="base_link"/>
     <child link="link2_1"/>
+    <limit lower="0" upper="180" /> 
     <axis xyz="-0.0 0.0 1.0"/>
   </joint>
   <joint name="Rev3" type="revolute">
     <origin rpy="0 0 0" xyz="-0.04445 0.064201 0.082569"/>
     <parent link="link2_1"/>
     <child link="link3_1"/>
+    <limit lower="0" upper="3.14" /> 
     <axis xyz="-1.0 -0.0 -0.0"/>
   </joint>
   <joint name="Rev4" type="revolute">
     <origin rpy="0 0 0" xyz="0.015 0.305 0.0"/>
     <parent link="link3_1"/>
     <child link="link4_1"/>
+    <limit lower="0" upper="6.28" /> 
     <axis xyz="-1.0 -0.0 -0.0"/>
   </joint>
   <joint name="Rev5" type="revolute">
     <origin rpy="0 0 0" xyz="0.0022 0.0 0.222841"/>
     <parent link="link4_1"/>
     <child link="link5_1"/>
+    <limit lower="0" upper="3" /> 
     <axis xyz="1.0 0.0 -0.0"/>
   </joint>
   <joint name="Rev6" type="revolute">
     <origin rpy="0 0 0" xyz="0.035782 0.0 0.02119"/>
     <parent link="link5_1"/>
     <child link="hand_1"/>
+    <limit lower="0" upper="6.28" /> 
     <axis xyz="-0.0 0.0 1.0"/>
   </joint>
 </robot>

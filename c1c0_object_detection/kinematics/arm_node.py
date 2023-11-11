@@ -20,8 +20,8 @@ from ikpy.chain import Chain
 # Global arm configuration - IMPORTANT: wraps with nostderr() to hide command line errors.
 ik_py = True #boolean flag: True if ik_py, False if Kinpy
 with nostderr():
-    arm_chain = Chain.from_urdf_file("c1c0_object_detection/kinematics/models/XArm.urdf")
-    # arm_chain = Chain.from_urdf_file("c1c0_object_detection/kinematics/models/SimpleArmModelforURDF.urdf")
+    #arm_chain = Chain.from_urdf_file("c1c0_object_detection/kinematics/models/XArm.urdf")
+    arm_chain = Chain.from_urdf_file("c1c0_object_detection/kinematics/models/SimpleArmModelforURDF.urdf")
 
 
 class Node(object):
@@ -53,7 +53,7 @@ class Node(object):
         (0, 2 * math.pi)
     ]
 
-    XARM_URDF_BOUNDS = [(0, math.pi),(0, math.pi), (0, math.pi), (0, 150*math.pi/180), (0, math.pi), (math.pi/9, 8*math.pi/9)]
+    #SIMPLE_ARM_BOUNDS = [(0, math.pi),(0, math.pi), (0, math.pi), (0, 150*math.pi/180), (0, math.pi), (math.pi/9, 8*math.pi/9)]
     """
     [
         (2*math.pi, math.pi),
@@ -64,7 +64,7 @@ class Node(object):
         (17 * math.pi / 16, 15 * math.pi / 16),
     ]
     """
-    bounds = XARM_URDF_BOUNDS
+    bounds = SIMPLE_ARM_BOUNDS
 
     def __init__(self, configuration: List[float]):
         if configuration is None:
