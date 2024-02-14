@@ -151,7 +151,7 @@ def plot_ik_trial(target_point, obtained_config):
     plot_arm_configs(ax, [obtained_config], None)
 
 
-def plot_config_at_point():
+def plot_config_at_point(ax):
     """Plot a certain amount of arm configurations using inverse kinematics."""
     num_configs = 1
 

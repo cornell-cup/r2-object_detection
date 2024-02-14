@@ -20,7 +20,7 @@ def init_serial():
     Initializes the serial port, usually set baud to 9600
     '''
     global ser
-    ser = serial.Serial( port = '/dev/ttyTHS1', baudrate = 9600)
+    ser = serial.Serial( port = '/dev/ttyTHS1', baudrate = 38400)
 
     
 def close_serial():
@@ -42,6 +42,9 @@ def read_encoder_values():
     # length of message plus 16
     good_data = False 
     while (not good_data):
+        data = 1
+        write_byte = encode(bytes('PRMR','utf-8'), data.to_bytes(12,'little'))
+        ser.write(write_byte)
         ser_msg = ser.read(28)
         msgtype, msg, status = decode(ser_msg)
         print("Hex: ", msg.hex())
