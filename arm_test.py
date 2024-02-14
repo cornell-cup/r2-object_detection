@@ -19,12 +19,12 @@ startpos = [0, 0, 0, 0, 0, 0]
 print ("initializing arm")
 arm.init_serial()
 print ("Arm initialized. Now reading encoder values")
-#startpos = arm.read_encoder_values()
+startpos = arm.read_encoder_values()
 print ("read encoder values")
 #endpos = [20, 90, 30, 45, 45, 120]
 obstacles = []
 print ("executing rrt")
-arm_config, success = alr.linear_path_to_point(startpos, .1,.1,.1, obstacles, 2)
+arm_config, success = alr.linear_path_to_point(startpos, .1,.1,.25, obstacles, 2)
 if not success:
     print ("plan failed")
 else:
@@ -34,6 +34,7 @@ ax = plt.axes(projection='3d')
 arm_plot.configure_graph(ax)
 arm_plot.plot_arm_configs(ax, arm_config, [])
 plt.show()
+
 for config in arm_config:
     converted_array = alr.radians_to_degrees(config) # uncomment following for rev [::-1]
     print("WRITING ARM CONFIG", converted_array)
