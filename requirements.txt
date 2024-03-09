@@ -7,3 +7,5 @@ tensorrt
 wheel
 pbr
 scipy
+scikit-learn
+pyrealsense2

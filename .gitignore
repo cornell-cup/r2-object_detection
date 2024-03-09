@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+bin/
 build/
 develop-eggs/
 dist/
@@ -20,7 +21,7 @@ parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
+share/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -112,6 +113,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+*.cfg
 
 # Spyder project settings
 .spyderproject

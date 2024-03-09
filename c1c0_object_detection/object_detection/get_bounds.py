@@ -72,8 +72,8 @@ def draw_boxes(img):
     tmp = img.copy()
     for param in rect_params:
         cv2.rectangle(tmp,param[0],param[1],(100,100,100),1)
-    #cv2.imshow("boxes", tmp)
-    #cv2.waitKey()
+    cv2.imshow("boxes", tmp)
+    cv2.waitKey()
 
 def erode_and_dilate(img, debug=False):
     # erosion takes the min value of the kernel and 

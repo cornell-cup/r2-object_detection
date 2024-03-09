@@ -30,10 +30,10 @@ sys.path.insert(1, '/usr/local/lib/python3.6')
 sys.path.insert(2, '/home/cornellcup-cs/Desktop/c1c0_modules/r2-object_detection/src/kinematics')
 sys.path.insert(3, '/home/cornellcup-cs/Desktop/c1c0_modules/r2-object_detection/src')
 
-from src.camera import Camera
-from src.projections import *
-#import src.kinematics.linear_rrt as alr 
-from src.kmeans import *
+from c1c0_object_detection.object_detection.camera import Camera
+from c1c0_object_detection.object_detection.projections import *
+#import c1c0_object_detection.object_detection.kinematics.linear_rrt as alr 
+from c1c0_object_detection.object_detection.kmeans import *
 
 import jetson.inference
 import jetson.utils

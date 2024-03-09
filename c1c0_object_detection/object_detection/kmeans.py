@@ -8,9 +8,9 @@ from sklearn import preprocessing
 import os
 from datetime import datetime
 from matplotlib import image
-from .get_bounds import get_bound
-from .projections import proj_pixel_to_point
-#import get_depth_frame as df
+from get_bounds import get_bound
+from projections import proj_pixel_to_point
+import get_depth_frame as df
 
 
 def preprocess_data(depth_img, rgbd):
@@ -179,9 +179,9 @@ def bound_to_coor(depth_scale, depth_frame, depth_img, bounds, cam):
     return boxes
 
 def main():
-    #org_image, depth_img, rgbd = df.get_depth_frame()
+    org_img, depth_img, rgbd = df.get_depth_frame()
     
-    org_img, depth_img = get_depth_images("23-04-14:42:35")
+    # org_img, depth_img = get_depth_images("23-04-14:42:35")
     get_image_bounds(org_img, depth_img)
     
 
