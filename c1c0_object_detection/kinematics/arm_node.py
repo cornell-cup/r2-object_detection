@@ -97,7 +97,8 @@ class Node(object):
         self.fail_count = self.fail_count + 1
 
     def angle_within_bounds(self, angle, joint):
-        return (0 < angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi)
+        """Determine whether the given angle is within the bounds of its corresponding joint."""
+        return (0 <= angle < self.bounds[joint][1]) or (self.bounds[joint][0] > angle > 2 * math.pi)
 
     def angles_within_bounds(self, angles):
         for i, angle in enumerate(angles):
