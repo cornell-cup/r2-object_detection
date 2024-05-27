@@ -211,8 +211,13 @@ def linear_path_to_point(start_angles, end_x, end_y, end_z, obstacles, num_iter=
     Returns:
         An array of Node instances or float arrays representing a valid path between the start and end configurations
     """
-    end_angles = Node.from_point((end_x, end_y, end_z)).angles
-    return linear_path_to_angles(start_angles, end_angles, obstacles, num_iter)
+    end_config = Node.from_point((end_x, end_y, end_z))
+    end_angles = end_config.angles
+    if end_config.angles_within_bounds(end_angles):
+        return linear_path_to_angles(start_angles, end_angles, obstacles, num_iter)
+
+    else:
+        return None, False
 
 
 def degrees_to_radians(angles: list[float]):
