@@ -6,7 +6,7 @@ from client.client import * # Importing The Client/Task Manager
 SLEEP_TIME: float = 0.25
 
 if __name__ == '__main__':
-    client: Client = Client(disp=True, prnt=True) # Creating The Client
+    client: Client = Client(disp=True, prnt=True, open=True) # Creating The Client
 
     while True:
         # Clearing Terminal & Getting Inputs
