@@ -1,10 +1,8 @@
-import numpy as np, time, cv2, os # Default Python Libraries
+import time # Default Python Libraries
 from ultralytics import YOLO
 
 from client.config import * # Default Configuration Values
 from client.camera import Camera
-
-from typing import List, Mapping, Tuple, Set # Type Hinting
 
 class Client:
     def __init__(self: any, disp: bool = DEFAULT_DISP, prnt: bool = DEFAULT_PRINT, 
@@ -14,23 +12,17 @@ class Client:
 
         PARAMETERS
         ----------
-        path         - The path to the directory containing the images to load.
         open         - Whether or not to open the camera.
-        load         - Whether or not to load images from the specified path.
         disp         - Whether or not to display the image with bounding boxes.
         prnt         - Whether or not to print the results of the facial recognition.
-        cache        - Whether or not to load encodings from the specified cache directory.
-        cache_dir    - The directory to load encodings from.
-        mappings     - The mappings to update with the added filenames.
         camera       - The camera to use.
-        scale_factor - The scale factor to use when resizing images.
         """
 
         self.disp: bool = disp
         self.prnt: bool = prnt
         self.open: bool = open
-        self.camera = Camera(camera) if self.open else None
-        self.model = YOLO('yolo11m.pt')
+        self.camera = Camera(camera) if self.open else None 
+        self.model = YOLO('yolo11m.pt') # YOLO object detection model initialization
         self.image = None
 
         self.task_map = {
@@ -62,68 +54,76 @@ class Client:
         return self.task_map[task]
 
     def detect_file(self, path: str = None, display: bool = False):
-        if not path:
-            return False
+        if not path: return False
         results = self.model(path, show=display, stream=True)
+        total_names = []
+
         for result in results:
             boxes = result.boxes
-        if boxes is not None:
-            confs = boxes.conf.cpu().numpy()       # Confidence scores
-            classes = boxes.cls.cpu().numpy()      # Class indices
-            names = result.names                   # Class index -> name mapping
+            if boxes is not None:
+                confs = boxes.conf.cpu().numpy()       # Confidence scores
+                classes = boxes.cls.cpu().numpy()      # Class indices
+                names = result.names                   # Class index -> name mapping
 
-            # Create a list of (name, confidence) pairs
-            name_conf_pairs = [(names[int(cls)], float(conf)) for cls, conf in zip(classes, confs)]
+                # Create a sorted list of (name, confidence) pairs
+                name_conf_pairs = [(names[int(cls)], float(conf)) for cls, conf in zip(classes, confs)]
+                sorted_pairs = sorted(name_conf_pairs, key=lambda x: x[1], reverse=True)
+                sorted_names = [name for name, _ in sorted_pairs]
 
-            # Sort by confidence descending
-            sorted_pairs = sorted(name_conf_pairs, key=lambda x: x[1], reverse=True)
-
-            # Just names, sorted by confidence
-            sorted_names = [name for name, _ in sorted_pairs]
-
-            if self.prnt: print("Sorted class names by confidence:", sorted_names)
-            return sorted_names
+                for name in sorted_names:
+                    total_names.append(name)
+        
+        if self.prnt: 
+            print("Sorted names:", total_names)
+            time.sleep(3)
+        return total_names
 
     def detect_all(self, display: bool = False):
         image = self.camera.adjust_read() if self.open else self.image
         results = self.model(image, show=display, stream=True)
+        total_names = []
+
         for result in results:
             boxes = result.boxes
-        if boxes is not None:
-            confs = boxes.conf.cpu().numpy()       # Confidence scores
-            classes = boxes.cls.cpu().numpy()      # Class indices
-            names = result.names                   # Class index -> name mapping
+            if boxes is not None:
+                confs = boxes.conf.cpu().numpy()       # Confidence scores
+                classes = boxes.cls.cpu().numpy()      # Class indices
+                names = result.names                   # Class index -> name mapping
 
-            # Create a list of (name, confidence) pairs
-            name_conf_pairs = [(names[int(cls)], float(conf)) for cls, conf in zip(classes, confs)]
+                # Create a sorted list of (name, confidence) pairs
+                name_conf_pairs = [(names[int(cls)], float(conf)) for cls, conf in zip(classes, confs)]
+                sorted_pairs = sorted(name_conf_pairs, key=lambda x: x[1], reverse=True)
+                sorted_names = [name for name, _ in sorted_pairs]
 
-            # Sort by confidence descending
-            sorted_pairs = sorted(name_conf_pairs, key=lambda x: x[1], reverse=True)
-
-            # Just names, sorted by confidence
-            sorted_names = [name for name, _ in sorted_pairs]
-
-            if self.prnt: print("Sorted class names by confidence:", sorted_names)
-            return sorted_names
+                for name in sorted_names:
+                    total_names.append(name)
+            
+            if self.prnt: 
+                print("Sorted names:", total_names)
+                time.sleep(3)
+            return total_names
 
     def detect_count(self, display: bool = True):
         image = self.camera.adjust_read() if self.open else self.image
         results = self.model(image, show=display, stream=True)
+        total_names = []
+
         for result in results:
             boxes = result.boxes
-        if boxes is not None:
-            confs = boxes.conf.cpu().numpy()       # Confidence scores
-            classes = boxes.cls.cpu().numpy()      # Class indices
-            names = result.names                   # Class index -> name mapping
+            if boxes is not None:
+                confs = boxes.conf.cpu().numpy()       # Confidence scores
+                classes = boxes.cls.cpu().numpy()      # Class indices
+                names = result.names                   # Class index -> name mapping
 
-            # Create a list of (name, confidence) pairs
-            name_conf_pairs = [(names[int(cls)], float(conf)) for cls, conf in zip(classes, confs)]
+                # Create a sorted list of (name, confidence) pairs
+                name_conf_pairs = [(names[int(cls)], float(conf)) for cls, conf in zip(classes, confs)]
+                sorted_pairs = sorted(name_conf_pairs, key=lambda x: x[1], reverse=True)
+                sorted_names = [name for name, _ in sorted_pairs]
 
-            # Sort by confidence descending
-            sorted_pairs = sorted(name_conf_pairs, key=lambda x: x[1], reverse=True)
+                for name in sorted_names:
+                    total_names.append(name)
 
-            # Just names, sorted by confidence
-            sorted_names = [name for name, _ in sorted_pairs]
-
-            if self.prnt: print("Most prominent object:", sorted_names[0])
-            return sorted_names[0]
+        if self.prnt: 
+            print("Number of objects:", len(total_names))
+            time.sleep(3)
+        return len(total_names)
