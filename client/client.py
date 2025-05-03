@@ -33,7 +33,10 @@ class Client:
             'a' : (lambda _: self.detect_all(display=disp)), # Ask Scheduler for an image and return the names of all detected objects
 
             'count' : (lambda _: self.detect_count(display=disp)),
-            'c' : (lambda _: self.detect_count(display=disp)) # Ask Scheduler for an image and return the num
+            'c' : (lambda _: self.detect_count(display=disp)), # Ask Scheduler for an image and return the num
+
+            'main' : (lambda _: self.detect_main(display=disp)),
+            'm' : (lambda _: self.detect_main(display=disp)), # Ask Scheduler for an image and return the names of all detected objects
         }
 
 
@@ -127,3 +130,28 @@ class Client:
             print("Number of objects:", len(total_names))
             time.sleep(3)
         return len(total_names)
+    
+    def detect_main(self, display: bool = True):
+        image = self.camera.adjust_read() if self.open else self.image
+        results = self.model(image, show=display, stream=True)
+        total_names = []
+
+        for result in results:
+            boxes = result.boxes
+            if boxes is not None:
+                confs = boxes.conf.cpu().numpy()       # Confidence scores
+                classes = boxes.cls.cpu().numpy()      # Class indices
+                names = result.names                   # Class index -> name mapping
+
+                # Create a sorted list of (name, confidence) pairs
+                name_conf_pairs = [(names[int(cls)], float(conf)) for cls, conf in zip(classes, confs)]
+                sorted_pairs = sorted(name_conf_pairs, key=lambda x: x[1], reverse=True)
+                sorted_names = [name for name, _ in sorted_pairs]
+
+                for name in sorted_names:
+                    total_names.append(name)
+
+        if self.prnt: 
+            print("Main Object: " + total_names[0])
+            time.sleep(3)
+        return [total_names[0]]
