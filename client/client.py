@@ -130,9 +130,10 @@ class Client:
             print("Number of objects:", len(total_names))
             time.sleep(3)
         return len(total_names)
-    
+
     def detect_main(self, display: bool = True):
         image = self.camera.adjust_read() if self.open else self.image
+
         results = self.model(image, show=display, stream=True)
         total_names = []
 
